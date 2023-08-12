@@ -30,7 +30,7 @@ You can install the development version of EPhysData like so:
 if (!requireNamespace("remotes", quietly = TRUE)){
   install.packages("remotes")
 }
-#remotes::install_github("moritzlindner/EPhysData")
+remotes::install_github("moritzlindner/EPhysData")
 ```
 
 ## Example
