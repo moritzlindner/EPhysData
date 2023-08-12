@@ -1,0 +1,74 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# EPhysData R Package
+
+## Introduction
+
+The `EPhysData` package provides a set of tools and classes for working with electrophysiological data in R. This package is designed to streamline the process of importing and preprocessing electrophysiological data, making it easier for researchers and analysts to work with complex datasets.
+
+There are two classes for storing the data. The `EPhysData` class stores  data from a single recording (possibly with repeated measurements). It is usually generated from imported raw data using `newEPhysSet()`. Information on how to filter or average the data contained in this class can be stored in it, but the data is left unchanged. The `EPhysSet` class contains a collection of associated  `EPhysData` classes (e.g. data from different channels recorded in parallel or in response to increasing stimulus intensities). Each `EPhysData` stored is associated with metadata describing the nature of the particular recodring. This class can be subsetted, extended or modified in other ways.  
+
+## Installation
+
+You can install the development version of EPhysData like so:
+
+``` {r installation}
+if (!requireNamespace("remotes", quietly = TRUE)){
+  install.packages("remotes")
+}
+remotes::install_github("moritzlindner/EPhysData")
+```
+
+## Example
+
+This is a basic example which shows you how to solve a common problem:
+
+```{r example}
+# Load the EPhysData package
+library(EPhysData)
+
+# Create an example EPhysData object
+data <- makeExampleEPhysData()
+
+# Get data
+GetData(data, Raw = T)
+
+# Get time trace data
+TimeTrace(data)
+
+# Set Averaging and function for the data
+FilterFunction(data)<-function(x){x/max(x)}
+GetData(data, Raw = F)
+AverageFunction(data)<-function(x){mean(x)}
+GetData(data, Raw = F)
+
+# Create an EPhysSet object
+ephysSet <-
+  newEPhysSet(
+    Data = list(
+      makeExampleEPhysData(),
+      makeExampleEPhysData(),
+      makeExampleEPhysData(),
+      makeExampleEPhysData()
+    ),
+    Metadata = data.frame(StepID = c("A1", "A2", "A3", "A4"))
+  )
+ephysSet
+
+```
+
+# Documentation
+

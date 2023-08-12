@@ -1,15 +1,14 @@
 #' Get/Set methods for EPhysData objects
 #'
-#' These methods are used to get and set the non-data slots from \linkS4class{EPhysData} objects.
+#' These methods are used to get and set the non-data slots from \link{EPhysData} objects.
 #' @param X An \code{EPhysData} object
 #' @name Get_Set_EPhysData
 #' @rdname Get_Set_EPhysData
 #' @docType methods
+#' @noMd
 #' @examples
 #' # Create an EPhysData object with example data
-#' myData <- matrix(rnorm(10), ncol = 1)
-#' myTimeTrace <- seq(0, 1, length.out = 10)
-#' myEPhysData <- newEPhysData(Data = myData, TimeTrace = myTimeTrace)
+#' myEPhysData <- makeExampleEPhysData()
 #'
 #' # Get the "Rejected" slot
 #' Rejected(myEPhysData)
@@ -33,15 +32,15 @@ NULL
 
 
 #' @rdname Get_Set_EPhysData
-#' @details \code{Rejected}: These functions set or get the logical vector indicating which of the repeated measurements stored in an \linkS4class{EPhysData} object to exclude from averaging.
-#' @exportMethod Rejected
+#' @details \code{Rejected}: These functions set or get the logical vector indicating which of the repeated measurements stored in an \link{EPhysData} object to exclude from averaging.
+#' @noMd
 setGeneric(
   name = "Rejected",
   def = function(X) {
     standardGeneric("Rejected")
   }
 )
-#' @noMd
+#' @exportMethod Rejected
 setMethod("Rejected", signature = "EPhysData", function(X) {
   return(X@Rejected)
 })
@@ -63,7 +62,7 @@ setMethod("Rejected<-", signature = "EPhysData", function(X, value) {
 })
 
 #' @rdname Get_Set_EPhysData
-#' @details \code{filter.fx}: Set  a function for filtering each individual of the repeated measurements in the \linkS4class{EPhysData} object. Could be downsampling or noise removal, for instance.
+#' @details \code{filter.fx}: Set  a function for filtering each individual of the repeated measurements in the \link{EPhysData} object. Could be downsampling or noise removal, for instance.
 #' @exportMethod FilterFunction
 setGeneric(
   name = "FilterFunction",
@@ -93,7 +92,7 @@ setMethod("FilterFunction<-", signature = "EPhysData", function(X, value) {
 })
 
 #' @rdname Get_Set_EPhysData
-#' @details \code{AverageFunction}: Set a function describing how averaging across repeated measurement should be performed in the \linkS4class{EPhysData} object. Usually, \link{mean}[base:mean] can be a good start.
+#' @details \code{AverageFunction}: Set a function describing how averaging across repeated measurement should be performed in the \link{EPhysData} object. Usually, \link[base:mean]{mean} can be a good start.
 #' @exportMethod AverageFunction
 setGeneric(
   name = "AverageFunction",
@@ -123,7 +122,7 @@ setMethod("AverageFunction<-", signature = "EPhysData", function(X, value) {
 })
 
 #' @rdname Get_Set_EPhysData
-#' @details \code{TimeTrace}: These functions set or get the time trace belonging to the measurements stored in an \linkS4class{EPhysData} object.
+#' @details \code{TimeTrace}: These functions set or get the time trace belonging to the measurements stored in an \link{EPhysData} object.
 #' @exportMethod TimeTrace
 setGeneric(
   name = "TimeTrace",
@@ -136,18 +135,42 @@ setMethod("TimeTrace", signature = "EPhysData", function(X) {
   return(X@TimeTrace)
 })
 
+#' #' @rdname Get_Set_EPhysData
+#' #' @exportMethod TimeTrace<-
+#' setGeneric(
+#'   name = "TimeTrace<-",
+#'   def = function(X, value) {
+#'     standardGeneric("TimeTrace<-")
+#'   }
+#' )
+#' #' @noMd
+#' setMethod("TimeTrace<-", signature = "EPhysData", function(X, value) {
+#'   X@TimeTrace <- value
+#'   if (validEPhysData(X)) {
+#'     return(X)
+#'   }
+#' })
+
 #' @rdname Get_Set_EPhysData
-#' @exportMethod TimeTrace<-
+#' @import units
+#' @exportMethod StimulusTrace
 setGeneric(
-  name = "TimeTrace<-",
-  def = function(X, value) {
-    standardGeneric("TimeTrace<-")
+  name = "StimulusTrace",
+  def = function(X)
+  {
+    standardGeneric("StimulusTrace")
   }
 )
+
+#' @import units
 #' @noMd
-setMethod("TimeTrace<-", signature = "EPhysData", function(X, value) {
-  X@TimeTrace <- value
-  if (validEPhysData(X)) {
-    return(X)
-  }
-})
+setMethod("StimulusTrace",
+          "EPhysData",
+          function(X) {
+            if (length(X@StimulusTrace)!=0){
+              out<-X@StimulusTrace
+              return(out)
+            }else{
+              stop("No stimulus trace contained in 'EPhysData' object")
+            }
+          })
