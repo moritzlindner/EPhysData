@@ -7,18 +7,16 @@
 \title{Create Example EPhysData Object}
 \usage{
 makeExampleEPhysData(
-  nrows = 4,
-  ncols = 3,
-  start_time = 1,
-  time_unit = "s",
+  sample_points = 400,
+  start_time = 0,
+  time_unit = "ms",
   data_unit = "mV",
   replicate_count = 3
 )
 
 makeExampleEPhysSet(
   nsets = 4,
-  nrows = 4,
-  ncols = 3,
+  sample_points = 4,
   start_time = 1,
   time_unit = "s",
   data_unit = "mV",
@@ -27,9 +25,7 @@ makeExampleEPhysSet(
 )
 }
 \arguments{
-\item{nrows}{Number of rows for the example data frame.}
-
-\item{ncols}{Number of columns for the example data frame.}
+\item{sample_points}{Number of rows for the example data frame.}
 
 \item{start_time}{The starting time for the time trace.}
 

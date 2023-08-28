@@ -91,6 +91,7 @@ validEPhysData <- function(object) {
 #' @slot average.fx A function describing how averaging across repeated measurement should be performed. By default, repeated measurements are returned and no averaging is performed.
 #' @importFrom units as_units
 #' @docType class
+#' @name EPhysData
 #' @return An object of class \code{EPhysData}
 #' @seealso \link{newEPhysData}
 #' @exportClass EPhysData

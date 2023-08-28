@@ -2,8 +2,7 @@
 #'
 #' These functions generate an example \code{EPhysData} or \code{EPhysSet} object for demonstration purposes.
 #'
-#' @param nrows Number of rows for the example data frame.
-#' @param ncols Number of columns for the example data frame.
+#' @param sample_points Number of rows for the example data frame.
 #' @param nsets Number of data sets to include into an \code{EPhysSet} object.
 #' @param start_time The starting time for the time trace.
 #' @param time_unit The time unit for the time trace.
@@ -14,31 +13,61 @@
 #' @name makeExample
 #'
 #' @export
-makeExampleEPhysData <- function(nrows = 4, ncols = 3, start_time = 1, time_unit = "s", data_unit = "mV", replicate_count = 3) {
+makeExampleEPhysData <-
+  function(sample_points = 400,
+           start_time = 0,
+           time_unit = "ms",
+           data_unit = "mV",
+           replicate_count = 3) {
 
-  Data <- data.frame(matrix(runif(nrows * replicate_count), ncol = replicate_count))
-  colnames(Data) <- paste0("rep", 1:replicate_count)
+    signal<-sin(seq(0, length.out = sample_points, by = 0.1))
 
-  TimeTrace <- seq(start_time, length.out = nrows, by = 1)
+    Data<-data.frame(matrix(NA,nrow=sample_points,ncol = replicate_count))
+    for (i in 1:ncol(Data)){
+      Data[,i]<-signal+(runif(sample_points, min=-0.3, max=+0.3))
+    }
 
-  myEPhysData <- newEPhysData(Data = Data, TimeTrace = TimeTrace, Unit = data_unit, TimeUnit = time_unit)
-  return(myEPhysData)
-}
+    colnames(Data) <- paste0("rep", 1:replicate_count)
+
+    TimeTrace <- seq(start_time, length.out = sample_points, by = 1)
+
+    myEPhysData <-
+      newEPhysData(
+        Data = Data,
+        TimeTrace = TimeTrace,
+        Unit = data_unit,
+        TimeUnit = time_unit
+      )
+    return(myEPhysData)
+  }
 
 #' @describeIn makeExample makeExampleEPhysSet
 #' @export
-makeExampleEPhysSet <- function(nsets = 4, nrows = 4, ncols = 3, start_time = 1, time_unit = "s", data_unit = "mV", replicate_count = 3, metadata_data = NULL) {
-  library(EPhysData)  # Assuming the library is loaded
+makeExampleEPhysSet <-
+  function(nsets = 4,
+           sample_points = 4,
+           start_time = 1,
+           time_unit = "s",
+           data_unit = "mV",
+           replicate_count = 3,
+           metadata_data = NULL) {
+    library(EPhysData)  # Assuming the library is loaded
 
-  if (is.null(metadata_data)) {
-    metadata_data <- data.frame(StepID = paste0("A", 1:nsets))
+    if (is.null(metadata_data)) {
+      metadata_data <- data.frame(StepID = paste0("A", 1:nsets))
+    }
+
+    ephysDataList <- vector("list", nsets)
+    for (i in 1:nsets) {
+      ephysDataList[[i]] <-
+        makeExampleEPhysData(sample_points = sample_points,
+                             start_time = start_time,
+                             time_unit = time_unit,
+                             data_unit = data_unit,
+                             replicate_count = replicate_count)
+    }
+
+    ephysSet <-
+      new("EPhysSet", Data = ephysDataList, Metadata = metadata_data)
+    return(ephysSet)
   }
-
-  ephysDataList <- vector("list", nsets)
-  for (i in 1:nsets) {
-    ephysDataList[[i]] <- makeExampleEPhysData(nrows, ncols, start_time, time_unit, data_unit, replicate_count)
-  }
-
-  ephysSet <- new("EPhysSet", Data = ephysDataList, Metadata = metadata_data)
-  return(ephysSet)
-}

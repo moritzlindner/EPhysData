@@ -39,7 +39,7 @@ There are two classes for storing the data. The \code{EPhysData} class stores  d
 \item \link[=FilterFunction]{FilterFunction} (for \link[=EPhysData]{EPhysData} objects) \cr
 \item \link[=StimulusTrace]{StimulusTrace} (for \link[=EPhysData]{EPhysData} objects) \cr
 \item \link[=TimeTrace]{TimeTrace} (for \link[=EPhysData]{EPhysData} objects) \cr
-\item \link[=Rejected]{Rejected} (for \link[=EPhysData]{EPhysData} objects) \cr
+\item \link[=Rejected]{Rejected} (for \link[=EPhysData]{EPhysData} objects) \cr\cr
 \item \link[=Metadata]{Metadata} (for \link[=EPhysSet]{EPhysSet} objects) \cr\cr
 }
 }
@@ -49,7 +49,9 @@ There are two classes for storing the data. The \code{EPhysData} class stores  d
 \itemize{
 \item \link[=makeExampleEPhysData]{makeExampleEPhysData} \cr
 \item \link[=makeExampleEPhysSet]{makeExampleEPhysSet} \cr
-\item \link[=make_metadata_parilist]{make_metadata_parilist} \cr\cr
+\item \link[=make_metadata_parilist]{make_metadata_parilist} \cr
+\item \link[=length]{length} (for \link[=EPhysSet]{EPhysSet} objects) \cr
+\item \link[=dim]{dim} (for \link[=EPhysData]{EPhysData} objects) \cr\cr
 }
 }
 

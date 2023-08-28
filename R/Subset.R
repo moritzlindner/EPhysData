@@ -26,25 +26,25 @@
 #' subsetted_myEPhysSet <- Subset(myEPhysSet,Metadata_select=selection_list)
 #' subsetted_myEPhysSet
 #' Metadata(subsetted_myEPhysSet)
-#' @exportMethod Subset
+#' @export Subset
 setGeneric(
   name = "Subset",
-  def = function(X,
-                 ...)
-  {
+  def = function(X, ...) {
     standardGeneric("Subset")
   }
 )
 
 #' @importFrom units as_units
 #' @describeIn Subset Subset method for EPhysData
+#' @exportMethod Subset
 setMethod("Subset",
           "EPhysData",
           function(X,
                    Time = range(TimeTrace(X)),
                    TimeExclusive = FALSE,
                    Repeats = !Rejected(X),
-                   Raw = T) {
+                   Raw = T,
+                   ...) {
             Data <- GetData(
               X = X,
               Time = Time,
@@ -86,7 +86,9 @@ setMethod("Subset",
 
 #' @importFrom units as_units
 #' @describeIn Subset Subset method for EPhysSet
-#' @noMd
+#' @param Repeats If X is an EPhysSet, this parameter can only be used if all EPhysData contained in the set has the same number of repeats.
+#'                or a logical vector of the same length as repeats stored,
+#' @exportMethod Subset
 setMethod("Subset",
           "EPhysSet",
           function(X,
@@ -95,7 +97,8 @@ setMethod("Subset",
                    Repeats = NULL,
                    Metadata_select = make_metadata_parilist(X),
                    Raw = T,
-                   Simplify = F
+                   Simplify = F,
+                   ...
                    ) {
 
             if(!all(names(Metadata_select) %in% colnames(Metadata(X)))){
@@ -121,6 +124,15 @@ setMethod("Subset",
 
             X@Metadata<-Metadata(X)[MetaSubset,, drop=FALSE]
             X@Data<-X@Data[MetaSubset]
+
+            if (!is.null(Repeats)) { # if "Repeats" not null, check that all EPhysData have same number of repeats
+              if (length(unique(unlist(lapply(X@Data, function(x) {
+                dim(x)[2]
+              })))) != 1) {
+                stop("Paramater 'Repeats' is defined, but EPhysData stored in the set have different number or repeats.  'Repeats' can only be used if all EPhysData have the same number of repeats.")
+              }
+            }
+
             X@Data <- lapply(X@Data, function(x) {
               if (is.null(Time)){
                 Time = range(TimeTrace(x))

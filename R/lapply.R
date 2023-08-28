@@ -15,6 +15,7 @@
 #' myEPhysSet
 #' FilterFunction(myEPhysSet@Data[[2]])
 #'
+#' @name lapply
 #' @exportMethod lapply
 setMethod("lapply",
           "EPhysSet",

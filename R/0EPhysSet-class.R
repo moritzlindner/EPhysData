@@ -27,8 +27,8 @@ validEPhysSet <- function(object) {
 #'
 #' @slot Data Data A list of \linkS4class{EPhysData} objects.
 #' @slot Metadata  A data frame containing metadata information associated with the data, each row corresponds to one list item. Rows must be unique
-#' @name EPhysSet-class
-#' @importFrom methods setClass
+#' @name EPhysSet
+#' @docType class
 #' @exportClass EPhysSet
 EPhysSet<-setClass("EPhysSet",
                    slots = list(

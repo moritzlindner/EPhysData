@@ -20,9 +20,9 @@ Default is the entire time range (i.e., keep all data).}
 
 \item{TimeExclusive}{Keep only the two time points stated under \code{Time}, not the range.}
 
-\item{Repeats}{Specifies which columns of \code{X@Data} to use for extraction.
-It can be either a numeric vector specifying the column indices of the repeated measurements
-or a logical vector of the same length as columns in \code{X@Data},
+\item{Repeats}{Specifies which of the repeated measurements (if any) to use for extraction.
+It can be either a numeric vector specifying the indices of the repeated measurements
+or a logical vector of the same length as repeats stored,
 where \code{TRUE} indicates using that column for extraction. Default is the inverse of the \code{\code{\link{Rejected}}(X)} vector.}
 
 \item{Raw}{Logical indicating whether to get raw data or processed (filtered, averaged) data.}

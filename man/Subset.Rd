@@ -14,7 +14,8 @@ Subset(X, ...)
   Time = range(TimeTrace(X)),
   TimeExclusive = FALSE,
   Repeats = !Rejected(X),
-  Raw = T
+  Raw = T,
+  ...
 )
 
 \S4method{Subset}{EPhysSet}(
@@ -24,7 +25,8 @@ Subset(X, ...)
   Repeats = NULL,
   Metadata_select = make_metadata_parilist(X),
   Raw = T,
-  Simplify = F
+  Simplify = F,
+  ...
 )
 
 make_metadata_parilist(X, except = list())
@@ -39,10 +41,8 @@ Default is the entire time range (i.e., keep all data).}
 
 \item{TimeExclusive}{Keep only the two time points stated under \code{Time}, not the range.}
 
-\item{Repeats}{Specifies which columns of \code{X@Data} to use for extraction.
-It can be either a numeric vector specifying the column indices of the repeated measurements
-or a logical vector of the same length as columns in \code{X@Data},
-where \code{TRUE} indicates using that column for extraction. Default is the inverse of the \code{\code{\link{Rejected}}(X)} vector.}
+\item{Repeats}{If X is an EPhysSet, this parameter can only be used if all EPhysData contained in the set has the same number of repeats.
+or a logical vector of the same length as repeats stored,}
 
 \item{Raw}{Logical indicating whether to get raw data or processed (filtered, averaged) data.}
 

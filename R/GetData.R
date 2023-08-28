@@ -6,9 +6,9 @@
 #' @param Time Numeric vector of length 2 representing the time range for data extraction.
 #'             Default is the entire time range (i.e., keep all data).
 #' @param TimeExclusive Keep only the two time points stated under \code{Time}, not the range.
-#' @param Repeats Specifies which columns of `X@Data` to use for extraction.
-#'                It can be either a numeric vector specifying the column indices of the repeated measurements
-#'                or a logical vector of the same length as columns in `X@Data`,
+#' @param Repeats Specifies which of the repeated measurements (if any) to use for extraction.
+#'                It can be either a numeric vector specifying the indices of the repeated measurements
+#'                or a logical vector of the same length as repeats stored,
 #'                where `TRUE` indicates using that column for extraction. Default is the inverse of the `\code{\link{Rejected}}(X)` vector.
 #' @param Raw Logical indicating whether to get raw data or processed (filtered, averaged) data.
 #' @return A data matrix containing either raw or processed (filtered, averaged) values.
@@ -80,7 +80,7 @@ setMethod("GetData",
 
             # subsetting repeats
             out <-
-              X@Data[TimeTrace(X) %in% Time, RepeatsLogical]
+              X@Data[TimeTrace(X) %in% Time, RepeatsLogical, drop=FALSE]
 
             if (is.null(dim(out))) {
               stop("No data left after subsetting with the given parameters for 'Time' and 'Repeats'.")
@@ -89,7 +89,7 @@ setMethod("GetData",
             # filtering and averaging
             if (!Raw) {
               out <- tryCatch(
-                t(apply(out, 2, FilterFunction(X))),
+                apply(out, 2, FilterFunction(X)),
                 error = function (e) {
                   stop("could not apply 'filter.fx' (",
                        deparse(FilterFunction(X)),
@@ -97,7 +97,7 @@ setMethod("GetData",
                 }
               )
               out <- tryCatch(
-                t(apply(out, 2, AverageFunction(X))),
+                apply(out, 2, AverageFunction(X)),
                 error = function (e) {
                   stop("could not apply 'average.fx' (",
                        deparse(AverageFunction(X)),

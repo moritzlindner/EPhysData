@@ -28,14 +28,16 @@
 #' * \link[=FilterFunction]{FilterFunction} (for \link[=EPhysData]{EPhysData} objects) \cr
 #' * \link[=StimulusTrace]{StimulusTrace} (for \link[=EPhysData]{EPhysData} objects) \cr
 #' * \link[=TimeTrace]{TimeTrace} (for \link[=EPhysData]{EPhysData} objects) \cr
-#' * \link[=Rejected]{Rejected} (for \link[=EPhysData]{EPhysData} objects) \cr
+#' * \link[=Rejected]{Rejected} (for \link[=EPhysData]{EPhysData} objects) \cr\cr
 #'
 #' * \link[=Metadata]{Metadata} (for \link[=EPhysSet]{EPhysSet} objects) \cr\cr
 #'
 #' @section Helper functions:
 #' * \link[=makeExampleEPhysData]{makeExampleEPhysData} \cr
 #' * \link[=makeExampleEPhysSet]{makeExampleEPhysSet} \cr
-#' * \link[=make_metadata_parilist]{make_metadata_parilist} \cr\cr
+#' * \link[=make_metadata_parilist]{make_metadata_parilist} \cr
+#' * \link[=length]{length} (for \link[=EPhysSet]{EPhysSet} objects) \cr
+#' * \link[=dim]{dim} (for \link[=EPhysData]{EPhysData} objects) \cr\cr
 #'
 #'
 #' @examples
