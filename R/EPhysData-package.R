@@ -35,7 +35,6 @@
 #' @section Helper functions:
 #' * \link[=makeExampleEPhysData]{makeExampleEPhysData} \cr
 #' * \link[=makeExampleEPhysSet]{makeExampleEPhysSet} \cr
-#' * \link[=make_metadata_parilist]{make_metadata_parilist} \cr
 #' * \link[=length]{length} (for \link[=EPhysSet]{EPhysSet} objects) \cr
 #' * \link[=dim]{dim} (for \link[=EPhysData]{EPhysData} objects) \cr\cr
 #'

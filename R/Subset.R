@@ -19,11 +19,9 @@
 #' subsetted_myEPhysData <- Subset(myEPhysData, Time = TimeTrace(myEPhysData)[c(1, 3)], Repeats = c(1, 2))
 #' subsetted_myEPhysData
 #'
-#' # Subset EPhysSet with make_metadata_parilist
-#' myEPhysSet <- makeExampleEPhysSet()
-#' selection_list <- make_metadata_parilist(myEPhysSet,except=list(StepID=c("A3")))
-#' selection_list
-#' subsetted_myEPhysSet <- Subset(myEPhysSet,Metadata_select=selection_list)
+#' # Subset EPhysSet
+#' myEPhysSet <- makeExampleEPhysSet(nSets=10)
+#' subsetted_myEPhysSet <- Subset(myEPhysSet, SetItems=c(4:7))
 #' subsetted_myEPhysSet
 #' Metadata(subsetted_myEPhysSet)
 #' @export Subset
@@ -87,7 +85,7 @@ setMethod("Subset",
 #' @importFrom units as_units
 #' @describeIn Subset Subset method for EPhysSet
 #' @param Repeats If X is an EPhysSet, this parameter can only be used if all EPhysData contained in the set has the same number of repeats.
-#'                or a logical vector of the same length as repeats stored,
+#'                Numeric index/indices or a logical vector of the same length as repeats stored,
 #' @exportMethod Subset
 setMethod("Subset",
           "EPhysSet",
@@ -95,35 +93,28 @@ setMethod("Subset",
                    Time = NULL,
                    TimeExclusive = FALSE,
                    Repeats = NULL,
-                   Metadata_select = make_metadata_parilist(X),
+                   SetItems = rep(TRUE, nrow(Metadata(X))),
                    Raw = T,
                    Simplify = F,
                    ...
                    ) {
 
-            if(!all(names(Metadata_select) %in% colnames(Metadata(X)))){
-              stop("Not all keys from 'Metadata_select' are column names of the metadata of 'X'.")
-            }
-
-            for (i in names(Metadata_select)){
-              if(!all(Metadata_select[[i]] %in% Metadata(X)[,i])){
-                warning("Not all criteria specified for ",i," occure in the column '",i,"' of the metadata of 'X'.")
+            if(is.logical(SetItems)){
+              if(length(SetItems)!=length(X)){
+                stop("Lengths mismatch: \n'SetItems' must be a logical vector of the same length as 'X' or a numeric vector representing valid item indices.")
               }
-              if(!any(Metadata_select[[i]] %in% Metadata(X)[,i])){
-                stop("None of the criteria specified for ",i," occure in the column '",i,"' of the metadata of 'X'.")
+            }else{
+              if(!is.numeric(SetItems)){
+                stop("'SetItems' is neither logical nor numeric. \nSetItems' must be a logical vector of the same length as 'X' or a numeric vector representing valid item indices.")
+              }else{
+                if(!(all(SetItems %in% 1:length(X)))){
+                  stop("'SetItems' contains invalid indices. \nSetItems' must be a logical vector of the same length as 'X' or a numeric vector representing valid item indices.")
+                }
               }
             }
 
-            MetaSubset<-array(dim=dim(Metadata(X)))
-            colnames(MetaSubset)<-colnames(Metadata(X))
-            for (i in names(Metadata_select)){
-              MetaSubset[,i]<-(Metadata(X)[,i] %in% Metadata_select[[i]])
-            }
-
-            MetaSubset<-apply(MetaSubset,1,all)
-
-            X@Metadata<-Metadata(X)[MetaSubset,, drop=FALSE]
-            X@Data<-X@Data[MetaSubset]
+            X@Metadata<-Metadata(X)[SetItems,, drop=FALSE]
+            X@Data<-X@Data[SetItems]
 
             if (!is.null(Repeats)) { # if "Repeats" not null, check that all EPhysData have same number of repeats
               if (length(unique(unlist(lapply(X@Data, function(x) {
@@ -180,32 +171,3 @@ condition_time <- function(X, Time, TimeExclusive) {
   }
 }
 
-#' @describeIn Subset make_metadata_parilist
-#' @param except Which values to remove in the subset.
-#' @return `make_metadata_parilist`: A pairlist providing input for the 'Metadata_select' parameter of \code{Subset} for \code{EPhysSet}.
-#'
-#' @details The \code{make_metadata_parilist} function is a helper function for \code{Subset}. It creates a pairlist that provides input for the 'Metadata_select' parameter of \code{Subset} for \code{EPhysSet}. as 'Metadata_select' is a positive selector, \code{make_metadata_parilist} may be particularly helpful when only a single condition should be excluded. See example below.
-#' @exportMethod make_metadata_parilist
-setGeneric(
-  name = "make_metadata_parilist",
-  def = function(X,
-                 except = list())
-  {
-    standardGeneric("make_metadata_parilist")
-  }
-)
-
-setMethod("make_metadata_parilist",
-          "EPhysSet",
-          function(X, except = list()) {
-            Metadata_select <- pairlist()
-            for (cn in colnames(Metadata(X))) {
-              Metadata_select[[cn]] <- unique(Metadata(X)[, cn])
-            }
-            if (length(except) != 0) {
-              for (ex in names(except)) {
-                Metadata_select[[ex]] <- Metadata_select[[ex]][!(Metadata_select[[ex]] %in% except[[ex]])]
-              }
-            }
-            return(Metadata_select)
-          })

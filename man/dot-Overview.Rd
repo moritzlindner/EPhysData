@@ -49,7 +49,6 @@ There are two classes for storing the data. The \code{EPhysData} class stores  d
 \itemize{
 \item \link[=makeExampleEPhysData]{makeExampleEPhysData} \cr
 \item \link[=makeExampleEPhysSet]{makeExampleEPhysSet} \cr
-\item \link[=make_metadata_parilist]{make_metadata_parilist} \cr
 \item \link[=length]{length} (for \link[=EPhysSet]{EPhysSet} objects) \cr
 \item \link[=dim]{dim} (for \link[=EPhysData]{EPhysData} objects) \cr\cr
 }

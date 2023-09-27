@@ -4,7 +4,6 @@
 \alias{Subset}
 \alias{Subset,EPhysData-method}
 \alias{Subset,EPhysSet-method}
-\alias{make_metadata_parilist}
 \title{Subset from EPhysData Object}
 \usage{
 Subset(X, ...)
@@ -23,13 +22,11 @@ Subset(X, ...)
   Time = NULL,
   TimeExclusive = FALSE,
   Repeats = NULL,
-  Metadata_select = make_metadata_parilist(X),
+  SetItems = rep(TRUE, nrow(Metadata(X))),
   Raw = T,
   Simplify = F,
   ...
 )
-
-make_metadata_parilist(X, except = list())
 }
 \arguments{
 \item{X}{An \code{EPhysData} object}
@@ -42,36 +39,28 @@ Default is the entire time range (i.e., keep all data).}
 \item{TimeExclusive}{Keep only the two time points stated under \code{Time}, not the range.}
 
 \item{Repeats}{If X is an EPhysSet, this parameter can only be used if all EPhysData contained in the set has the same number of repeats.
-or a logical vector of the same length as repeats stored,}
+Numeric index/indices or a logical vector of the same length as repeats stored,}
 
 \item{Raw}{Logical indicating whether to get raw data or processed (filtered, averaged) data.}
 
-\item{Metadata_select}{A pairlist of metadata parameters for subsetting (only for \code{EPhysSet}).}
-
 \item{Simplify}{Logical if 'True' will return \code{EPhysData} instead of \code{EPhysSet} if only one \code{EPhysData} is left in the set.}
 
-\item{except}{Which values to remove in the subset.}
+\item{Metadata_select}{A pairlist of metadata parameters for subsetting (only for \code{EPhysSet}).}
 }
 \value{
 \code{Subset}: An \code{EPhysData} or an \code{EPhysSet} object representing the subsetted data.
-
-\code{make_metadata_parilist}: A pairlist providing input for the 'Metadata_select' parameter of \code{Subset} for \code{EPhysSet}.
 }
 \description{
 This method subsets an \code{EPhysData} or an \code{EPhysSet} object into a new object of the same class.
 }
 \details{
 The \code{Subset} function creates a new \code{EPhysData} or \code{EPhysSet} object containing a subset of the data (and metadata for \code{EPhysSet}) from the original object, based on the provided parameters.
-
-The \code{make_metadata_parilist} function is a helper function for \code{Subset}. It creates a pairlist that provides input for the 'Metadata_select' parameter of \code{Subset} for \code{EPhysSet}. as 'Metadata_select' is a positive selector, \code{make_metadata_parilist} may be particularly helpful when only a single condition should be excluded. See example below.
 }
 \section{Functions}{
 \itemize{
 \item \code{Subset,EPhysData-method}: Subset method for EPhysData
 
 \item \code{Subset,EPhysSet-method}: Subset method for EPhysSet
-
-\item \code{make_metadata_parilist}: make_metadata_parilist
 }}
 
 \examples{
@@ -82,11 +71,9 @@ myEPhysData <- makeExampleEPhysData()
 subsetted_myEPhysData <- Subset(myEPhysData, Time = TimeTrace(myEPhysData)[c(1, 3)], Repeats = c(1, 2))
 subsetted_myEPhysData
 
-# Subset EPhysSet with make_metadata_parilist
-myEPhysSet <- makeExampleEPhysSet()
-selection_list <- make_metadata_parilist(myEPhysSet,except=list(StepID=c("A3")))
-selection_list
-subsetted_myEPhysSet <- Subset(myEPhysSet,Metadata_select=selection_list)
+# Subset EPhysSet
+myEPhysSet <- makeExampleEPhysSet(nSets=10)
+subsetted_myEPhysSet <- Subset(myEPhysSet, SetItems=c(4:7))
 subsetted_myEPhysSet
 Metadata(subsetted_myEPhysSet)
 }
