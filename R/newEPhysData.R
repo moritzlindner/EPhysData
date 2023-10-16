@@ -129,7 +129,7 @@ newEPhysData <-
       Data = Data,
       TimeTrace = TimeTrace,
       StimulusTrace = StimulusTrace,
-      Rejected = logical(length = dim(Data)[2]),
+      Rejected = function(x){logical(length = dim(Data)[2])},
       Created = as.POSIXct(Sys.time())
     )
     if(validEPhysData(out)){

@@ -32,17 +32,21 @@ NULL
 
 
 #' @rdname Get_Set_EPhysData
-#' @details \code{Rejected}: These functions set or get the logical vector indicating which of the repeated measurements stored in an \link{EPhysData} object to exclude from averaging.
+#' @details \code{Rejected}: These functions set or get a function returning a logical vector indicating which of the repeated measurements stored in an \link{EPhysData} object to exclude from averaging.
 #' @noMd
 setGeneric(
   name = "Rejected",
-  def = function(X) {
+  def = function(X, return.fx = F) {
     standardGeneric("Rejected")
   }
 )
 #' @exportMethod Rejected
-setMethod("Rejected", signature = "EPhysData", function(X) {
-  return(X@Rejected)
+setMethod("Rejected", signature = "EPhysData", function(X, return.fx = F) {
+  if (!return.fx) {
+    return(X@Rejected(X@Data))
+  } else{
+    return(X@Rejected)
+  }
 })
 
 #' @rdname Get_Set_EPhysData
@@ -55,14 +59,28 @@ setGeneric(
 )
 #' @noMd
 setMethod("Rejected<-", signature = "EPhysData", function(X, value) {
-  X@Rejected <- value
+  if ("function" %in% class(value)) {
+    X@Rejected <- value
+  } else{
+    if ("logical" %in% class(value)) {
+      if (length(value) == dim(X)[2]) {
+        X@Rejected <- function(x) {
+          return(value)
+        }
+      } else{
+        stop("Incorrect length of logical vector.")
+      }
+    } else{
+      stop("Incorrect data type; must be logical or function.")
+    }
+  }
   if (validEPhysData(X)) {
     return(X)
   }
 })
 
 #' @rdname Get_Set_EPhysData
-#' @details \code{filter.fx}: Set  a function for filtering each individual of the repeated measurements in the \link{EPhysData} object. Could be downsampling or noise removal, for instance.
+#' @details \code{FilterFunction}: Set  a function for filtering each individual of the repeated measurements in the \link{EPhysData} object. Could be downsampling or noise removal, for instance.
 #' @exportMethod FilterFunction
 setGeneric(
   name = "FilterFunction",

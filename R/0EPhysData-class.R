@@ -102,7 +102,7 @@ EPhysData <- setClass(
     TimeTrace = "units",
     StimulusTrace = "units",
     Created = "POSIXct",
-    Rejected = "logical",
+    Rejected = "function",
     filter.fx = "function",
     average.fx = "function"
   ),
@@ -111,7 +111,9 @@ EPhysData <- setClass(
     TimeTrace = as_units(integer(),"s"),
     StimulusTrace = as_units(integer(),unitless),
     Created = as.POSIXct(Sys.time()),
-    Rejected = logical(),
+    Rejected = function(x) {
+      rep(FALSE, nrow(Data))
+    },
     filter.fx = function(x) {
       x
     },

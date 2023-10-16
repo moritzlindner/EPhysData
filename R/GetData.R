@@ -97,7 +97,7 @@ setMethod("GetData",
                 }
               )
               out <- tryCatch(
-                apply(out, 2, AverageFunction(X)),
+                apply(out, 1, AverageFunction(X)),
                 error = function (e) {
                   stop("could not apply 'average.fx' (",
                        deparse(AverageFunction(X)),
