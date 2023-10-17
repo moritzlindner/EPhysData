@@ -6,7 +6,8 @@ Author: person("Moritz", "Lindner", email = "moritz@lindnerlab.de", role = c("au
 Maintainer: Moritz Lindner <moritz@lindnerlab.de>
 Description: This package provides classes and methods for handling electrophysiological data.
 License: GPL (>= 3)
-Remotes: moritzlindner/EPhysData
+Remotes:
+    github::moritzlindner/EPhysMethods
 Depends:
     units
 Imports:

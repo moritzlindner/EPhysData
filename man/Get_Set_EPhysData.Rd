@@ -13,7 +13,7 @@
 \alias{StimulusTrace}
 \title{Get/Set methods for EPhysData objects}
 \usage{
-Rejected(X)
+Rejected(X, return.fx = F)
 
 Rejected(X) <- value
 
@@ -36,9 +36,9 @@ StimulusTrace(X)
 These methods are used to get and set the non-data slots from \link{EPhysData} objects.
 }
 \details{
-\code{Rejected}: These functions set or get the logical vector indicating which of the repeated measurements stored in an \link{EPhysData} object to exclude from averaging.
+\code{Rejected}: These functions set or get a function returning a logical vector indicating which of the repeated measurements stored in an \link{EPhysData} object to exclude from averaging. The following function from the EPhysMethods package may be helpful: \link[EPhysMethods:autoreject.by.distance]{EPhysMethods::autoreject.by.distance}, \link[EPhysMethods:autoreject.by.signalfree]{EPhysMethods::autoreject.by.signalfree}
 
-\code{filter.fx}: Set  a function for filtering each individual of the repeated measurements in the \link{EPhysData} object. Could be downsampling or noise removal, for instance.
+\code{FilterFunction}: Set  a function for filtering each individual of the repeated measurements in the \link{EPhysData} object. Could be downsampling or noise removal, for instance. The following functions from the EPhysMethods package may be helpful: \link[EPhysMethods:filter.bandpass]{EPhysMethods::filter.bandpass}, \link[EPhysMethods:filter.detrend]{EPhysMethods::filter.detrend},
 
 \code{AverageFunction}: Set a function describing how averaging across repeated measurement should be performed in the \link{EPhysData} object. Usually, \link[base:mean]{mean} can be a good start.
 
@@ -66,4 +66,7 @@ AverageFunction(myEPhysData)
 # Set the "average.fx" slot
 AverageFunction(myEPhysData) <- median
 
+}
+\seealso{
+\link[EPhysMethods:autoreject.by.distance]{EPhysMethods::autoreject.by.distance}, \link[EPhysMethods:autoreject.by.signalfree]{EPhysMethods::autoreject.by.signalfree}, \link[EPhysMethods:filter.bandpass]{EPhysMethods::filter.bandpass}, \link[EPhysMethods:filter.detrend]{EPhysMethods::filter.detrend},
 }

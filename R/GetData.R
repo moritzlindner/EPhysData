@@ -78,15 +78,17 @@ setMethod("GetData",
             # Time Ranges
             Time <- condition_time(X, Time, TimeExclusive)
 
-            # subsetting repeats
-            out <-
-              X@Data[TimeTrace(X) %in% Time, RepeatsLogical, drop=FALSE]
+            # extract data
+            X@Data
 
+            # subset by time
+            out <-
+              out[TimeTrace(X) %in% Time, , drop = FALSE]
             if (is.null(dim(out))) {
-              stop("No data left after subsetting with the given parameters for 'Time' and 'Repeats'.")
+              stop("No data left after subsetting with the given parameters for 'Repeats'.")
             }
 
-            # filtering and averaging
+            # filter
             if (!Raw) {
               out <- tryCatch(
                 apply(out, 2, FilterFunction(X)),
@@ -96,6 +98,17 @@ setMethod("GetData",
                        ") to data.")
                 }
               )
+            }
+
+            # subset by repeats
+            out <-
+              out[ , RepeatsLogical, drop=FALSE]
+            if (is.null(dim(out))) {
+              stop("No data left after subsetting with the given parameters for 'Repeats'.")
+            }
+
+            # averaging
+            if (!Raw) {
               out <- tryCatch(
                 apply(out, 1, AverageFunction(X)),
                 error = function (e) {

@@ -4,6 +4,7 @@
 #' @param X An \code{EPhysData} object
 #' @name Get_Set_EPhysData
 #' @rdname Get_Set_EPhysData
+#' @seealso \link[EPhysMethods:autoreject.by.distance]{EPhysMethods::autoreject.by.distance}, \link[EPhysMethods:autoreject.by.signalfree]{EPhysMethods::autoreject.by.signalfree}, \link[EPhysMethods:filter.bandpass]{EPhysMethods::filter.bandpass}, \link[EPhysMethods:filter.detrend]{EPhysMethods::filter.detrend},
 #' @docType methods
 #' @noMd
 #' @examples
@@ -32,7 +33,7 @@ NULL
 
 
 #' @rdname Get_Set_EPhysData
-#' @details \code{Rejected}: These functions set or get a function returning a logical vector indicating which of the repeated measurements stored in an \link{EPhysData} object to exclude from averaging.
+#' @details \code{Rejected}: These functions set or get a function returning a logical vector indicating which of the repeated measurements stored in an \link{EPhysData} object to exclude from averaging. The following function from the EPhysMethods package may be helpful: \link[EPhysMethods:autoreject.by.distance]{EPhysMethods::autoreject.by.distance}, \link[EPhysMethods:autoreject.by.signalfree]{EPhysMethods::autoreject.by.signalfree}
 #' @noMd
 setGeneric(
   name = "Rejected",
@@ -80,7 +81,7 @@ setMethod("Rejected<-", signature = "EPhysData", function(X, value) {
 })
 
 #' @rdname Get_Set_EPhysData
-#' @details \code{FilterFunction}: Set  a function for filtering each individual of the repeated measurements in the \link{EPhysData} object. Could be downsampling or noise removal, for instance.
+#' @details \code{FilterFunction}: Set  a function for filtering each individual of the repeated measurements in the \link{EPhysData} object. Could be downsampling or noise removal, for instance. The following functions from the EPhysMethods package may be helpful: \link[EPhysMethods:filter.bandpass]{EPhysMethods::filter.bandpass}, \link[EPhysMethods:filter.detrend]{EPhysMethods::filter.detrend},
 #' @exportMethod FilterFunction
 setGeneric(
   name = "FilterFunction",
