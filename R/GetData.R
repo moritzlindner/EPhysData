@@ -79,7 +79,7 @@ setMethod("GetData",
             Time <- condition_time(X, Time, TimeExclusive)
 
             # extract data
-            X@Data
+            out<-X@Data
 
             # subset by time
             out <-
@@ -117,6 +117,9 @@ setMethod("GetData",
                        ") to data.")
                 }
               )
+              if(!is.null(dim(out))){
+                out<-t(out)
+              }
               return(as_units(out, deparse_unit(X@Data)))
             } else{
               return(out)

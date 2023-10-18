@@ -13,15 +13,15 @@
 \alias{StimulusTrace}
 \title{Get/Set methods for EPhysData objects}
 \usage{
-Rejected(X, return.fx = F)
+Rejected(X, return.fx = F, ...)
 
-Rejected(X) <- value
+Rejected(X, ...) <- value
 
-FilterFunction(X)
+FilterFunction(X, ...)
 
-FilterFunction(X) <- value
+FilterFunction(X, ...) <- value
 
-AverageFunction(X)
+AverageFunction(X, ...)
 
 AverageFunction(X) <- value
 

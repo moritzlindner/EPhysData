@@ -2,6 +2,7 @@
 #'
 #' These methods are used to get and set the non-data slots from \link{EPhysData} objects.
 #' @param X An \code{EPhysData} object
+#' @param value A value (usually a function) to set.
 #' @name Get_Set_EPhysData
 #' @rdname Get_Set_EPhysData
 #' @seealso \link[EPhysMethods:autoreject.by.distance]{EPhysMethods::autoreject.by.distance}, \link[EPhysMethods:autoreject.by.signalfree]{EPhysMethods::autoreject.by.signalfree}, \link[EPhysMethods:filter.bandpass]{EPhysMethods::filter.bandpass}, \link[EPhysMethods:filter.detrend]{EPhysMethods::filter.detrend},
@@ -37,7 +38,7 @@ NULL
 #' @noMd
 setGeneric(
   name = "Rejected",
-  def = function(X, return.fx = F) {
+  def = function(X, return.fx = F, ...) {
     standardGeneric("Rejected")
   }
 )
@@ -54,7 +55,7 @@ setMethod("Rejected", signature = "EPhysData", function(X, return.fx = F) {
 #' @exportMethod Rejected<-
 setGeneric(
   name = "Rejected<-",
-  def = function(X, value) {
+  def = function(X, value, ...) {
     standardGeneric("Rejected<-")
   }
 )
@@ -85,7 +86,7 @@ setMethod("Rejected<-", signature = "EPhysData", function(X, value) {
 #' @exportMethod FilterFunction
 setGeneric(
   name = "FilterFunction",
-  def = function(X) {
+  def = function(X, ...) {
     standardGeneric("FilterFunction")
   }
 )
@@ -98,7 +99,7 @@ setMethod("FilterFunction", signature = "EPhysData", function(X) {
 #' @exportMethod FilterFunction<-
 setGeneric(
   name = "FilterFunction<-",
-  def = function(X, value) {
+  def = function(X, value, ...) {
     standardGeneric("FilterFunction<-")
   }
 )
@@ -115,7 +116,7 @@ setMethod("FilterFunction<-", signature = "EPhysData", function(X, value) {
 #' @exportMethod AverageFunction
 setGeneric(
   name = "AverageFunction",
-  def = function(X) {
+  def = function(X, ...) {
     standardGeneric("AverageFunction")
   }
 )
@@ -128,7 +129,7 @@ setMethod("AverageFunction", signature = "EPhysData", function(X) {
 #' @exportMethod AverageFunction<-
 setGeneric(
   name = "AverageFunction<-",
-  def = function(X, value) {
+  def = function(X, value, ...) {
     standardGeneric("AverageFunction<-")
   }
 )
