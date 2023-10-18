@@ -23,7 +23,7 @@ FilterFunction(X, ...) <- value
 
 AverageFunction(X, ...)
 
-AverageFunction(X) <- value
+AverageFunction(X, ...) <- value
 
 TimeTrace(X)
 
@@ -31,6 +31,8 @@ StimulusTrace(X)
 }
 \arguments{
 \item{X}{An \code{EPhysData} object}
+
+\item{value}{A value (usually a function) to set.}
 }
 \description{
 These methods are used to get and set the non-data slots from \link{EPhysData} objects.
