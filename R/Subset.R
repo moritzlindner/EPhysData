@@ -3,7 +3,6 @@
 #' This method subsets an \code{EPhysData} or an \code{EPhysSet} object into a new object of the same class.
 #'
 #' @inheritParams GetData
-#' @param Metadata_select A pairlist of metadata parameters for subsetting (only for \code{EPhysSet}).
 #' @param Simplify Logical if 'True' will return \code{EPhysData} instead of \code{EPhysSet} if only one \code{EPhysData} is left in the set.
 #' @param ... currently unused.
 #' @return `Subset`: An \code{EPhysData} or an \code{EPhysSet} object representing the subsetted data.
@@ -20,7 +19,7 @@
 #' subsetted_myEPhysData
 #'
 #' # Subset EPhysSet
-#' myEPhysSet <- makeExampleEPhysSet(nSets=10)
+#' myEPhysSet <- makeExampleEPhysSet(nsets=10)
 #' subsetted_myEPhysSet <- Subset(myEPhysSet, SetItems=c(4:7))
 #' subsetted_myEPhysSet
 #' Metadata(subsetted_myEPhysSet)
@@ -33,6 +32,7 @@ setGeneric(
 )
 
 #' @importFrom units as_units
+#' @importFrom methods new validObject
 #' @describeIn Subset Subset method for EPhysData
 #' @exportMethod Subset
 setMethod("Subset",
@@ -72,7 +72,9 @@ setMethod("Subset",
               Data = Data,
               TimeTrace = Time,
               StimulusTrace = StimulusTrace,
-              Rejected = Rejected(X)[Repeats],
+              Rejected = function(x) {
+                return(Rejected(X)[Repeats])
+              },
               Created = X@Created
             )
             if (validObject(out)) {
@@ -82,7 +84,9 @@ setMethod("Subset",
             }
           })
 
+#' @param SetItems Which items of the set to subset/keep.
 #' @importFrom units as_units
+#' @importFrom methods validObject
 #' @describeIn Subset Subset method for EPhysSet
 #' @param Repeats If X is an EPhysSet, this parameter can only be used if all EPhysData contained in the set has the same number of repeats.
 #'                Numeric index/indices or a logical vector of the same length as repeats stored,

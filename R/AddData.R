@@ -7,8 +7,8 @@
 #' @param newMetadata A data frame containing metadata information associated with the new data.
 #'
 #' @return An updated \code{EPhysSet} object with the new data and metadata added.
+#' @importFrom methods validObject
 #'
-#' @method AddData EPhysSet
 #'
 #' @examples
 #' # Create an example EPhysSet object

@@ -10,6 +10,7 @@
 #' @param replicate_count The number of replicate columns in the data frame.
 #' @param metadata_data The metadata data frame to be associated with the \code{EPhysSet}.
 #' @return An \code{EPhysData} object with example data.
+#' @importFrom stats runif
 #' @name makeExample
 #'
 #' @export
@@ -42,6 +43,7 @@ makeExampleEPhysData <-
   }
 
 #' @describeIn makeExample makeExampleEPhysSet
+#' @importFrom methods new
 #' @export
 makeExampleEPhysSet <-
   function(nsets = 4,

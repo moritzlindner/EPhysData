@@ -5,18 +5,18 @@
 #' @inheritParams Get_Set_EPhysData
 #' @param Time Numeric vector of length 2 representing the time range for data extraction.
 #'             Default is the entire time range (i.e., keep all data).
-#' @param TimeExclusive Keep only the two time points stated under \code{Time}, not the range.
+#' @param TimeExclusive Keep only the two time points stated under 'Time', not the range.
 #' @param Repeats Specifies which of the repeated measurements (if any) to use for extraction.
 #'                It can be either a numeric vector specifying the indices of the repeated measurements
 #'                or a logical vector of the same length as repeats stored,
-#'                where `TRUE` indicates using that column for extraction. Default is the inverse of the `\code{\link{Rejected}}(X)` vector.
+#'                where `TRUE` indicates using that column for extraction. Default is the inverse of the \code{\link{Rejected-method}}(X) vector.
 #' @param Raw Logical indicating whether to get raw data or processed (filtered, averaged) data.
 #' @return A data matrix containing either raw or processed (filtered, averaged) values.
 #'
 #' @details The `GetData` function extracts the recorded data from an `EPhysData` or related object.
 #'          By default, the resulting data matrix contains unfiltered data from all repeated measurements.
 #'
-#' @seealso \code{\link{EPhysData}}, \code{\link{TimeTrace}}, \code{\link{Rejected}}
+#' @seealso \code{\link{EPhysData-class}} \code{\link{TimeTrace-method}}, \code{\link{Rejected-method}}
 #'
 #' @name GetData
 #' @examples
@@ -73,6 +73,11 @@ setMethod("GetData",
               } else{
                 stop("'Repeats' neither logical nor numeric.")
               }
+            }
+            if (any(RepeatsLogical != (!Rejected(X)))
+                & !Raw) {
+              RepeatsLogical <- !Rejected(X)
+              warning("Subsetting by Repeats is not allowed when 'Raw = F'. Processing will be performed from all unrejected repeats (see: 'Rejected(X)').")
             }
 
             # Time Ranges

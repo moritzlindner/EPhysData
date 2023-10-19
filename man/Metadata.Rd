@@ -29,11 +29,11 @@ These functions are used to modify (\code{AddMetadata}, \code{Metadata<-}) metad
 }
 \section{Functions}{
 \itemize{
-\item \code{AddMetadata}: Metadata
+\item \code{AddMetadata()}: AddMetadata
 
-\item \code{Metadata<-}: Metadata<-
+\item \code{Metadata(X) <- value}: Metadata<-
+
 }}
-
 \examples{
 # Create example data
 Data <- data.frame(rep1 = c(0.5, 0.52, 0.48, 0.49),

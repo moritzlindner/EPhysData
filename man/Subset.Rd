@@ -36,16 +36,16 @@ Subset(X, ...)
 \item{Time}{Numeric vector of length 2 representing the time range for data extraction.
 Default is the entire time range (i.e., keep all data).}
 
-\item{TimeExclusive}{Keep only the two time points stated under \code{Time}, not the range.}
+\item{TimeExclusive}{Keep only the two time points stated under 'Time', not the range.}
 
 \item{Repeats}{If X is an EPhysSet, this parameter can only be used if all EPhysData contained in the set has the same number of repeats.
 Numeric index/indices or a logical vector of the same length as repeats stored,}
 
 \item{Raw}{Logical indicating whether to get raw data or processed (filtered, averaged) data.}
 
-\item{Simplify}{Logical if 'True' will return \code{EPhysData} instead of \code{EPhysSet} if only one \code{EPhysData} is left in the set.}
+\item{SetItems}{Which items of the set to subset/keep.}
 
-\item{Metadata_select}{A pairlist of metadata parameters for subsetting (only for \code{EPhysSet}).}
+\item{Simplify}{Logical if 'True' will return \code{EPhysData} instead of \code{EPhysSet} if only one \code{EPhysData} is left in the set.}
 }
 \value{
 \code{Subset}: An \code{EPhysData} or an \code{EPhysSet} object representing the subsetted data.
@@ -58,11 +58,11 @@ The \code{Subset} function creates a new \code{EPhysData} or \code{EPhysSet} obj
 }
 \section{Functions}{
 \itemize{
-\item \code{Subset,EPhysData-method}: Subset method for EPhysData
+\item \code{Subset(EPhysData)}: Subset method for EPhysData
 
-\item \code{Subset,EPhysSet-method}: Subset method for EPhysSet
+\item \code{Subset(EPhysSet)}: Subset method for EPhysSet
+
 }}
-
 \examples{
 # Subset EPhysData
 myEPhysData <- makeExampleEPhysData()
@@ -72,7 +72,7 @@ subsetted_myEPhysData <- Subset(myEPhysData, Time = TimeTrace(myEPhysData)[c(1, 
 subsetted_myEPhysData
 
 # Subset EPhysSet
-myEPhysSet <- makeExampleEPhysSet(nSets=10)
+myEPhysSet <- makeExampleEPhysSet(nsets=10)
 subsetted_myEPhysSet <- Subset(myEPhysSet, SetItems=c(4:7))
 subsetted_myEPhysSet
 Metadata(subsetted_myEPhysSet)

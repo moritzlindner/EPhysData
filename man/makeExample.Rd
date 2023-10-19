@@ -47,6 +47,6 @@ These functions generate an example \code{EPhysData} or \code{EPhysSet} object f
 }
 \section{Functions}{
 \itemize{
-\item \code{makeExampleEPhysSet}: makeExampleEPhysSet
-}}
+\item \code{makeExampleEPhysSet()}: makeExampleEPhysSet
 
+}}

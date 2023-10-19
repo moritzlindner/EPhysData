@@ -3,6 +3,7 @@
 #' These methods are used to get and set the non-data slots from \link{EPhysData} objects.
 #' @param X An \code{EPhysData} object
 #' @param value A value (usually a function) to set.
+#' @param return.fx For \code{Rejected()}: Whether to return the function or the resulting logical vector. Default is \code{FALSE}, i.e. to return the function.
 #' @name Get_Set_EPhysData
 #' @rdname Get_Set_EPhysData
 #' @seealso \link[EPhysMethods:autoreject.by.distance]{EPhysMethods::autoreject.by.distance}, \link[EPhysMethods:autoreject.by.signalfree]{EPhysMethods::autoreject.by.signalfree}, \link[EPhysMethods:filter.bandpass]{EPhysMethods::filter.bandpass}, \link[EPhysMethods:filter.detrend]{EPhysMethods::filter.detrend},
@@ -33,8 +34,6 @@
 NULL
 
 
-#' @rdname Get_Set_EPhysData
-#' @details \code{Rejected}: These functions set or get a function returning a logical vector indicating which of the repeated measurements stored in an \link{EPhysData} object to exclude from averaging. The following function from the EPhysMethods package may be helpful: \link[EPhysMethods:autoreject.by.distance]{EPhysMethods::autoreject.by.distance}, \link[EPhysMethods:autoreject.by.signalfree]{EPhysMethods::autoreject.by.signalfree}
 #' @noMd
 setGeneric(
   name = "Rejected",
@@ -42,6 +41,8 @@ setGeneric(
     standardGeneric("Rejected")
   }
 )
+#' @describeIn Get_Set_EPhysData Rejected
+#' @details \code{Rejected}: These functions set or get a function returning a logical vector indicating which of the repeated measurements stored in an \link{EPhysData} object to exclude from averaging. The following function from the EPhysMethods package may be helpful: \link[EPhysMethods:autoreject.by.distance]{EPhysMethods::autoreject.by.distance}, \link[EPhysMethods:autoreject.by.signalfree]{EPhysMethods::autoreject.by.signalfree}
 #' @exportMethod Rejected
 setMethod("Rejected", signature = "EPhysData", function(X, return.fx = F) {
   if (!return.fx) {
@@ -51,15 +52,16 @@ setMethod("Rejected", signature = "EPhysData", function(X, return.fx = F) {
   }
 })
 
-#' @rdname Get_Set_EPhysData
-#' @exportMethod Rejected<-
+#' @noMd
 setGeneric(
   name = "Rejected<-",
-  def = function(X, value, ...) {
+  def = function(X, ..., value) {
     standardGeneric("Rejected<-")
   }
 )
-#' @noMd
+
+#' @describeIn Get_Set_EPhysData Rejected<-
+#' @exportMethod Rejected<-
 setMethod("Rejected<-", signature = "EPhysData", function(X, value) {
   if ("function" %in% class(value)) {
     X@Rejected <- value
@@ -81,29 +83,29 @@ setMethod("Rejected<-", signature = "EPhysData", function(X, value) {
   }
 })
 
-#' @rdname Get_Set_EPhysData
-#' @details \code{FilterFunction}: Set  a function for filtering each individual of the repeated measurements in the \link{EPhysData} object. Could be downsampling or noise removal, for instance. The following functions from the EPhysMethods package may be helpful: \link[EPhysMethods:filter.bandpass]{EPhysMethods::filter.bandpass}, \link[EPhysMethods:filter.detrend]{EPhysMethods::filter.detrend},
-#' @exportMethod FilterFunction
+#' @noMd
 setGeneric(
   name = "FilterFunction",
   def = function(X, ...) {
     standardGeneric("FilterFunction")
   }
 )
-#' @noMd
+#' @describeIn Get_Set_EPhysData FilterFunction
+#' @details \code{FilterFunction}: Set  a function for filtering each individual of the repeated measurements in the \link{EPhysData} object. Could be downsampling or noise removal, for instance. The following functions from the EPhysMethods package may be helpful: \link[EPhysMethods:filter.bandpass]{EPhysMethods::filter.bandpass}, \link[EPhysMethods:filter.detrend]{EPhysMethods::filter.detrend},
+#' @exportMethod FilterFunction
 setMethod("FilterFunction", signature = "EPhysData", function(X) {
   return(X@filter.fx)
 })
 
-#' @rdname Get_Set_EPhysData
-#' @exportMethod FilterFunction<-
+#' @noMd
 setGeneric(
   name = "FilterFunction<-",
-  def = function(X, value, ...) {
+  def = function(X, ..., value) {
     standardGeneric("FilterFunction<-")
   }
 )
-#' @noMd
+#' @describeIn Get_Set_EPhysData FilterFunction<-
+#' @exportMethod FilterFunction<-
 setMethod("FilterFunction<-", signature = "EPhysData", function(X, value) {
   X@filter.fx <- value
   if (validEPhysData(X)) {
@@ -111,29 +113,30 @@ setMethod("FilterFunction<-", signature = "EPhysData", function(X, value) {
   }
 })
 
-#' @rdname Get_Set_EPhysData
-#' @details \code{AverageFunction}: Set a function describing how averaging across repeated measurement should be performed in the \link{EPhysData} object. Usually, \link[base:mean]{mean} can be a good start.
-#' @exportMethod AverageFunction
+#' @noMd
 setGeneric(
   name = "AverageFunction",
   def = function(X, ...) {
     standardGeneric("AverageFunction")
   }
 )
-#' @noMd
+#' @describeIn Get_Set_EPhysData AverageFunction
+#' @details \code{AverageFunction}: Set a function describing how averaging across repeated measurement should be performed in the \link{EPhysData} object. Usually, \link[base:mean]{mean} can be a good start.
+#' @exportMethod AverageFunction
 setMethod("AverageFunction", signature = "EPhysData", function(X) {
   return(X@average.fx)
 })
 
-#' @rdname Get_Set_EPhysData
-#' @exportMethod AverageFunction<-
+
+#' @noMd
 setGeneric(
   name = "AverageFunction<-",
-  def = function(X, value, ...) {
+  def = function(X, ..., value) {
     standardGeneric("AverageFunction<-")
   }
 )
-#' @noMd
+#' @describeIn Get_Set_EPhysData AverageFunction<-
+#' @exportMethod AverageFunction<-
 setMethod("AverageFunction<-", signature = "EPhysData", function(X, value) {
   X@average.fx <- value
   if (validEPhysData(X)) {
@@ -141,39 +144,22 @@ setMethod("AverageFunction<-", signature = "EPhysData", function(X, value) {
   }
 })
 
-#' @rdname Get_Set_EPhysData
-#' @details \code{TimeTrace}: These functions set or get the time trace belonging to the measurements stored in an \link{EPhysData} object.
-#' @exportMethod TimeTrace
+#' @noMd
 setGeneric(
   name = "TimeTrace",
   def = function(X) {
     standardGeneric("TimeTrace")
   }
 )
-#' @noMd
+#' @describeIn Get_Set_EPhysData TimeTrace
+#' @details \code{TimeTrace}: These functions set or get the time trace belonging to the measurements stored in an \link{EPhysData} object.
+#' @exportMethod TimeTrace
 setMethod("TimeTrace", signature = "EPhysData", function(X) {
   return(X@TimeTrace)
 })
 
-#' #' @rdname Get_Set_EPhysData
-#' #' @exportMethod TimeTrace<-
-#' setGeneric(
-#'   name = "TimeTrace<-",
-#'   def = function(X, value) {
-#'     standardGeneric("TimeTrace<-")
-#'   }
-#' )
-#' #' @noMd
-#' setMethod("TimeTrace<-", signature = "EPhysData", function(X, value) {
-#'   X@TimeTrace <- value
-#'   if (validEPhysData(X)) {
-#'     return(X)
-#'   }
-#' })
 
-#' @rdname Get_Set_EPhysData
-#' @import units
-#' @exportMethod StimulusTrace
+#' @noMd
 setGeneric(
   name = "StimulusTrace",
   def = function(X)
@@ -182,8 +168,9 @@ setGeneric(
   }
 )
 
+#' @describeIn Get_Set_EPhysData StimulusTrace
 #' @import units
-#' @noMd
+#' @exportMethod StimulusTrace
 setMethod("StimulusTrace",
           "EPhysData",
           function(X) {

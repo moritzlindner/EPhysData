@@ -7,7 +7,7 @@
 newEPhysSet(Data, Metadata)
 }
 \arguments{
-\item{Data}{A list of \linkS4class{EPhysData} objects.}
+\item{Data}{A list of \link[=EPhysData]{EPhysData}objects.}
 
 \item{Metadata}{A data frame containing metadata information associated with the data, each row corresponds to one list item.
 \describe{

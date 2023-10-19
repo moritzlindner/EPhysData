@@ -25,11 +25,11 @@ Converts an \link{EPhysData} or \link{EPhysSet} object to a data frame format. E
 }
 \section{Methods (by class)}{
 \itemize{
-\item \code{EPhysData}: Method for EPhysData
+\item \code{as.data.frame(EPhysData)}: Method for EPhysData
 
-\item \code{EPhysSet}: Method for EPhysSet
+\item \code{as.data.frame(EPhysSet)}: Method for EPhysSet
+
 }}
-
 \examples{
 # Create an example EPhysData object
 new_data <- makeExampleEPhysData()

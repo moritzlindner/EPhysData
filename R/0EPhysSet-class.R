@@ -27,8 +27,6 @@ validEPhysSet <- function(object) {
 #'
 #' @slot Data Data A list of \linkS4class{EPhysData} objects.
 #' @slot Metadata  A data frame containing metadata information associated with the data, each row corresponds to one list item. Rows must be unique
-#' @name EPhysSet
-#' @docType class
 #' @exportClass EPhysSet
 EPhysSet<-setClass("EPhysSet",
                    slots = list(
@@ -49,7 +47,7 @@ EPhysSet<-setClass("EPhysSet",
 #' @description This function creates an instance of the \code{EPhysSet} class
 #' with the specified data and attributes.
 #'
-#' @param Data A list of \linkS4class{EPhysData} objects.
+#' @param Data A list of \link[=EPhysData]{EPhysData}objects.
 #' @param Metadata A data frame containing metadata information associated with the data, each row corresponds to one list item.
 #' \describe{
 #'   \item{Step}{A character vector containing the steps associated with the data.}
@@ -75,6 +73,7 @@ EPhysSet<-setClass("EPhysSet",
 #'  )
 #' ephysSet
 #' @seealso \code{\link{EPhysSet-class}}
+#' @importFrom methods new validObject
 #' @export
 newEPhysSet <- function(Data, Metadata) {
   # Call the default constructor
@@ -91,6 +90,7 @@ newEPhysSet <- function(Data, Metadata) {
 
 }
 
+#' @importFrom object.size
 #' @noMd
 setMethod("show",
           "EPhysSet",

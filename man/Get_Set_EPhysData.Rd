@@ -3,34 +3,36 @@
 \docType{methods}
 \name{Get_Set_EPhysData}
 \alias{Get_Set_EPhysData}
-\alias{Rejected}
-\alias{Rejected<-}
-\alias{FilterFunction}
-\alias{FilterFunction<-}
-\alias{AverageFunction}
-\alias{AverageFunction<-}
-\alias{TimeTrace}
-\alias{StimulusTrace}
+\alias{Rejected,EPhysData-method}
+\alias{Rejected<-,EPhysData-method}
+\alias{FilterFunction,EPhysData-method}
+\alias{FilterFunction<-,EPhysData-method}
+\alias{AverageFunction,EPhysData-method}
+\alias{AverageFunction<-,EPhysData-method}
+\alias{TimeTrace,EPhysData-method}
+\alias{StimulusTrace,EPhysData-method}
 \title{Get/Set methods for EPhysData objects}
 \usage{
-Rejected(X, return.fx = F, ...)
+\S4method{Rejected}{EPhysData}(X, return.fx = F)
 
-Rejected(X, ...) <- value
+\S4method{Rejected}{EPhysData}(X) <- value
 
-FilterFunction(X, ...)
+\S4method{FilterFunction}{EPhysData}(X)
 
-FilterFunction(X, ...) <- value
+\S4method{FilterFunction}{EPhysData}(X) <- value
 
-AverageFunction(X, ...)
+\S4method{AverageFunction}{EPhysData}(X)
 
-AverageFunction(X, ...) <- value
+\S4method{AverageFunction}{EPhysData}(X) <- value
 
-TimeTrace(X)
+\S4method{TimeTrace}{EPhysData}(X)
 
-StimulusTrace(X)
+\S4method{StimulusTrace}{EPhysData}(X)
 }
 \arguments{
 \item{X}{An \code{EPhysData} object}
+
+\item{return.fx}{For \code{Rejected()}: Whether to return the function or the resulting logical vector. Default is \code{FALSE}, i.e. to return the function.}
 
 \item{value}{A value (usually a function) to set.}
 }
@@ -46,6 +48,25 @@ These methods are used to get and set the non-data slots from \link{EPhysData} o
 
 \code{TimeTrace}: These functions set or get the time trace belonging to the measurements stored in an \link{EPhysData} object.
 }
+\section{Functions}{
+\itemize{
+\item \code{Rejected(EPhysData)}: Rejected
+
+\item \code{Rejected(EPhysData) <- value}: Rejected<-
+
+\item \code{FilterFunction(EPhysData)}: FilterFunction
+
+\item \code{FilterFunction(EPhysData) <- value}: FilterFunction<-
+
+\item \code{AverageFunction(EPhysData)}: AverageFunction
+
+\item \code{AverageFunction(EPhysData) <- value}: AverageFunction<-
+
+\item \code{TimeTrace(EPhysData)}: TimeTrace
+
+\item \code{StimulusTrace(EPhysData)}: StimulusTrace
+
+}}
 \examples{
 # Create an EPhysData object with example data
 myEPhysData <- makeExampleEPhysData()

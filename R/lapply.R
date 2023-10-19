@@ -8,6 +8,8 @@
 #'
 #' @return If ReturnEPhysSet is \code{TRUE} modified \code{EPhysSet} object with the function applied to the data. If ReturnEPhysSet is \code{FALSE}, a list with the results will be returned.
 #'
+#' @importFrom methods validObject
+#'
 #' @examples
 #' myEPhysSet <- makeExampleEPhysSet()
 #' myEPhysSet
@@ -15,7 +17,6 @@
 #' myEPhysSet
 #' FilterFunction(myEPhysSet@Data[[2]])
 #'
-#' @name lapply
 #' @exportMethod lapply
 setMethod("lapply",
           "EPhysSet",

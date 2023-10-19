@@ -42,7 +42,7 @@ setMethod("Metadata", "EPhysSet", function(X) {
   return(X@Metadata)
 })
 
-#' @describeIn Metadata Metadata
+#' @describeIn Metadata AddMetadata
 #' @param columnName Name of the new column to be added.
 #' @param columnData Data for the new column.
 #' @exportMethod AddMetadata
@@ -53,6 +53,7 @@ setGeneric(
   }
 )
 
+#' @importFrom methods validObject
 #' @noRd
 setMethod("AddMetadata", "EPhysSet", function(X, columnName, columnData) {
   if (length(columnData) != nrow(X@Metadata)) {
@@ -74,6 +75,7 @@ setGeneric(
   }
 )
 
+#' @importFrom methods validObject
 #' @noRd
 setMethod("Metadata<-", "EPhysSet", function(X, value) {
   if (!is.data.frame(value)) {

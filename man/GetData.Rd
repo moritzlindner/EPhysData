@@ -18,12 +18,12 @@ GetData(
 \item{Time}{Numeric vector of length 2 representing the time range for data extraction.
 Default is the entire time range (i.e., keep all data).}
 
-\item{TimeExclusive}{Keep only the two time points stated under \code{Time}, not the range.}
+\item{TimeExclusive}{Keep only the two time points stated under 'Time', not the range.}
 
 \item{Repeats}{Specifies which of the repeated measurements (if any) to use for extraction.
 It can be either a numeric vector specifying the indices of the repeated measurements
 or a logical vector of the same length as repeats stored,
-where \code{TRUE} indicates using that column for extraction. Default is the inverse of the \code{\code{\link{Rejected}}(X)} vector.}
+where \code{TRUE} indicates using that column for extraction. Default is the inverse of the \code{\link{Rejected-method}}(X) vector.}
 
 \item{Raw}{Logical indicating whether to get raw data or processed (filtered, averaged) data.}
 }
@@ -46,5 +46,5 @@ AverageFunction(myEPhysData) <- median
 filtered_and_averaged_data <- GetData(myEPhysData, Raw = FALSE)
 }
 \seealso{
-\code{\link{EPhysData}}, \code{\link{TimeTrace}}, \code{\link{Rejected}}
+\code{\link{EPhysData-class}} \code{\link{TimeTrace-method}}, \code{\link{Rejected-method}}
 }

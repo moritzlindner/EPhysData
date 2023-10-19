@@ -4,7 +4,6 @@
 #'
 #' @param x An object of class \link{EPhysSet}.
 #' @return An integer representing the number of recordings stored in the object.
-#' @name length
 #' @exportMethod length
 setMethod("length",
           "EPhysSet",

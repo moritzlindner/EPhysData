@@ -25,6 +25,7 @@
 #' newEPhysData(Data = Data, TimeTrace = TimeTrace, Unit = Unit, TimeUnit = TimeUnit)
 #' # Output: An object of class 'EPhysData' with processed data and information.
 #' @importFrom  units deparse_unit as_units unitless
+#' @importFrom methods new
 #' @seealso \link{EPhysData}
 #' @export newEPhysData
 newEPhysData <-
@@ -129,7 +130,9 @@ newEPhysData <-
       Data = Data,
       TimeTrace = TimeTrace,
       StimulusTrace = StimulusTrace,
-      Rejected = function(x){logical(length = dim(Data)[2])},
+      Rejected = function(x) {
+        rep(FALSE, ncol(Data))
+      },
       Created = as.POSIXct(Sys.time())
     )
     if(validEPhysData(out)){
