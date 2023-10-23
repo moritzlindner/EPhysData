@@ -90,7 +90,7 @@ newEPhysSet <- function(Data, Metadata) {
 
 }
 
-#' @importFrom object.size
+#' @importFrom utils object.size
 #' @noMd
 setMethod("show",
           "EPhysSet",

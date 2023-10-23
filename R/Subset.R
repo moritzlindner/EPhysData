@@ -5,11 +5,15 @@
 #' @inheritParams GetData
 #' @param Simplify Logical if 'True' will return \code{EPhysData} instead of \code{EPhysSet} if only one \code{EPhysData} is left in the set.
 #' @param ... currently unused.
+#' @param SetItems Which items of the set to subset/keep.
+#' @param Repeats If X is an EPhysSet, this parameter can only be used if all EPhysData contained in the set has the same number of repeats.
+#'                Numeric index/indices or a logical vector of the same length as repeats stored,
 #' @return `Subset`: An \code{EPhysData} or an \code{EPhysSet} object representing the subsetted data.
 #'
 #' @details The \code{Subset} function creates a new \code{EPhysData} or \code{EPhysSet} object containing a subset of the data (and metadata for \code{EPhysSet}) from the original object, based on the provided parameters.
 #' @family EPhysData-methods
 #' @family Subsetting_Dataextraction
+#' @name Subset-method
 #' @examples
 #' # Subset EPhysData
 #' myEPhysData <- makeExampleEPhysData()
@@ -23,7 +27,7 @@
 #' subsetted_myEPhysSet <- Subset(myEPhysSet, SetItems=c(4:7))
 #' subsetted_myEPhysSet
 #' Metadata(subsetted_myEPhysSet)
-#' @export Subset
+
 setGeneric(
   name = "Subset",
   def = function(X, ...) {
@@ -33,7 +37,7 @@ setGeneric(
 
 #' @importFrom units as_units
 #' @importFrom methods new validObject
-#' @describeIn Subset Subset method for EPhysData
+#' @describeIn Subset-method Subset method for EPhysData
 #' @exportMethod Subset
 setMethod("Subset",
           "EPhysData",
@@ -84,12 +88,9 @@ setMethod("Subset",
             }
           })
 
-#' @param SetItems Which items of the set to subset/keep.
 #' @importFrom units as_units
 #' @importFrom methods validObject
-#' @describeIn Subset Subset method for EPhysSet
-#' @param Repeats If X is an EPhysSet, this parameter can only be used if all EPhysData contained in the set has the same number of repeats.
-#'                Numeric index/indices or a logical vector of the same length as repeats stored,
+#' @describeIn Subset-method Subset method for EPhysSet
 #' @exportMethod Subset
 setMethod("Subset",
           "EPhysSet",

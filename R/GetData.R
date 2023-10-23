@@ -77,7 +77,7 @@ setMethod("GetData",
             if (any(RepeatsLogical != (!Rejected(X)))
                 & !Raw) {
               RepeatsLogical <- !Rejected(X)
-              warning("Subsetting by Repeats is not allowed when 'Raw = F'. Processing will be performed from all unrejected repeats (see: 'Rejected(X)').")
+              warning("Subsetting by Repeats is not recomended when 'Raw = F'. Processing will be performed from all unrejected repeats (see: 'Rejected(X)').")
             }
 
             # Time Ranges
