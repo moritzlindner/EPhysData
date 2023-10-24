@@ -28,7 +28,7 @@
 #' # Retrieve metadata
 #' retrievedMetadata <- Metadata(ephysSet)
 #' retrievedMetadata
-#' @name Metadata
+#' @name Metadata-method
 #' @exportMethod Metadata
 setGeneric(
   name = "Metadata",
@@ -42,7 +42,7 @@ setMethod("Metadata", "EPhysSet", function(X) {
   return(X@Metadata)
 })
 
-#' @describeIn Metadata AddMetadata
+#' @describeIn Metadata-method AddMetadata
 #' @param columnName Name of the new column to be added.
 #' @param columnData Data for the new column.
 #' @exportMethod AddMetadata
@@ -66,7 +66,7 @@ setMethod("AddMetadata", "EPhysSet", function(X, columnName, columnData) {
 })
 
 #' @param value New metadata to replace the existing metadata.
-#' @describeIn Metadata Metadata<-
+#' @describeIn Metadata-method Metadata<-
 #' @exportMethod Metadata<-
 setGeneric(
   name = "Metadata<-",

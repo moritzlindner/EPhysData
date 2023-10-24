@@ -12,7 +12,7 @@
 #' Rejected(ephys_data) <- c(F,F,F,F,T,T,T,F,F,F,F,T,F,T,F) # randmly reject some
 #' AverageFunction(ephys_data) <- mean
 #' ggEPhysData(ephys_data)  # Generate a ggplot2 plot
-#' @name ggEPhysData
+#' @name ggEPhysData-methods
 NULL
 setGeneric(
   name = "ggEPhysData",

@@ -21,10 +21,10 @@
 #'
 #' @importFrom tidyr pivot_longer starts_with
 #' @importFrom units drop_units as_units
-#' @name as.data.frame
+#' @name as.data.frame-method
 NULL
 
-#' @describeIn as.data.frame Method for EPhysData
+#' @describeIn as.data.frame-method Method for EPhysData
 #' @exportMethod as.data.frame
 setMethod("as.data.frame",
           "EPhysData",
@@ -76,7 +76,7 @@ setMethod("as.data.frame",
             return(as.data.frame(dat))
           })
 
-#' @describeIn as.data.frame Method for EPhysSet
+#' @describeIn as.data.frame-method Method for EPhysSet
 #' @exportMethod as.data.frame
 setMethod("as.data.frame",
           "EPhysSet",
