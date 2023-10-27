@@ -19,7 +19,9 @@
 #' * \link[=lapply]{lapply} (for \link[=EPhysSet]{EPhysSet} objects) \cr\cr
 #'
 #' @section Accession functions:
-#' * \link[=Subset]{Subset} (for \link[=EPhysData]{EPhysSet} and \link[=EPhysData]{EPhysSet}  objects) \cr
+#' * \link[=Subset]{Subset} (for \link[=EPhysData]{EPhysData} and \link[=EPhysData]{EPhysSet}  objects) \cr
+#' * \link[=[]{[} (for \link[=EPhysData]{EPhysData}) \cr
+#' * \link[=[[]{[[} and \link[=[[<-]{[[<-} (for \link[=EPhysSet]{EPhysSet}) \cr
 #' * \link[=as.data.frame]{as.data.frame} (for \link[=EPhysData]{EPhysSet} and \link[=EPhysData]{EPhysSet}  objects) \cr\cr
 #'
 #' * \link[=GetData]{GetData} (for \link[=EPhysData]{EPhysData} objects) \cr\cr

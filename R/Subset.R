@@ -3,21 +3,22 @@
 #' This method subsets an \code{EPhysData} or an \code{EPhysSet} object into a new object of the same class.
 #'
 #' @inheritParams GetData
+#' @inheritParams as.data.frame-method
 #' @param i,j Indices specifying elements to extract.
 #' @param Simplify Logical if 'True' will return \code{EPhysData} instead of \code{EPhysSet} if only one \code{EPhysData} is left in the set.
 #' @param ... currently unused.
 #' @param SetItems Which items of the set to subset/keep.
 #' @param Repeats If X is an EPhysSet, this parameter can only be used if all EPhysData contained in the set has the same number of repeats.
-#'                Numeric index/indices or a logical vector of the same length as repeats stored,
+#'                Numeric index/indices or a logical vector of the same length as repeats stored.
 #' @return `Subset`: An \code{EPhysData} or an \code{EPhysSet} object representing the subsetted data.
 #'
 #' @details The \code{Subset} function creates a new \code{EPhysData} or \code{EPhysSet} object containing a subset of the data (and metadata for \code{EPhysSet}) from the original object, based on the provided parameters.
 #' @family EPhysData-methods
 #' @family Subsetting_Dataextraction
-#' @name Subset-method
+#' @name Subset
 #' @examples
 #' # Subset EPhysData
-#' myEPhysData <- makeExampleEPhysData()
+#' myEPhysData <- makeExampleEPhysData(replicate_count = 3)
 #'
 #' ## Get subsetted data based on time range and repeated measurements
 #' subsetted_myEPhysData <- Subset(myEPhysData, Time = TimeTrace(myEPhysData)[c(1, 3)], Repeats = c(1, 2))
@@ -29,6 +30,9 @@
 #' subsetted_myEPhysSet
 #' Metadata(subsetted_myEPhysSet)
 
+#' @importFrom units as_units
+#' @importFrom methods new validObject
+#' @exportMethod Subset
 setGeneric(
   name = "Subset",
   def = function(X, ...) {
@@ -36,10 +40,8 @@ setGeneric(
   }
 )
 
-#' @importFrom units as_units
-#' @importFrom methods new validObject
-#' @describeIn Subset-method Subset method for EPhysData
-#' @exportMethod Subset
+#' @describeIn Subset Subset method for EPhysSet
+#' @noMd
 setMethod("Subset",
           "EPhysData",
           function(X,
@@ -71,15 +73,22 @@ setMethod("Subset",
               StimulusTrace<-as_units(integer(),unitless)
             }
 
+            if(!Raw){
+              rejected.fx<-function(x) {
+                return(FALSE)
+              }
+            } else {
+              rejected.fx<-function(x) {
+                return(Rejected(X)[Repeats])
+              }
+            }
 
             out <- new(
               "EPhysData",
               Data = Data,
               TimeTrace = Time,
               StimulusTrace = StimulusTrace,
-              Rejected = function(x) {
-                return(Rejected(X)[Repeats])
-              },
+              Rejected = rejected.fx,
               Created = X@Created
             )
             if (validObject(out)) {
@@ -91,8 +100,8 @@ setMethod("Subset",
 
 #' @importFrom units as_units
 #' @importFrom methods validObject
-#' @describeIn Subset-method Subset method for EPhysSet
-#' @exportMethod Subset
+#' @describeIn Subset Subset method for EPhysSet
+#' @noMd
 setMethod("Subset",
           "EPhysSet",
           function(X,
@@ -155,29 +164,7 @@ setMethod("Subset",
             }
           })
 
-#' @keywords internal
-#' @noMd
-condition_time <- function(X, Time, TimeExclusive) {
-  if (!isTRUE(all.equal(Time, range(TimeTrace(X))))) {
-    if (!TimeExclusive) {
-      Time <-
-        TimeTrace(X)[TimeTrace(X) >= Time[1] &
-                       TimeTrace(X) <= Time[2]]
-    } else{
-      # if extracting exact time points. get closest to values entered
-      Time[1] <-
-        TimeTrace(X)[which(abs(TimeTrace(X) - Time[1]) == min(abs(TimeTrace(X) -
-                                                                    Time[1])))]
-      Time[2] <-
-        TimeTrace(X)[which(abs(TimeTrace(X) - Time[2]) == min(abs(TimeTrace(X) -
-                                                                    Time[2])))]
-    }
-  } else{
-    Time <- TimeTrace(X)
-  }
-}
-
-#' @describeIn Subset-method Extract specific items from an \linkS4class{EPhysSet} object. Returns an \linkS4class{EPhysData} object or a list thereof.
+#' @describeIn Subset Extract specific items from an \linkS4class{EPhysSet} object. Returns an \linkS4class{EPhysData} object or a list thereof.
 #' @exportMethod [[
 setMethod("[[",
           "EPhysSet",
@@ -219,7 +206,7 @@ setMethod("[[<-",
             }
           })
 
-#' @describeIn Subset-method Extract specific items from an \linkS4class{EPhysData} object. Returns a data.frame.
+#' @describeIn Subset Extract specific items from an \linkS4class{EPhysData} object. Returns a data.frame.
 #' @exportMethod [
 setMethod("[",
           "EPhysData",

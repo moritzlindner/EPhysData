@@ -3,36 +3,38 @@
 \docType{methods}
 \name{Get_Set_EPhysData}
 \alias{Get_Set_EPhysData}
-\alias{Rejected,EPhysData-method}
-\alias{Rejected<-,EPhysData-method}
-\alias{FilterFunction,EPhysData-method}
-\alias{FilterFunction<-,EPhysData-method}
-\alias{AverageFunction,EPhysData-method}
-\alias{AverageFunction<-,EPhysData-method}
-\alias{TimeTrace,EPhysData-method}
-\alias{StimulusTrace,EPhysData-method}
+\alias{Rejected}
+\alias{Rejected<-}
+\alias{FilterFunction}
+\alias{FilterFunction<-}
+\alias{AverageFunction}
+\alias{AverageFunction<-}
+\alias{TimeTrace}
+\alias{StimulusTrace}
 \title{Get/Set methods for EPhysData objects}
 \usage{
-\S4method{Rejected}{EPhysData}(X, return.fx = F)
+Rejected(X, return.fx = F, ...)
 
-\S4method{Rejected}{EPhysData}(X) <- value
+Rejected(X, ...) <- value
 
-\S4method{FilterFunction}{EPhysData}(X)
+FilterFunction(X, ...)
 
-\S4method{FilterFunction}{EPhysData}(X) <- value
+FilterFunction(X, ...) <- value
 
-\S4method{AverageFunction}{EPhysData}(X)
+AverageFunction(X, ...)
 
-\S4method{AverageFunction}{EPhysData}(X) <- value
+AverageFunction(X, ...) <- value
 
-\S4method{TimeTrace}{EPhysData}(X)
+TimeTrace(X)
 
-\S4method{StimulusTrace}{EPhysData}(X)
+StimulusTrace(X)
 }
 \arguments{
 \item{X}{An \code{EPhysData} object}
 
 \item{return.fx}{For \code{Rejected()}: Whether to return the function or the resulting logical vector. Default is \code{FALSE}, i.e. to return the function.}
+
+\item{...}{Currently unused.}
 
 \item{value}{A value (usually a function) to set.}
 }
@@ -50,21 +52,21 @@ These methods are used to get and set the non-data slots from \link{EPhysData} o
 }
 \section{Functions}{
 \itemize{
-\item \code{Rejected(EPhysData)}: Rejected
+\item \code{Rejected()}: Rejected
 
-\item \code{Rejected(EPhysData) <- value}: Rejected<-
+\item \code{Rejected(X, ...) <- value}: Rejected<-
 
-\item \code{FilterFunction(EPhysData)}: FilterFunction
+\item \code{FilterFunction()}: FilterFunction
 
-\item \code{FilterFunction(EPhysData) <- value}: FilterFunction<-
+\item \code{FilterFunction(X, ...) <- value}: FilterFunction<-
 
-\item \code{AverageFunction(EPhysData)}: AverageFunction
+\item \code{AverageFunction()}: AverageFunction
 
-\item \code{AverageFunction(EPhysData) <- value}: AverageFunction<-
+\item \code{AverageFunction(X, ...) <- value}: AverageFunction<-
 
-\item \code{TimeTrace(EPhysData)}: TimeTrace
+\item \code{TimeTrace()}: TimeTrace
 
-\item \code{StimulusTrace(EPhysData)}: StimulusTrace
+\item \code{StimulusTrace()}: StimulusTrace
 
 }}
 \examples{
@@ -75,7 +77,7 @@ myEPhysData <- makeExampleEPhysData()
 Rejected(myEPhysData)
 
 # Set the "Rejected" slot
-Rejected(myEPhysData) <- c(FALSE, FALSE, TRUE)
+Rejected(myEPhysData) <- sample(c(TRUE,FALSE), dim(myEPhysData)[2], TRUE)
 
 # Get the "filter.fx" slot
 FilterFunction(myEPhysData)

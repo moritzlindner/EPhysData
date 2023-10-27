@@ -18,12 +18,12 @@ GetData(
 \item{Time}{Numeric vector of length 2 representing the time range for data extraction.
 Default is the entire time range (i.e., keep all data).}
 
-\item{TimeExclusive}{Keep only the two time points stated under 'Time', not the range.}
+\item{TimeExclusive}{Keep only the two points stated under 'Time', not the range.}
 
 \item{Repeats}{Specifies which of the repeated measurements (if any) to use for extraction.
 It can be either a numeric vector specifying the indices of the repeated measurements
 or a logical vector of the same length as repeats stored,
-where \code{TRUE} indicates using that column for extraction. Default is the inverse of the \code{\link{Rejected-method}}(X) vector.}
+where \code{TRUE} indicates using that column for extraction. Default is the inverse of the \code{\link{Rejected}}(X) vector.}
 
 \item{Raw}{Logical indicating whether to get raw data or processed (filtered, averaged) data.}
 }
@@ -38,13 +38,16 @@ The \code{GetData} function extracts the recorded data from an \code{EPhysData} 
 By default, the resulting data matrix contains unfiltered data from all repeated measurements.
 }
 \examples{
-myEPhysData <- makeExampleEPhysData()
+myEPhysData <- makeExampleEPhysData(sample_points = sample(seq(1, 400, 10), 1),replicate_count = sample(1:5, 1))
+myEPhysData
 # Get raw data
-raw_data <- GetData(myEPhysData)
+raw_data <- GetData(myEPhysData, Raw = TRUE)
+head(raw_data)
 # Get processed (filtered and averaged) data
 AverageFunction(myEPhysData) <- median
 filtered_and_averaged_data <- GetData(myEPhysData, Raw = FALSE)
+head(filtered_and_averaged_data)
 }
 \seealso{
-\code{\link{EPhysData-class}} \code{\link{TimeTrace-method}}, \code{\link{Rejected-method}}
+\code{\link{EPhysData-class}} \code{\link{TimeTrace}}, \code{\link{Rejected}}
 }

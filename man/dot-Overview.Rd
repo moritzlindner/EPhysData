@@ -32,7 +32,9 @@ There are two classes for storing the data. The \code{EPhysData} class stores  d
 \section{Accession functions}{
 
 \itemize{
-\item \link[=Subset]{Subset} (for \link[=EPhysData]{EPhysSet} and \link[=EPhysData]{EPhysSet}  objects) \cr
+\item \link[=Subset]{Subset} (for \link[=EPhysData]{EPhysData} and \link[=EPhysData]{EPhysSet}  objects) \cr
+\item \link[=[]{[} (for \link[=EPhysData]{EPhysData}) \cr
+\item \link[=[[]{[[} and \link[=[[<-]{[[<-} (for \link[=EPhysSet]{EPhysSet}) \cr
 \item \link[=as.data.frame]{as.data.frame} (for \link[=EPhysData]{EPhysSet} and \link[=EPhysData]{EPhysSet}  objects) \cr\cr
 \item \link[=GetData]{GetData} (for \link[=EPhysData]{EPhysData} objects) \cr\cr
 \item \link[=AverageFunction]{AverageFunction} (for \link[=EPhysData]{EPhysData} objects) \cr

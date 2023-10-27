@@ -7,20 +7,20 @@
 \title{Create Example EPhysData Object}
 \usage{
 makeExampleEPhysData(
-  sample_points = 400,
+  sample_points = sample(seq(1, 400, 10), 1),
   start_time = 0,
   time_unit = "ms",
   data_unit = "mV",
-  replicate_count = 3
+  replicate_count = sample(1:5, 1)
 )
 
 makeExampleEPhysSet(
   nsets = 4,
-  sample_points = 4,
+  sample_points = sample(seq(1, 400, 10), 1),
   start_time = 1,
   time_unit = "s",
   data_unit = "mV",
-  replicate_count = 3,
+  replicate_count = sample(1:5, 1),
   metadata_data = NULL
 )
 }
