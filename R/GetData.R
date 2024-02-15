@@ -132,7 +132,7 @@ setMethod("GetData",
                      ") to test vector 'c(1:3)'")
               }
             )
-            if (!Raw & !valid.avg.fx) {
+            if (!Raw & (!valid.avg.fx || dim(X)[2]!=1)) {
               warning(
                 "Averaging function ",
                 deparse(AverageFunction(X)),
