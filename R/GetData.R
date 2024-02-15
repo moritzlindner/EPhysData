@@ -98,6 +98,7 @@ setMethod("GetData",
 
             # filter
             if (!Raw) {
+              unit.buffer<-deparse_unit(out)
               out <- tryCatch(
                 apply(out, 2, FilterFunction(X), simplify = T),
                 error = function (e) {
@@ -106,8 +107,8 @@ setMethod("GetData",
                        ") to data.")
                 }
               )
+              out<-as_units(as.matrix(out),unit.buffer)
             }
-            out<-as.matrix(out)
 
             # subset by time
             out <-
