@@ -21,8 +21,9 @@
 #' # Add new data to the EPhysSet
 #' updated_ephys_set <- AddData(ephys_set, newData = new_data, newMetadata = new_metadata)
 #' updated_ephys_set
-#'
-#' @exportMethod AddData
+#' @export
+#' @docType methods
+#' @rdname AddData-methods
 setGeneric(
   name = "AddData",
   def = function(X, newData, newMetadata) {
@@ -30,7 +31,8 @@ setGeneric(
   }
 )
 
-#' @noMd
+#' @rdname AddData-methods
+#' @aliases AddData,EPhysSet,ANY-method
 setMethod("AddData",
           "EPhysSet",
           function(X, newData, newMetadata) {

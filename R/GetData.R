@@ -29,7 +29,9 @@
 #' AverageFunction(myEPhysData) <- median
 #' filtered_and_averaged_data <- GetData(myEPhysData, Raw = FALSE)
 #' head(filtered_and_averaged_data)
-#' @exportMethod GetData
+#' @export
+#' @docType methods
+#' @rdname GetData-methods
 setGeneric(
   name = "GetData",
   def = function(X,
@@ -43,8 +45,9 @@ setGeneric(
 )
 
 
-#' @import units
-#' @noMd
+#' @importFrom  units deparse_unit as_units
+#' @rdname GetData-methods
+#' @aliases GetData,EPhysData,ANY-method
 setMethod("GetData",
           "EPhysData",
           function(X,

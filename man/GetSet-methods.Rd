@@ -4,30 +4,62 @@
 \name{Get_Set_EPhysData}
 \alias{Get_Set_EPhysData}
 \alias{Rejected}
+\alias{Rejected,EPhysData-method}
+\alias{Rejected,EPhysData,ANY-method}
 \alias{Rejected<-}
+\alias{Rejected<-,EPhysData-method}
+\alias{`Rejected<-`,EPhysData,ANY-method}
 \alias{FilterFunction}
+\alias{FilterFunction,EPhysData-method}
+\alias{FilterFunction,EPhysData,ANY-method}
 \alias{FilterFunction<-}
+\alias{FilterFunction<-,EPhysData-method}
+\alias{`FilterFunction<-`,EPhysData,ANY-method}
 \alias{AverageFunction}
+\alias{AverageFunction,EPhysData-method}
+\alias{AverageFunction,EPhysData,ANY-method}
 \alias{AverageFunction<-}
+\alias{AverageFunction<-,EPhysData-method}
+\alias{`AverageFunction<-`,EPhysData,ANY-method}
 \alias{TimeTrace}
+\alias{TimeTrace,EPhysData-method}
+\alias{TimeTrace,EPhysData,ANY-method}
 \alias{StimulusTrace}
+\alias{StimulusTrace,EPhysData-method}
+\alias{StimulusTrace,EPhysData,ANY-method}
 \title{Get/Set methods for EPhysData objects}
 \usage{
 Rejected(X, return.fx = F, ...)
 
+\S4method{Rejected}{EPhysData}(X, return.fx = F)
+
 Rejected(X, ...) <- value
+
+\S4method{Rejected}{EPhysData}(X) <- value
 
 FilterFunction(X, ...)
 
+\S4method{FilterFunction}{EPhysData}(X)
+
 FilterFunction(X, ...) <- value
+
+\S4method{FilterFunction}{EPhysData}(X) <- value
 
 AverageFunction(X, ...)
 
+\S4method{AverageFunction}{EPhysData}(X)
+
 AverageFunction(X, ...) <- value
+
+\S4method{AverageFunction}{EPhysData}(X) <- value
 
 TimeTrace(X)
 
+\S4method{TimeTrace}{EPhysData}(X)
+
 StimulusTrace(X)
+
+\S4method{StimulusTrace}{EPhysData}(X)
 }
 \arguments{
 \item{X}{An \code{EPhysData} object}
@@ -49,26 +81,9 @@ These methods are used to get and set the non-data slots from \link{EPhysData} o
 \code{AverageFunction}: Set a function describing how averaging across repeated measurement should be performed in the \link{EPhysData} object. Usually, \link[base:mean]{mean} can be a good start.
 
 \code{TimeTrace}: These functions set or get the time trace belonging to the measurements stored in an \link{EPhysData} object.
+
+\code{StimulusTrace}: These functions set or get the stimulus trace belonging to the measurements stored in an \link{EPhysData} object.
 }
-\section{Functions}{
-\itemize{
-\item \code{Rejected()}: Rejected
-
-\item \code{Rejected(X, ...) <- value}: Rejected<-
-
-\item \code{FilterFunction()}: FilterFunction
-
-\item \code{FilterFunction(X, ...) <- value}: FilterFunction<-
-
-\item \code{AverageFunction()}: AverageFunction
-
-\item \code{AverageFunction(X, ...) <- value}: AverageFunction<-
-
-\item \code{TimeTrace()}: TimeTrace
-
-\item \code{StimulusTrace()}: StimulusTrace
-
-}}
 \examples{
 # Create an EPhysData object with example data
 myEPhysData <- makeExampleEPhysData()

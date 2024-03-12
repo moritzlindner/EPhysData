@@ -23,10 +23,12 @@
 #' SampleData
 #' @seealso \link[=Load]{Load}, \link[=EPhysData]{EPhysData}, \link[=EPhysSet]{EPhysSet}
 #' @name LoadSave
+#' @rdname LoadSave-methods
+#' @docType methods
 NULL
 #'
-#' @describeIn LoadSave Save \linkS4class{EPhysData} or \linkS4class{EPhysSet} objects to an HDF5 file
-#' @exportMethod Save
+#' @describeIn LoadSave-methods Save \linkS4class{EPhysData} or \linkS4class{EPhysSet} objects to an HDF5 file
+#' @export
 setGeneric(
   name = "Save",
   def = function(X,
@@ -39,7 +41,8 @@ setGeneric(
 
 #' @importFrom hdf5r H5File
 #' @importFrom stringr str_detect
-#' @noMd
+#' @rdname LoadSave-methods
+#' @aliases Save,EPhysData,EPhysSet,ANY-method
 setMethod("Save",
           "EPhysData",
           function(X,
@@ -73,7 +76,7 @@ setMethod("Save",
 
 #' @importFrom hdf5r H5File
 #' @importFrom stringr str_detect
-#' @noMd
+#' @rdname LoadSave-methods
 setMethod("Save",
           "EPhysSet",
           function(X,
@@ -122,6 +125,7 @@ Save.EPhysData <- function (con, X) {
   con[["Created"]] <- X@Created
   con[["Type"]] <- "EPhysData"
   con[["EPhysDataVersion"]] <- as.character(packageVersion('EPhysData'))
+  #con[["Description"]] <- readLines(file = paste0(path.package("EPhysData"), "/Hdf5_EPhysData_desc.txt"))
   con
 }
 
@@ -147,7 +151,7 @@ Save.EPhysSet <- function (con, X) {
 
 #' @importFrom hdf5r H5File
 #' @importFrom utils packageVersion compareVersion
-#' @describeIn LoadSave Load \linkS4class{EPhysData} or \linkS4class{EPhysSet} objects from an HDF5 file
+#' @describeIn LoadSave-methods Load \linkS4class{EPhysData} or \linkS4class{EPhysSet} objects from an HDF5 file
 #' @export
 Load <- function(filename) {
   if (file.exists(filename)) {

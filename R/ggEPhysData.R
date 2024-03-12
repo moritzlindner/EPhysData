@@ -13,7 +13,9 @@
 #' AverageFunction(ephys_data) <- mean
 #' ggEPhysData(ephys_data)  # Generate a ggplot2 plot
 #' @name ggEPhysData
-#' @exportMethod ggEPhysData
+#' @export
+#' @docType methods
+#' @rdname ggEPhysData-methods
 setGeneric(
   name = "ggEPhysData",
   def = function(X, Raw = T) {
@@ -21,7 +23,8 @@ setGeneric(
   }
 )
 
-#' @noMd
+#' @rdname ggEPhysData-methods
+#' @aliases ggEPhysData,EPhysData,ANY-method
 setMethod("ggEPhysData",
           "EPhysData",
           function(X, Raw = T) {

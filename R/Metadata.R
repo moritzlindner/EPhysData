@@ -28,8 +28,9 @@
 #' # Retrieve metadata
 #' retrievedMetadata <- Metadata(ephysSet)
 #' retrievedMetadata
-#' @name Metadata
-#' @exportMethod Metadata
+#' @export
+#' @docType methods
+#' @rdname Metadata-methods
 setGeneric(
   name = "Metadata",
   def = function(X) {
@@ -37,12 +38,13 @@ setGeneric(
   }
 )
 
-#' @noMd
+#' @rdname Metadata-methods
+#' @aliases Metadata,EPhysSet,ANY-method
 setMethod("Metadata", "EPhysSet", function(X) {
   return(X@Metadata)
 })
 
-#' @describeIn Metadata AddMetadata
+#' @describeIn Metadata-methods AddMetadata
 #' @param columnName Name of the new column to be added.
 #' @param columnData Data for the new column.
 #' @exportMethod AddMetadata
@@ -54,7 +56,8 @@ setGeneric(
 )
 
 #' @importFrom methods validObject
-#' @noMd
+#' @rdname Metadata-methods
+#' @aliases AddMetadata,EPhysSet,ANY-method
 setMethod("AddMetadata", "EPhysSet", function(X, columnName, columnData) {
   if (length(columnData) != nrow(X@Metadata)) {
     stop("Column data length should match the number of rows in Metadata.")
@@ -66,7 +69,7 @@ setMethod("AddMetadata", "EPhysSet", function(X, columnName, columnData) {
 })
 
 #' @param value New metadata to replace the existing metadata.
-#' @describeIn Metadata Metadata<-
+#' @describeIn Metadata-methods Metadata<-
 #' @exportMethod Metadata<-
 setGeneric(
   name = "Metadata<-",
@@ -76,7 +79,8 @@ setGeneric(
 )
 
 #' @importFrom methods validObject
-#' @noMd
+#' @rdname Metadata-methods
+#' @aliases Metadata<-,EPhysSet,ANY-method
 setMethod("Metadata<-", "EPhysSet", function(X, value) {
   if (!is.data.frame(value)) {
     stop("New metadata must be a data frame.")

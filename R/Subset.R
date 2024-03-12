@@ -32,7 +32,9 @@
 
 #' @importFrom units as_units
 #' @importFrom methods new validObject
-#' @exportMethod Subset
+#' @export
+#' @docType methods
+#' @rdname Subset-methods
 setGeneric(
   name = "Subset",
   def = function(X, ...) {
@@ -40,8 +42,8 @@ setGeneric(
   }
 )
 
-#' @describeIn Subset Subset method for EPhysSet
-#' @noMd
+#' @rdname Subset-methods
+#' @aliases Subset,EPhysData,EPhysSet,ANY-method
 setMethod("Subset",
           "EPhysData",
           function(X,
@@ -100,8 +102,7 @@ setMethod("Subset",
 
 #' @importFrom units as_units
 #' @importFrom methods validObject
-#' @describeIn Subset Subset method for EPhysSet
-#' @noMd
+#' @rdname Subset-methods
 setMethod("Subset",
           "EPhysSet",
           function(X,
@@ -168,8 +169,9 @@ setMethod("Subset",
             }
           })
 
-#' @describeIn Subset Extract specific items from an \linkS4class{EPhysSet} object. Returns an \linkS4class{EPhysData} object or a list thereof.
-#' @exportMethod [[
+#' @describeIn Subset-methods Extract specific items from an \linkS4class{EPhysSet} object. Returns an \linkS4class{EPhysData} object or a list thereof.
+#' @aliases `[[`,EPhysSet,ANY-method
+#' @export
 setMethod("[[",
           "EPhysSet",
           function(x, i) {
@@ -184,6 +186,7 @@ setMethod("[[",
           })
 
 #' @keywords internal
+#' @aliases `[[<-`,EPhysSet,ANY-method
 #' @noMd
 setMethod("[[<-",
           "EPhysSet",
@@ -210,8 +213,9 @@ setMethod("[[<-",
             }
           })
 
-#' @describeIn Subset Extract specific items from an \linkS4class{EPhysData} object. Returns a data.frame.
-#' @exportMethod [
+#' @describeIn Subset-methods Extract specific items from an \linkS4class{EPhysData} object. Returns a data.frame.
+#' @aliases `[`,EPhysData,ANY-method
+#' @export
 setMethod("[",
           "EPhysData",
           function(x, i, j) {

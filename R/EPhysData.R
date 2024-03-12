@@ -1,4 +1,4 @@
-#' Structured Index and Introduction for the EPhysData R Package
+#' EPhysData: Structured Index and Introduction for the EPhysData R Package
 #'
 #' There are two classes for storing the data. The `EPhysData` class stores  data from a single recording (possibly with repeated measurements). It is usually generated from imported raw data using `newEPhysSet()`. Information on how to filter or average the data contained in this class can be stored in it, but the data is left unchanged. The `EPhysSet` class contains a collection of associated  `EPhysData` classes (e.g. data from different channels recorded in parallel or in response to increasing stimulus intensities). Each `EPhysData` stored is associated with metadata describing the nature of the particular recodring. This class can be subsetted, extended or modified in other ways.
 #'
@@ -77,7 +77,7 @@
 #'
 #'
 #' @author \href{https://www.lindnerlab.de}{Moritz Lindner}
-#'
+#' @aliases EPhysData-package
 #' @docType package
-#' @name .Overview
-"_PACKAGE"
+#' @name EPhysData-package
+NULL

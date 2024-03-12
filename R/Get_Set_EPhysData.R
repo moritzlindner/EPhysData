@@ -6,7 +6,7 @@
 #' @param return.fx For \code{Rejected()}: Whether to return the function or the resulting logical vector. Default is \code{FALSE}, i.e. to return the function.
 #' @param ... Currently unused.
 #' @name Get_Set_EPhysData
-#' @rdname Get_Set_EPhysData
+#' @rdname GetSet-methods
 #' @seealso \link[EPhysMethods:autoreject.by.distance]{EPhysMethods::autoreject.by.distance}, \link[EPhysMethods:autoreject.by.signalfree]{EPhysMethods::autoreject.by.signalfree}, \link[EPhysMethods:filter.bandpass]{EPhysMethods::filter.bandpass}, \link[EPhysMethods:filter.detrend]{EPhysMethods::filter.detrend},
 #' @docType methods
 #' @noMd
@@ -35,16 +35,18 @@
 NULL
 
 
-#' @describeIn Get_Set_EPhysData Rejected
 #' @details \code{Rejected}: These functions set or get a function returning a logical vector indicating which of the repeated measurements stored in an \link{EPhysData} object to exclude from averaging. The following function from the EPhysMethods package may be helpful: \link[EPhysMethods:autoreject.by.distance]{EPhysMethods::autoreject.by.distance}, \link[EPhysMethods:autoreject.by.signalfree]{EPhysMethods::autoreject.by.signalfree}
-#' @exportMethod Rejected
+#' @export
+#' @docType methods
+#' @rdname GetSet-methods
 setGeneric(
   name = "Rejected",
   def = function(X, return.fx = F, ...) {
     standardGeneric("Rejected")
   }
 )
-#' @noMd
+#' @rdname GetSet-methods
+#' @aliases Rejected,EPhysData,ANY-method
 setMethod("Rejected", signature = "EPhysData", function(X, return.fx = F) {
   if (!return.fx) {
     return(X@Rejected(X@Data))
@@ -53,15 +55,17 @@ setMethod("Rejected", signature = "EPhysData", function(X, return.fx = F) {
   }
 })
 
-#' @describeIn Get_Set_EPhysData Rejected<-
-#' @exportMethod Rejected<-
+#' @export
+#' @docType methods
+#' @rdname GetSet-methods
 setGeneric(
   name = "Rejected<-",
   def = function(X, ..., value) {
     standardGeneric("Rejected<-")
   }
 )
-#' @noMd
+#' @rdname GetSet-methods
+#' @aliases `Rejected<-`,EPhysData,ANY-method
 setMethod("Rejected<-", signature = "EPhysData", function(X, value) {
   if ("function" %in% class(value)) {
     X@Rejected <- value
@@ -83,29 +87,33 @@ setMethod("Rejected<-", signature = "EPhysData", function(X, value) {
   }
 })
 
-#' @describeIn Get_Set_EPhysData FilterFunction
 #' @details \code{FilterFunction}: Set  a function for filtering each individual of the repeated measurements in the \link{EPhysData} object. Could be downsampling or noise removal, for instance. The following functions from the EPhysMethods package may be helpful: \link[EPhysMethods:filter.bandpass]{EPhysMethods::filter.bandpass}, \link[EPhysMethods:filter.detrend]{EPhysMethods::filter.detrend},
-#' @exportMethod FilterFunction
+#' @export
+#' @docType methods
+#' @rdname GetSet-methods
 setGeneric(
   name = "FilterFunction",
   def = function(X, ...) {
     standardGeneric("FilterFunction")
   }
 )
-#' @noMd
+#' @rdname GetSet-methods
+#' @aliases FilterFunction,EPhysData,ANY-method
 setMethod("FilterFunction", signature = "EPhysData", function(X) {
   return(X@filter.fx)
 })
 
-#' @describeIn Get_Set_EPhysData FilterFunction<-
-#' @exportMethod FilterFunction<-
+#' @export
+#' @docType methods
+#' @rdname GetSet-methods
 setGeneric(
   name = "FilterFunction<-",
   def = function(X, ..., value) {
     standardGeneric("FilterFunction<-")
   }
 )
-#' @noMd
+#' @rdname GetSet-methods
+#' @aliases `FilterFunction<-`,EPhysData,ANY-method
 setMethod("FilterFunction<-", signature = "EPhysData", function(X, value) {
   X@filter.fx <- value
   if (validEPhysData(X)) {
@@ -113,9 +121,10 @@ setMethod("FilterFunction<-", signature = "EPhysData", function(X, value) {
   }
 })
 
-#' @describeIn Get_Set_EPhysData AverageFunction
 #' @details \code{AverageFunction}: Set a function describing how averaging across repeated measurement should be performed in the \link{EPhysData} object. Usually, \link[base:mean]{mean} can be a good start.
-#' @exportMethod AverageFunction
+#' @export
+#' @docType methods
+#' @rdname GetSet-methods
 setGeneric(
   name = "AverageFunction",
   def = function(X, ...) {
@@ -123,13 +132,15 @@ setGeneric(
   }
 )
 
-#' @noMd
+#' @rdname GetSet-methods
+#' @aliases AverageFunction,EPhysData,ANY-method
 setMethod("AverageFunction", signature = "EPhysData", function(X) {
   return(X@average.fx)
 })
 
-#' @describeIn Get_Set_EPhysData AverageFunction<-
-#' @exportMethod AverageFunction<-
+#' @export
+#' @docType methods
+#' @rdname GetSet-methods
 setGeneric(
   name = "AverageFunction<-",
   def = function(X, ..., value) {
@@ -137,7 +148,8 @@ setGeneric(
   }
 )
 
-#' @noMd
+#' @rdname GetSet-methods
+#' @aliases `AverageFunction<-`,EPhysData,ANY-method
 setMethod("AverageFunction<-", signature = "EPhysData", function(X, value) {
   X@average.fx <- value
   if (validEPhysData(X)) {
@@ -145,9 +157,10 @@ setMethod("AverageFunction<-", signature = "EPhysData", function(X, value) {
   }
 })
 
-#' @describeIn Get_Set_EPhysData TimeTrace
 #' @details \code{TimeTrace}: These functions set or get the time trace belonging to the measurements stored in an \link{EPhysData} object.
-#' @exportMethod TimeTrace
+#' @export
+#' @docType methods
+#' @rdname GetSet-methods
 setGeneric(
   name = "TimeTrace",
   def = function(X) {
@@ -155,14 +168,16 @@ setGeneric(
   }
 )
 
-#' @noMd
+#' @rdname GetSet-methods
+#' @aliases TimeTrace,EPhysData,ANY-method
 setMethod("TimeTrace", signature = "EPhysData", function(X) {
   return(X@TimeTrace)
 })
 
-#' @describeIn Get_Set_EPhysData StimulusTrace
-#' @import units
-#' @exportMethod StimulusTrace
+#' @details \code{StimulusTrace}: These functions set or get the stimulus trace belonging to the measurements stored in an \link{EPhysData} object.
+#' @export
+#' @docType methods
+#' @rdname GetSet-methods
 setGeneric(
   name = "StimulusTrace",
   def = function(X)
@@ -171,7 +186,8 @@ setGeneric(
   }
 )
 
-#' @noMd
+#' @rdname GetSet-methods
+#' @aliases StimulusTrace,EPhysData,ANY-method
 setMethod("StimulusTrace",
           "EPhysData",
           function(X) {
