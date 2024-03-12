@@ -39,6 +39,8 @@
 #' * \link[=makeExampleEPhysSet]{makeExampleEPhysSet} \cr
 #' * \link[=length]{length} (for \link[=EPhysSet]{EPhysSet} objects) \cr
 #' * \link[=dim]{dim} (for \link[=EPhysData]{EPhysData} objects) \cr\cr
+#' * \link[=Save]{Save} Saves EPhysData or EPhySet objects to an HDF5 file \cr
+#' * \link[=Load]{Load} Loads EPhysData or EPhySet objects from an HDF5 file \cr
 #'
 #'
 #' @examples

@@ -30,6 +30,7 @@ setGeneric(
   }
 )
 
+#' @noMd
 setMethod("AddData",
           "EPhysSet",
           function(X, newData, newMetadata) {

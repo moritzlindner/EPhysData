@@ -125,21 +125,26 @@ setMethod("GetData",
             }
 
             # averaging
-            tryCatch(
-              valid.avg.fx <- length(AverageFunction(X)(1:3))==1,
-              error = function (e) {
-                stop("Could not apply 'average.fx' (",
-                     deparse(AverageFunction(X)),
-                     ") to test vector 'c(1:3)'")
-              }
-            )
-            if (!Raw && !valid.avg.fx) {
-              warning(
-                "Averaging function ",
-                deparse(AverageFunction(X)),
-                " returns more than a single value per time point. Has a valid function been set? Try e.g.: AverageFunction(X)<-mean"
+            if (!Raw){
+              tryCatch(
+                valid.avg.fx <- length(AverageFunction(X)(1:3))==1,
+                error = function (e) {
+                  stop("Could not apply 'average.fx' (",
+                       deparse(AverageFunction(X)),
+                       ") to test vector 'c(1:3)'")
+                }
               )
+              if (dim(X)[2]>1 && !valid.avg.fx) {
+                warning(
+                  "Averaging function ",
+                  deparse(AverageFunction(X)),
+                  " returns more than a single value per time point. Has a valid function been set? Try e.g.: AverageFunction(X)<-mean"
+                )
+              }
+            } else {
+              valid.avg.fx <- T
             }
+
 
             if (!Raw & ncol(out)>1 & valid.avg.fx) {
               out <- tryCatch(

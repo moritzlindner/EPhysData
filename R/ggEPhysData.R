@@ -30,6 +30,7 @@ setMethod("ggEPhysData",
               df$Type <- "RAW"
               df$Rejected <- "NO"
             }
+            Time<-Value<-Type<-Repeat<-NULL
 
             df.avg <- as.data.frame(X, Raw = F)
             if(length(unique(df.avg$Repeat))!=length(unique(df$Repeat))){

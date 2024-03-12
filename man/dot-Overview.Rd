@@ -53,6 +53,8 @@ There are two classes for storing the data. The \code{EPhysData} class stores  d
 \item \link[=makeExampleEPhysSet]{makeExampleEPhysSet} \cr
 \item \link[=length]{length} (for \link[=EPhysSet]{EPhysSet} objects) \cr
 \item \link[=dim]{dim} (for \link[=EPhysData]{EPhysData} objects) \cr\cr
+\item \link[=Save]{Save} Saves EPhysData or EPhySet objects to an HDF5 file \cr
+\item \link[=Load]{Load} Loads EPhysData or EPhySet objects from an HDF5 file \cr
 }
 }
 

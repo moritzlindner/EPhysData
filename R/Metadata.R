@@ -37,7 +37,7 @@ setGeneric(
   }
 )
 
-#' @noRd
+#' @noMd
 setMethod("Metadata", "EPhysSet", function(X) {
   return(X@Metadata)
 })
@@ -54,7 +54,7 @@ setGeneric(
 )
 
 #' @importFrom methods validObject
-#' @noRd
+#' @noMd
 setMethod("AddMetadata", "EPhysSet", function(X, columnName, columnData) {
   if (length(columnData) != nrow(X@Metadata)) {
     stop("Column data length should match the number of rows in Metadata.")
@@ -76,7 +76,7 @@ setGeneric(
 )
 
 #' @importFrom methods validObject
-#' @noRd
+#' @noMd
 setMethod("Metadata<-", "EPhysSet", function(X, value) {
   if (!is.data.frame(value)) {
     stop("New metadata must be a data frame.")

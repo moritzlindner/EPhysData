@@ -143,8 +143,12 @@ setMethod("Subset",
               if (is.null(Time)){
                 Time = range(TimeTrace(x))
               }
-              if (is.null(Repeats)){
+              if (is.null(Repeats) && !Raw){
                 Repeats = !Rejected(x)
+              } else {
+                if (is.null(Repeats)){
+                  Repeats <- !logical(dim(X@Data[[1]])[2])
+                }
               }
               X<-Subset(
                 X = x,
