@@ -7,7 +7,7 @@ Maintainer: Moritz Lindner <moritz@lindnerlab.de>
 Description: This package provides classes and methods for handling electrophysiological data.
 License: GPL (>= 3)
 Remotes:
-    github::moritzlindner/EPhysMethods
+    github::moritzlindner/EPhysMethods (>= 0.3.0)
 Depends:
     units
 Imports:

@@ -16,13 +16,13 @@
 #'                     into a factor and stored in the 'StimulusFactor' slot of the output object. If 'Data' inherits the type 'units', this parameter is optional.
 #' @return An object of class \link{EPhysData} containing the raw electrophysiological data and other information.
 #' @examples
-#' Data <- data.frame(rep1 = c(0.5, 0.52, 0.48, 0.49),
+#' Dat <- data.frame(rep1 = c(0.5, 0.52, 0.48, 0.49),
 #'                    rep2 = c(0.55, 0.57, 0.54, 0.56),
 #'                    rep3 = c(0.48, 0.47, 0.46, 0.48))
 #' TimeTrace <- c(1, 2, 3, 4)
 #' Unit <- "mV"
 #' TimeUnit <- "s"
-#' newEPhysData(Data = Data, TimeTrace = TimeTrace, Unit = Unit, TimeUnit = TimeUnit)
+#' newEPhysData(Data = Dat, TimeTrace = TimeTrace, Unit = Unit, TimeUnit = TimeUnit)
 #' # Output: An object of class 'EPhysData' with processed data and information.
 #' @importFrom  units deparse_unit as_units unitless
 #' @importFrom methods new
@@ -131,7 +131,7 @@ newEPhysData <-
       TimeTrace = TimeTrace,
       StimulusTrace = StimulusTrace,
       Rejected = function(x) {
-        rep(FALSE, ncol(Data))
+        rep(FALSE, ncol(x))
       },
       Created = as.POSIXct(Sys.time())
     )

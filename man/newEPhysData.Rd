@@ -39,13 +39,13 @@ An object of class \link{EPhysData} containing the raw electrophysiological data
 This function takes in raw electrophysiological stores them into a \link{EPhysData} object.
 }
 \examples{
-Data <- data.frame(rep1 = c(0.5, 0.52, 0.48, 0.49),
+Dat <- data.frame(rep1 = c(0.5, 0.52, 0.48, 0.49),
                    rep2 = c(0.55, 0.57, 0.54, 0.56),
                    rep3 = c(0.48, 0.47, 0.46, 0.48))
 TimeTrace <- c(1, 2, 3, 4)
 Unit <- "mV"
 TimeUnit <- "s"
-newEPhysData(Data = Data, TimeTrace = TimeTrace, Unit = Unit, TimeUnit = TimeUnit)
+newEPhysData(Data = Dat, TimeTrace = TimeTrace, Unit = Unit, TimeUnit = TimeUnit)
 # Output: An object of class 'EPhysData' with processed data and information.
 }
 \seealso{

@@ -57,5 +57,5 @@ SampleData<-Load(fn)
 SampleData
 }
 \seealso{
-\link[=Load]{Load}, \link[=EPhysData]{EPhysData}, \link[=EPhysSet]{EPhysSet}
+\link[=EPhysData]{EPhysData}, \link[=EPhysSet]{EPhysSet}
 }

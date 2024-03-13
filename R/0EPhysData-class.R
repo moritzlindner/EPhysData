@@ -112,7 +112,7 @@ EPhysData <- setClass(
     StimulusTrace = as_units(integer(),unitless),
     Created = as.POSIXct(Sys.time()),
     Rejected = function(x) {
-      rep(FALSE, ncol(Data))
+      rep(FALSE, 0)
     },
     filter.fx = function(x) {
       x

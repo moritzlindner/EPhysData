@@ -21,7 +21,7 @@
 #' rm(SampleData)
 #' SampleData<-Load(fn)
 #' SampleData
-#' @seealso \link[=Load]{Load}, \link[=EPhysData]{EPhysData}, \link[=EPhysSet]{EPhysSet}
+#' @seealso \link[=EPhysData]{EPhysData}, \link[=EPhysSet]{EPhysSet}
 #' @name LoadSave
 #' @rdname LoadSave-methods
 #' @docType methods
@@ -119,7 +119,7 @@ Save.EPhysData <- function (con, X) {
   con[["TimeUnit"]] <- deparse_unit(X@TimeTrace)
   con[["StimulusTrace"]] <- drop_units(X@StimulusTrace)
   con[["StimulusUnit"]] <- deparse_unit(X@StimulusTrace)
-  con[["Rejected"]] <- deparse1(X@Rejected)
+  con[["Rejected"]] <- iconv(deparse1(X@Rejected), "UTF-8", "UTF-8", sub = '')
   con[["filter.fx"]] <- deparse1(X@filter.fx)
   con[["average.fx"]] <- deparse1(X@average.fx)
   con[["Created"]] <- X@Created
@@ -180,20 +180,23 @@ Load <- function(filename) {
 #' @noMd
 Load.EPhysData <- function(con) {
   if(con$open("Type")$read() != "EPhysData"){
-    stop("This Hdf5 file does not contain EPhysData.")
+    warning("This Hdf5 file does not seem to contain EPhysData.")
   }
+
   out <- EPhysData(
     Data = as_units(con$open("Data")$read(), con$open("Units")$read()),
     TimeTrace = as_units(con$open("TimeTrace")$read(), con$open("TimeUnit")$read()),
     StimulusTrace = as_units(
       con$open("StimulusTrace")$read(),
       con$open("StimulusUnit")$read()
-    ),
-    Rejected = eval(parse(text = con$open("Rejected")$read())),
-    filter.fx = eval(parse(text = con$open("filter.fx")$read())),
-    average.fx = eval(parse(text = con$open("average.fx")$read()))
+    )#,
+    # Rejected = eval(parse(text = con$open("Rejected")$read())),
+    # filter.fx = eval(parse(text = con$open("filter.fx")$read())),
+    # average.fx = eval(parse(text = con$open("average.fx")$read()))
   )
   out@Created<-as.POSIXct(con$open("Created")$read(),origin="1970-01-01")
+
+  message("Currently, for EPhysData, loading of rejection, filter and averaging functions is not supported.")
 
   if (validObject(out)) {
     return(out)
@@ -209,16 +212,18 @@ Load.EPhysData <- function(con) {
 #' @noMd
 Load.EPhysSet <- function(con) {
   if(con$open("Type")$read() != "EPhysSet"){
-    stop("This Hdf5 file does not contain an EPhysSet.")
+    warning("This Hdf5 file does not seem to contain an EPhysSet.")
   }
 
   Data.con <- con$open("Data")
   DATA<-list()
   pb = txtProgressBar(min = 0, max = length(names(Data.con)), initial = 0)
+  j=0
   for (i in names(Data.con)){
     Data.curr<-Data.con$open(i)
     DATA[[as.integer(i)]]<-Load.EPhysData(con = Data.curr)
-    setTxtProgressBar(pb,i)
+    setTxtProgressBar(pb,j)
+    j=j+1
   }
   close(pb)
 
