@@ -9,7 +9,9 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.path = "man/figures/README-",
-  out.width = "100%"
+  out.width = "100%",
+  results = "hide",
+  message = FALSE
 )
 ```
 
@@ -30,6 +32,12 @@ if (!requireNamespace("remotes", quietly = TRUE)){
   install.packages("remotes")
 }
 remotes::install_github("moritzlindner/EPhysData")
+```
+
+Note that  `EPhysData` recommends the github-deposited R Package  `EPhysMethods`. Installation usually works automatically. Updating, however may fail. If this is the case, update manually using the following line of code:
+
+``` {r Update EPhysMethods}
+remotes::install_github("moritzlindner/EPhysMethods")
 ```
 
 ## Example
@@ -70,5 +78,6 @@ ephysSet
 
 ```
 
-# Documentation
+## Documentation
 
+Please see the `EPhysData-package`-page accessible via the package's help index for a systematic description of the functions and methods included into the package.

@@ -15,6 +15,14 @@
 #' rm(SampleData)
 #' SampleData<-Load(fn)
 #' SampleData
+#' require(EPhysMethods)
+#' Rejected(SampleData)<-autoreject.by.distance
+#' Save(SampleData, fn, overwrite = TRUE)
+#' SampleData
+#' rm(SampleData)
+#' SampleData<-Load(fn)
+#' SampleData
+#' rm(SampleData)
 #' SampleData<-makeExampleEPhysSet()
 #' Save(SampleData, fn, overwrite = TRUE)
 #' SampleData
@@ -179,9 +187,62 @@ Load <- function(filename) {
 #' @keywords internal
 #' @noMd
 Load.EPhysData <- function(con) {
-  if(con$open("Type")$read() != "EPhysData"){
+  if (con$open("Type")$read() != "EPhysData") {
     warning("This Hdf5 file does not seem to contain EPhysData.")
   }
+
+
+  Rejected = con$open("Rejected")$read()
+  filter.fx = con$open("filter.fx")$read()
+  average.fx = con$open("average.fx")$read()
+
+  warnstring1 <-
+    ", probably because it was too complex or not formatted correctly ('"
+  warnstring2 <-
+    "'). Replacing by default. For storing and loading multiline functions, make sure each line of code ends with a ';'."
+  fxstr<-Rejected
+  Rejected <- tryCatch({
+    eval(parse(text = Rejected))
+  }, error = function(e) {
+    warning(
+      "Function stored for rejection of recordings could not be imported",
+      warnstring1,
+      fxstr,
+      warnstring2
+    )
+
+    function(x) {
+      rep(FALSE, ncol(x))
+    }
+  })
+  fxstr<-filter.fx
+  filter.fx <- tryCatch({
+    eval(parse(text = filter.fx))
+  }, error = function(e) {
+    warning(
+      "Function stored for filtering of individual recordings could not be imported",
+      warnstring1,
+      fxstr,
+      warnstring2
+    )
+    function(x) {
+      x
+    }
+  })
+  fxstr<-average.fx
+  average.fx <- tryCatch({
+    eval(parse(text = average.fx))
+  }, error = function(e) {
+    function(x) {
+      x
+    }
+    warning(
+      "Function stored for averaging of recordings could not be imported",
+      warnstring1,
+      fxstr,
+      warnstring2
+    )
+  })
 
   out <- EPhysData(
     Data = as_units(con$open("Data")$read(), con$open("Units")$read()),
@@ -189,14 +250,13 @@ Load.EPhysData <- function(con) {
     StimulusTrace = as_units(
       con$open("StimulusTrace")$read(),
       con$open("StimulusUnit")$read()
-    )#,
-    # Rejected = eval(parse(text = con$open("Rejected")$read())),
-    # filter.fx = eval(parse(text = con$open("filter.fx")$read())),
-    # average.fx = eval(parse(text = con$open("average.fx")$read()))
+    ),
+    Rejected = Rejected,
+    filter.fx = filter.fx,
+    average.fx = average.fx
   )
-  out@Created<-as.POSIXct(con$open("Created")$read(),origin="1970-01-01")
-
-  message("Currently, for EPhysData, loading of rejection, filter and averaging functions is not supported.")
+  out@Created <-
+    as.POSIXct(con$open("Created")$read(), origin = "1970-01-01")
 
   if (validObject(out)) {
     return(out)

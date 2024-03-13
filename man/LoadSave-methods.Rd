@@ -49,6 +49,14 @@ SampleData
 rm(SampleData)
 SampleData<-Load(fn)
 SampleData
+require(EPhysMethods)
+Rejected(SampleData)<-autoreject.by.distance
+Save(SampleData, fn, overwrite = TRUE)
+SampleData
+rm(SampleData)
+SampleData<-Load(fn)
+SampleData
+rm(SampleData)
 SampleData<-makeExampleEPhysSet()
 Save(SampleData, fn, overwrite = TRUE)
 SampleData
