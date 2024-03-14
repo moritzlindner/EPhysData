@@ -49,7 +49,11 @@ setGeneric(
 #' @aliases Rejected,EPhysData,ANY-method
 setMethod("Rejected", signature = "EPhysData", function(X, return.fx = F) {
   if (!return.fx) {
-    return(X@Rejected(X@Data))
+    tryCatch({
+      return(X@Rejected(X@Data))
+    }, error = function(e){
+      stop("The function stored in the 'Rejected' slot could not be applied. A lkely reason is that the function is malformed or does not fit to the data stored in the object. Object has: ", dim(X)[2]," repeated measurements. Function string is: '", deparse1(X@Rejected),"' and returned error message is '", e,"' " )
+    })
   } else{
     return(X@Rejected)
   }
@@ -68,7 +72,12 @@ setGeneric(
 #' @aliases `Rejected<-`,EPhysData,ANY-method
 setMethod("Rejected<-", signature = "EPhysData", function(X, value) {
   if ("function" %in% class(value)) {
-    X@Rejected <- value
+    if(dim(X)[2]!=1){
+      X@Rejected <- value
+    } else {
+      warning("Can't set a Rejected function for 'X' because it contains no repeated measurements. Keeping the single trace contained.")
+      value <- TRUE
+    }
   } else{
     if ("logical" %in% class(value)) {
       if (length(value) == dim(X)[2]) {
