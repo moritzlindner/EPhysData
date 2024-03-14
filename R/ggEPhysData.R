@@ -47,7 +47,7 @@ setMethod("ggEPhysData",
             Time<-Value<-Type<-Repeat<-NULL
 
             df.avg <- as.data.frame(X, Raw = F)
-            if (length(unique(df.avg$Repeat)) != 1) {
+            if (length(unique(df.avg$Repeat)) != dim(x)[2]) {
               if (length(unique(df.avg$Repeat) == 1)) {
                 df.avg$Repeat <- paste0("AVG", df.avg$Repeat)
                 df.avg$Type <- "AVG"
