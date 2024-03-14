@@ -50,7 +50,11 @@ setGeneric(
 setMethod("Rejected", signature = "EPhysData", function(X, return.fx = F) {
   if (!return.fx) {
     tryCatch({
-      return(X@Rejected(X@Data))
+      out<-as.vector(X@Rejected(X@Data))
+      if(length(out)!=dim(X)[2]){
+        stop("Function call does not return vector of correct length.")
+      }
+      out
     }, error = function(e){
       stop("The function stored in the 'Rejected' slot could not be applied. A lkely reason is that the function is malformed or does not fit to the data stored in the object. Object has: ", dim(X)[2]," repeated measurements. Function string is: '", deparse1(X@Rejected),"' and returned error message is '", e,"' " )
     })
@@ -72,11 +76,24 @@ setGeneric(
 #' @aliases `Rejected<-`,EPhysData,ANY-method
 setMethod("Rejected<-", signature = "EPhysData", function(X, value) {
   if ("function" %in% class(value)) {
-    if(dim(X)[2]!=1){
+    # test if function is defined for a matrix of the given size of X
+    success <- tryCatch({
+      out<-value(X@Data)
+      if (!all(is.na(out)))
+      {
+        TRUE
+      } else {
+        FALSE
+      }
+
+    }, error = function(e) {
+      FALSE
+    })
+    if(success){
       X@Rejected <- value
     } else {
-      warning("Can't set a Rejected function for 'X' because it contains no repeated measurements. Keeping the single trace contained.")
-      value <- TRUE
+      warning("Can't set a Rejected function for 'X', likely because it contains no, or to few repeated measurements. Keeping all.")
+      value <- logical(dim(X)[2])
     }
   } else{
     if ("logical" %in% class(value)) {
