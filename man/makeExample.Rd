@@ -11,7 +11,7 @@ makeExampleEPhysData(
   start_time = 0,
   time_unit = "ms",
   data_unit = "mV",
-  replicate_count = sample(1:5, 1)
+  replicate_count = sample(3:7, 1)
 )
 
 makeExampleEPhysSet(
@@ -20,7 +20,7 @@ makeExampleEPhysSet(
   start_time = 1,
   time_unit = "s",
   data_unit = "mV",
-  replicate_count = sample(1:5, 1),
+  replicate_count = sample(2:6, 1),
   metadata_data = NULL
 )
 }

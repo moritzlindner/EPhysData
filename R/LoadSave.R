@@ -191,6 +191,8 @@ Load.EPhysData <- function(con) {
     warning("This Hdf5 file does not seem to contain EPhysData.")
   }
 
+  warning("Bugfix needed: Filterfunctions may be lost without a warning.")
+
 
   Rejected = con$open("Rejected")$read()
   filter.fx = con$open("filter.fx")$read()

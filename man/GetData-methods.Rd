@@ -11,7 +11,7 @@ GetData(
   X,
   Time = range(TimeTrace(X)),
   TimeExclusive = F,
-  Repeats = !Rejected(X),
+  Repeats = NULL,
   Raw = F
 )
 
@@ -19,7 +19,7 @@ GetData(
   X,
   Time = range(TimeTrace(X)),
   TimeExclusive = F,
-  Repeats = !Rejected(X),
+  Repeats = NULL,
   Raw = F
 )
 }
@@ -32,9 +32,9 @@ Default is the entire time range (i.e., keep all data).}
 \item{TimeExclusive}{Keep only the two points stated under 'Time', not the range.}
 
 \item{Repeats}{Specifies which of the repeated measurements (if any) to use for extraction.
-It can be either a numeric vector specifying the indices of the repeated measurements
-or a logical vector of the same length as repeats stored,
-where \code{TRUE} indicates using that column for extraction. Default is the inverse of the \code{\link{Rejected}}(X) vector.}
+It can be either a numeric vector specifying the indices of the repeated measurements,
+a logical vector of the same length as repeats stored, where \code{TRUE} indicates using that column for extraction, or
+NULL, indicating that the function stored in the Rejected slot will be used (default).}
 
 \item{Raw}{Logical indicating whether to get raw data or processed (filtered, averaged) data.}
 }

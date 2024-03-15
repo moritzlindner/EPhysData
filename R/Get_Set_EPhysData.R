@@ -90,7 +90,7 @@ setMethod("Rejected<-", signature = "EPhysData", function(X, value) {
       FALSE
     })
     if(success){
-      X@Rejected <- value
+      X@Rejected <- function(x) value(x)
     } else {
       warning("Can't set a Rejected function for 'X', likely because it contains no, or to few repeated measurements. Keeping all.")
       value <- logical(dim(X)[2])
@@ -141,7 +141,7 @@ setGeneric(
 #' @rdname GetSet-methods
 #' @aliases `FilterFunction<-`,EPhysData,ANY-method
 setMethod("FilterFunction<-", signature = "EPhysData", function(X, value) {
-  X@filter.fx <- value
+  X@filter.fx <- function(x) value(x)
   if (validEPhysData(X)) {
     return(X)
   }
@@ -177,7 +177,7 @@ setGeneric(
 #' @rdname GetSet-methods
 #' @aliases `AverageFunction<-`,EPhysData,ANY-method
 setMethod("AverageFunction<-", signature = "EPhysData", function(X, value) {
-  X@average.fx <- value
+  X@average.fx <- function(x) value(x)
   if (validEPhysData(X)) {
     return(X)
   }
