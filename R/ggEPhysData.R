@@ -36,22 +36,25 @@ setMethod("ggEPhysData",
                 unit.buffer<-deparse_unit(X.tmp@Data)
                 out<-apply(X.tmp@Data, 2, FilterFunction(X.tmp), simplify = T)
                 X.tmp@Data<-as_units(out,unit.buffer)
+                rej <- Rejected(X.tmp)
                 df <- as.data.frame(X.tmp, Raw = T)
               } else {
+                rej <- Rejected(X)
                 df <- as.data.frame(X, Raw = T)
-
               }
-              df$Type <- "RAW"
-              df$Rejected <- "NO"
+              df$Type <- "Raw"
+              df$Rejected <- "No"
+            } else {
+              rej <- Rejected(X)
             }
             Time<-Value<-Type<-Repeat<-NULL
 
             df.avg <- as.data.frame(X, Raw = F)
-            if (length(unique(df.avg$Repeat)) != dim(x)[2]) {
+            if (length(unique(df.avg$Repeat)) != dim(X)[2]) {
               if (length(unique(df.avg$Repeat) == 1)) {
                 df.avg$Repeat <- paste0("AVG", df.avg$Repeat)
-                df.avg$Type <- "AVG"
-                df.avg$Rejected <- "NO"
+                df.avg$Type <- "Averaged"
+                df.avg$Rejected <- "No"
                 if (Raw) {
                   df <- rbind(df, df.avg)
                 } else{
@@ -65,14 +68,26 @@ setMethod("ggEPhysData",
                 stop("No averaging function set.")
               }
             }
-
-            rej <- Rejected(X)
             if (any(rej) & Raw) {
-              Rejected(X) <- !Rejected(X)
-              df.rej <- as.data.frame(X, Raw = T)
-              df.rej$Type <- "RAW"
-              df.rej$Rejected <- "YES"
+              if(ShowFiltered){
+                X.tmp<-X
+                Rejected(X.tmp) <- !rej
+                unit.buffer<-deparse_unit(X.tmp@Data)
+                out<-apply(X.tmp@Data, 2, FilterFunction(X.tmp), simplify = T)
+                X.tmp@Data<-as_units(out,unit.buffer)
+                df.rej <- as.data.frame(X.tmp, Raw = T)
+              } else {
+                Rejected(X) <- !rej
+                df.rej <- as.data.frame(X, Raw = T)
+              }
+              df.rej$Type <- "Raw"
+              df.rej$Rejected <- "Yes"
               df.rej$Repeat<-length(unique(df$Repeat))+df.rej$Repeat
+              # Rejected(X) <- !rej
+              # df.rej <- as.data.frame(X, Raw = T)
+              # df.rej$Type <- "RAW"
+              # df.rej$Rejected <- "YES"
+              # df.rej$Repeat<-length(unique(df$Repeat))+df.rej$Repeat
               df <- rbind(df, df.rej)
             }
 
@@ -85,8 +100,8 @@ setMethod("ggEPhysData",
                             group = Repeat
                           )) +
               geom_line() +
-              scale_alpha_manual(values = c("RAW" = 1/sqrt(length(unique(df$Repeat))), "AVG" = 1)) +
-              scale_color_manual(values = c("YES" = "red", "NO" = "black")) +
+              scale_alpha_manual(values = c("Raw" = 1/sqrt(length(unique(df$Repeat))), "Averaged" = 1)) +
+              scale_color_manual(values = c("Yes" = "red", "No" = "black")) +
               labs(color = "Rejected", alpha = "Type") +
               theme_pubr()
             return(out)

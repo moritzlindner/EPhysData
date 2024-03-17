@@ -6,9 +6,9 @@
 #' @param Time Numeric vector of length 2 representing the time range for data extraction.
 #'             Default is the entire time range (i.e., keep all data).
 #' @param TimeExclusive Keep only the two points stated under 'Time', not the range.
-#' @param Repeats Specifies which of the repeated measurements (if any) to use for extraction.
+#' @param Trials Specifies which of the repeated measurements (if any) to use for extraction.
 #'                It can be either a numeric vector specifying the indices of the repeated measurements,
-#'                a logical vector of the same length as repeats stored, where `TRUE` indicates using that column for extraction, or
+#'                a logical vector of the same length as trials stored, where `TRUE` indicates using that column for extraction, or
 #'                NULL, indicating that the function stored in the Rejected slot will be used (default).
 #' @param Raw Logical indicating whether to get raw data or processed (filtered, averaged) data.
 #' @return A data matrix containing either raw or processed (filtered, averaged) values.
@@ -37,7 +37,7 @@ setGeneric(
   def = function(X,
                  Time = range(TimeTrace(X)),
                  TimeExclusive = F,
-                 Repeats = NULL,
+                 Trials = NULL,
                  Raw = F)
   {
     standardGeneric("GetData")
@@ -53,9 +53,8 @@ setMethod("GetData",
           function(X,
                    Time = range(TimeTrace(X)),
                    TimeExclusive = F,
-                   Repeats = NULL,
+                   Trials = NULL,
                    Raw = F) {
-            message("Better naming for Repeats necessary, e.g DataTraces/Traces?")
 
             # failsafe checks
             ## Time Range
@@ -64,34 +63,35 @@ setMethod("GetData",
               stop("'Time' outside range of X.")
             }
 
-            ## Repeats
-            if(!is.null(Repeats) && !is.numeric(Repeats) && !is.logical(Repeats)){
-              stop("'Repeats must be NULL, 'numeric' or 'logical', but is ", class(Repeats),".")
+            ## Trials
+            if(!is.null(Trials) && !is.numeric(Trials) && !is.logical(Trials)){
+              stop("'Trials must be NULL, 'numeric' or 'logical', but is ", class(Trials),".")
             }
-            if(is.numeric(Repeats)){
-              if (all(Repeats > 0) && all(Repeats < dim(X@Data)[2])) {
-                RepeatsLogical[Repeats] <- T
+            if(is.numeric(Trials)){
+              if (all(Trials > 0) && all(Trials <= dim(X@Data)[2])) {
+                TrialsLogical<-logical(dim(X)[2])
+                TrialsLogical[Trials] <- T
               } else{
-                stop("'Repeats' outside range of X.")
+                stop("'Trials' outside range of X.")
               }
             }
-            if(is.logical(Repeats)){
-              if (length(Repeats) == dim(X@Data)[2]) {
-                RepeatsLogical <- Repeats
-                if(!all(RepeatsLogical == (!Rejected(X))) && !Raw){
+            if(is.logical(Trials)){
+              if (length(Trials) == dim(X@Data)[2]) {
+                TrialsLogical <- Trials
+                if(!all(TrialsLogical == (!Rejected(X))) && !Raw){
                   warning(
-                    "Manual subsetting by Repeats requested for retruning non-raw data ('Raw = F'). Usually the 'Rejected(X)' method should be used instead."
+                    "Manual subsetting by trials requested for retruning non-raw data ('Raw = F'). Usually the 'Rejected(X)' method should be used instead."
                   )
                 }
               } else{
-                stop("'Repeats' not same lenght as columns in 'X'")
+                stop("'Trials' not same lenght as columns in 'X'")
               }
             }
-            if ((dim(X@Data)[2]==1) & !is.null(Repeats)){
-              if(!Repeats){
-                stop("'Repeats' must  be 'TRUE' if only one trace contained in object.")
+            if ((dim(X@Data)[2]==1) & !is.null(Trials)){
+              if(!Trials){
+                stop("'Trials' must  be 'TRUE' if only one trace contained in object.")
               }
-              RepeatsLogical<-TRUE
+              TrialsLogical<-TRUE
             }
 
             # Time Ranges
@@ -114,21 +114,14 @@ setMethod("GetData",
               out<-as_units(as.matrix(out),unit.buffer)
             }
 
-            # subset by Repeats
-            if(is.null(Repeats)){
-              RepeatsLogical<-!rejected.fx(out)
+            # subset by Trials
+            if(is.null(Trials)){
+              TrialsLogical<-!Rejected(X, return.fx = T)(out)
             }
-            out<-out[TimeTrace(X) %in% Time,RepeatsLogical,drop=F]
+            out<-out[TimeTrace(X) %in% Time,TrialsLogical,drop=F]
 
             if(any(dim(out)==0)){
-              stop("No data left after subsetting with the given parameters for 'Repeats' and 'Time'.")
-            }
-
-            # subset by repeats
-            out <-
-              out[ , RepeatsLogical, drop=FALSE]
-            if (is.null(dim(out))) {
-              stop("No data left after subsetting with the given parameters for 'Repeats'.")
+              stop("No data left after subsetting with the given parameters for 'Trials' and 'Time'.")
             }
 
             # averaging

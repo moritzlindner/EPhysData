@@ -133,7 +133,7 @@ setMethod("show",
           function(object) {
             cat("An object of class EPhysData \n")
             cat("Sample points:", dim(object@Data)[1], " \n")
-            cat("Repeats:", dim(object@Data)[2], " \n")
+            cat("Trials:", dim(object@Data)[2], " \n")
             cat("Duration", as.character(diff(range(TimeTrace(object)))), deparse_unit(TimeTrace(object)),"\n")
             cat("Created", as.character(object@Created),"\n")
           })

@@ -16,21 +16,30 @@
 #'
 #' # Get the "Rejected" slot
 #' Rejected(myEPhysData)
+#' head(GetData(myEPhysData))
 #'
 #' # Set the "Rejected" slot
 #' Rejected(myEPhysData) <- sample(c(TRUE,FALSE), dim(myEPhysData)[2], TRUE)
+#' Rejected(myEPhysData)
+#' head(GetData(myEPhysData))
+#' head(GetData(myEPhysData,Trials=1:dim(myEPhysData)[2]))
 #'
 #' # Get the "filter.fx" slot
 #' FilterFunction(myEPhysData)
 #'
 #' # Set the "filter.fx" slot
-#' FilterFunction(myEPhysData) <- function(x) x^2
+#' FilterFunction(myEPhysData) <- scale
+#' FilterFunction(myEPhysData)
 #'
 #' # Get the "average.fx" slot
 #' AverageFunction(myEPhysData)
+#' head(GetData(myEPhysData))
 #'
 #' # Set the "average.fx" slot
 #' AverageFunction(myEPhysData) <- median
+#' AverageFunction(myEPhysData)
+#' head(GetData(myEPhysData))
+#' head(GetData(myEPhysData,Raw=T))
 #'
 NULL
 
@@ -90,9 +99,9 @@ setMethod("Rejected<-", signature = "EPhysData", function(X, value) {
       FALSE
     })
     if(success){
-      X@Rejected <- function(x) value(x)
+      X@Rejected <- value
     } else {
-      warning("Can't set a Rejected function for 'X', likely because it contains no, or to few repeated measurements. Keeping all.")
+      warning("Can't set a Rejected function for 'X', either because 'X' contains no, or to few trials or because the function isn't appropriate. It must return a logical vector of the same length as trials (dim(X)[2]) in the object. Keeping all.")
       value <- logical(dim(X)[2])
     }
   } else{
@@ -141,7 +150,29 @@ setGeneric(
 #' @rdname GetSet-methods
 #' @aliases `FilterFunction<-`,EPhysData,ANY-method
 setMethod("FilterFunction<-", signature = "EPhysData", function(X, value) {
-  X@filter.fx <- function(x) value(x)
+  success <- tryCatch({
+    out<-apply(X@Data, 2, value, simplify = T)
+    ret<-T
+    if (!all(is.na(out)))
+    {
+      ret<-TRUE
+    } else {
+      ret<-FALSE
+    }
+    if(dim(out)[1]!=dim(X)[1]){
+      ret<-FALSE
+    }
+    if(dim(out)[2]!=dim(out)[2]){
+      ret<-FALSE
+    }
+    ret
+  }, error = function(e) {
+    FALSE
+  })
+  if(!success){
+    warning("Can't set filter function for 'X', likely because the function isn't appropriate. Must return a vector of the same length as the template vector.")
+  }
+  X@filter.fx <- value
   if (validEPhysData(X)) {
     return(X)
   }
@@ -177,7 +208,30 @@ setGeneric(
 #' @rdname GetSet-methods
 #' @aliases `AverageFunction<-`,EPhysData,ANY-method
 setMethod("AverageFunction<-", signature = "EPhysData", function(X, value) {
-  X@average.fx <- function(x) value(x)
+  success <- tryCatch({
+    ret <- TRUE
+    out<-apply(X@Data, 1, value, simplify = T)
+    ret <- (!all(is.na(out)))
+    if (!is.null(dim(out))) {
+      if (dim(out)[1] != dim(X)[1]) {
+        ret <- FALSE
+      }
+      if (dim(out)[2] != 1) {
+        ret <- FALSE
+      }
+    } else{
+      if (length(out) != dim(X)[1]) {
+        ret <- FALSE
+      }
+    }
+    ret
+  }, error = function(e) {
+    FALSE
+  })
+  if(!success){
+    stop("Can't set averaging function for 'X', either because 'X' contains no, or to few trials or because the function isn't appropriate. Function must return a single value when applied to a vector.")
+  }
+  X@average.fx <- value
   if (validEPhysData(X)) {
     return(X)
   }

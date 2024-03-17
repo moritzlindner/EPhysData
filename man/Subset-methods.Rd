@@ -18,7 +18,7 @@ Subset(X, ...)
   X,
   Time = range(TimeTrace(X)),
   TimeExclusive = FALSE,
-  Repeats = !Rejected(X),
+  Trials = !Rejected(X),
   Raw = T,
   ...
 )
@@ -27,7 +27,7 @@ Subset(X, ...)
   X,
   Time = NULL,
   TimeExclusive = FALSE,
-  Repeats = NULL,
+  Trials = NULL,
   SetItems = rep(TRUE, nrow(Metadata(X))),
   Raw = T,
   Simplify = F,
@@ -48,8 +48,8 @@ Default is the entire time range (i.e., keep all data).}
 
 \item{TimeExclusive}{Keep only the two points stated under 'Time', not the range.}
 
-\item{Repeats}{If X is an EPhysSet, this parameter can only be used if all EPhysData contained in the set has the same number of repeats.
-Numeric index/indices or a logical vector of the same length as repeats stored.}
+\item{Trials}{If X is an EPhysSet, this parameter can only be used if all EPhysData contained in the set has the same number of trials.
+Numeric index/indices or a logical vector of the same length as trials stored.}
 
 \item{Raw}{Logical indicating whether to get raw data or processed (filtered, averaged) data.}
 
@@ -82,7 +82,7 @@ The \code{Subset} function creates a new \code{EPhysData} or \code{EPhysSet} obj
 myEPhysData <- makeExampleEPhysData(replicate_count = 3)
 
 ## Get subsetted data based on time range and repeated measurements
-subsetted_myEPhysData <- Subset(myEPhysData, Time = TimeTrace(myEPhysData)[c(1, 3)], Repeats = c(1, 2))
+subsetted_myEPhysData <- Subset(myEPhysData, Time = TimeTrace(myEPhysData)[c(1, 3)], Trials = c(1, 2))
 subsetted_myEPhysData
 
 # Subset EPhysSet

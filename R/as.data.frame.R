@@ -4,20 +4,22 @@
 #'
 #' @param x An \link{EPhysData} or \link{EPhysSet} object.
 #' @param Raw Logical. If \code{TRUE}, raw data will be used; if \code{FALSE}, processed data will be used.
+#' @param IncludeRejected Logical. If \code{TRUE}, rejected trials will be included; if \code{FALSE} (default), rejected trials will be dropped.
 #' @param ... currently unused.
 #'
-#' @return A data frame representing the \link{EPhysData} object in long format.
+#' @return A data frame representing the \link{EPhysData} object in long format. Note that, by default, rejected Trials are excluded.
 #'
 #' @examples
 #' # Create an example EPhysData object
 #' new_data <- makeExampleEPhysData()
 #' # Convert EPhysData to a data frame
 #' new_data <- as.data.frame(new_data)
-#' new_data
+#' head(new_data)
 #'
 #' # Create an example EPhysSet object
 #' new_data <- makeExampleEPhysSet()
 #' new_data <- as.data.frame(new_data)
+#' head(new_data)
 #'
 #' @importFrom tidyr pivot_longer starts_with
 #' @importFrom units drop_units as_units
@@ -30,8 +32,13 @@ setMethod("as.data.frame",
           "EPhysData",
           function(x,
                    Raw = T,
+                   IncludeRejected = F,
                    ...) {
-            dat <- GetData(x, Raw = Raw)
+            if(IncludeRejected){
+              dat <- GetData(x, Raw = Raw, Trials = !logical(dim(x)[2]))
+            } else {
+              dat <- GetData(x, Raw = Raw)
+            }
             time <- TimeTrace(x)
             stim <-
               tryCatch(

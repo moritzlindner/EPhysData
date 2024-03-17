@@ -6,7 +6,7 @@
 \alias{as.data.frame,EPhysSet-method}
 \title{as.data.frame for EPhysData and EPhysSet}
 \usage{
-\S4method{as.data.frame}{EPhysData}(x, Raw = T, ...)
+\S4method{as.data.frame}{EPhysData}(x, Raw = T, IncludeRejected = F, ...)
 
 \S4method{as.data.frame}{EPhysSet}(x, Raw = T)
 }
@@ -15,10 +15,12 @@
 
 \item{Raw}{Logical. If \code{TRUE}, raw data will be used; if \code{FALSE}, processed data will be used.}
 
+\item{IncludeRejected}{Logical. If \code{TRUE}, rejected trials will be included; if \code{FALSE} (default), rejected trials will be dropped.}
+
 \item{...}{currently unused.}
 }
 \value{
-A data frame representing the \link{EPhysData} object in long format.
+A data frame representing the \link{EPhysData} object in long format. Note that, by default, rejected Trials are excluded.
 }
 \description{
 Converts an \link{EPhysData} or \link{EPhysSet} object to a data frame format. Each repeat of the data will be represented in a long format with columns for repeat number, time, stimulus (if avaliable), and value.
@@ -35,10 +37,11 @@ Converts an \link{EPhysData} or \link{EPhysSet} object to a data frame format. E
 new_data <- makeExampleEPhysData()
 # Convert EPhysData to a data frame
 new_data <- as.data.frame(new_data)
-new_data
+head(new_data)
 
 # Create an example EPhysSet object
 new_data <- makeExampleEPhysSet()
 new_data <- as.data.frame(new_data)
+head(new_data)
 
 }

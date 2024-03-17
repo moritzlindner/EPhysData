@@ -59,7 +59,7 @@
 #' # Set Averaging and function for the data
 #' FilterFunction(data)<-function(x){x/max(x)}
 #' GetData(data, Raw = FALSE)
-#' AverageFunction(data)<-function(x){mean(x)}
+#' AverageFunction(data)<-mean
 #' GetData(data, Raw = FALSE)
 #'
 #' # Create an EPhysSet object

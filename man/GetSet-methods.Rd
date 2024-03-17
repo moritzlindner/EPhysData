@@ -90,21 +90,30 @@ myEPhysData <- makeExampleEPhysData()
 
 # Get the "Rejected" slot
 Rejected(myEPhysData)
+head(GetData(myEPhysData))
 
 # Set the "Rejected" slot
 Rejected(myEPhysData) <- sample(c(TRUE,FALSE), dim(myEPhysData)[2], TRUE)
+Rejected(myEPhysData)
+head(GetData(myEPhysData))
+head(GetData(myEPhysData,Trials=1:dim(myEPhysData)[2]))
 
 # Get the "filter.fx" slot
 FilterFunction(myEPhysData)
 
 # Set the "filter.fx" slot
-FilterFunction(myEPhysData) <- function(x) x^2
+FilterFunction(myEPhysData) <- scale
+FilterFunction(myEPhysData)
 
 # Get the "average.fx" slot
 AverageFunction(myEPhysData)
+head(GetData(myEPhysData))
 
 # Set the "average.fx" slot
 AverageFunction(myEPhysData) <- median
+AverageFunction(myEPhysData)
+head(GetData(myEPhysData))
+head(GetData(myEPhysData,Raw=T))
 
 }
 \seealso{

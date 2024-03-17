@@ -8,8 +8,8 @@
 #' @param Simplify Logical if 'True' will return \code{EPhysData} instead of \code{EPhysSet} if only one \code{EPhysData} is left in the set.
 #' @param ... currently unused.
 #' @param SetItems Which items of the set to subset/keep.
-#' @param Repeats If X is an EPhysSet, this parameter can only be used if all EPhysData contained in the set has the same number of repeats.
-#'                Numeric index/indices or a logical vector of the same length as repeats stored.
+#' @param Trials If X is an EPhysSet, this parameter can only be used if all EPhysData contained in the set has the same number of trials.
+#'                Numeric index/indices or a logical vector of the same length as trials stored.
 #' @return `Subset`: An \code{EPhysData} or an \code{EPhysSet} object representing the subsetted data.
 #'
 #' @details The \code{Subset} function creates a new \code{EPhysData} or \code{EPhysSet} object containing a subset of the data (and metadata for \code{EPhysSet}) from the original object, based on the provided parameters.
@@ -21,7 +21,7 @@
 #' myEPhysData <- makeExampleEPhysData(replicate_count = 3)
 #'
 #' ## Get subsetted data based on time range and repeated measurements
-#' subsetted_myEPhysData <- Subset(myEPhysData, Time = TimeTrace(myEPhysData)[c(1, 3)], Repeats = c(1, 2))
+#' subsetted_myEPhysData <- Subset(myEPhysData, Time = TimeTrace(myEPhysData)[c(1, 3)], Trials = c(1, 2))
 #' subsetted_myEPhysData
 #'
 #' # Subset EPhysSet
@@ -49,14 +49,14 @@ setMethod("Subset",
           function(X,
                    Time = range(TimeTrace(X)),
                    TimeExclusive = FALSE,
-                   Repeats = !Rejected(X),
+                   Trials = !Rejected(X),
                    Raw = T,
                    ...) {
             Data <- GetData(
               X = X,
               Time = Time,
               TimeExclusive = TimeExclusive,
-              Repeats = Repeats,
+              Trials = Trials,
               Raw = Raw
             )
 
@@ -81,7 +81,7 @@ setMethod("Subset",
               }
             } else {
               rejected.fx<-function(x) {
-                return(Rejected(X)[Repeats])
+                return(Rejected(X)[Trials])
               }
             }
 
@@ -108,7 +108,7 @@ setMethod("Subset",
           function(X,
                    Time = NULL,
                    TimeExclusive = FALSE,
-                   Repeats = NULL,
+                   Trials = NULL,
                    SetItems = rep(TRUE, nrow(Metadata(X))),
                    Raw = T,
                    Simplify = F,
@@ -132,11 +132,11 @@ setMethod("Subset",
             X@Metadata<-Metadata(X)[SetItems,, drop=FALSE]
             X@Data<-X@Data[SetItems]
 
-            if (!is.null(Repeats)) { # if "Repeats" not null, check that all EPhysData have same number of repeats
+            if (!is.null(Trials)) { # if "Trials" not null, check that all EPhysData have same number of trials
               if (length(unique(unlist(lapply(X@Data, function(x) {
                 dim(x)[2]
               })))) != 1) {
-                stop("Paramater 'Repeats' is defined, but EPhysData stored in the set have different number or repeats.  'Repeats' can only be used if all EPhysData have the same number of repeats.")
+                stop("Paramater 'Trials' is defined, but EPhysData stored in the set have different number or trials  'Trials' can only be used if all EPhysData have the same number of trials.")
               }
             }
 
@@ -144,18 +144,18 @@ setMethod("Subset",
               if (is.null(Time)){
                 Time = range(TimeTrace(x))
               }
-              if (is.null(Repeats) && !Raw){
-                Repeats = !Rejected(x)
+              if (is.null(Trials) && !Raw){
+                Trials = !Rejected(x)
               } else {
-                if (is.null(Repeats)){
-                  Repeats <- !logical(dim(X@Data[[1]])[2])
+                if (is.null(Trials)){
+                  Trials <- !logical(dim(X@Data[[1]])[2])
                 }
               }
               X<-Subset(
                 X = x,
                 Time = Time,
                 TimeExclusive = TimeExclusive,
-                Repeats = Repeats,
+                Trials = Trials,
                 Raw = Raw
               )
             })
