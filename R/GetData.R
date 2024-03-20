@@ -84,7 +84,7 @@ setMethod("GetData",
                   )
                 }
               } else{
-                stop("'Trials' not same lenght as columns in 'X'")
+                stop("'Trials' has length ", length(Trials), " which is different from the number of trials stored in the EPhysData object 'X' (", dim(X)[2], "). ")
               }
             }
             if ((dim(X@Data)[2]==1) & !is.null(Trials)){

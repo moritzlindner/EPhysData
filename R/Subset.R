@@ -60,6 +60,10 @@ setMethod("Subset",
               Raw = Raw
             )
 
+            if(is.null(Trials)){
+              Trials<-!Rejected(X, return.fx = F)
+            }
+
             Time <- condition_time(X, Time, TimeExclusive)
 
             err <- tryCatch(
@@ -117,14 +121,14 @@ setMethod("Subset",
 
             if(is.logical(SetItems)){
               if(length(SetItems)!=length(X)){
-                stop("Lengths mismatch: \n'SetItems' must be a logical vector of the same length as 'X' or a numeric vector representing valid item indices.")
+                stop("Lengths mismatch: 'SetItems' is a ", typeof(SetItems), " of length ", length(SetItems), " but must be a logical vector of the same length as 'X' (", length(X), ") or a numeric vector representing valid item indices.")
               }
             }else{
               if(!is.numeric(SetItems)){
-                stop("'SetItems' is neither logical nor numeric. \nSetItems' must be a logical vector of the same length as 'X' or a numeric vector representing valid item indices.")
+                stop("'SetItems' is neither logical nor numeric. 'SetItems' is a ", typeof(SetItems), " of length ", length(SetItems), " but must be a logical vector of the same length as 'X' (", length(X), ") or a numeric vector representing valid item indices.")
               }else{
                 if(!(all(SetItems %in% 1:length(X)))){
-                  stop("'SetItems' contains invalid indices. \nSetItems' must be a logical vector of the same length as 'X' or a numeric vector representing valid item indices.")
+                  stop("'SetItems' contains invalid indices. 'SetItems' is a ", typeof(SetItems), " of length ", length(SetItems), " and with data in the range of ", min(SetItems), " to ", max(SetItems), " but must be a logical vector of the same length as 'X' (", length(X), ") or a numeric vector representing valid item indices (i.e. value range must be within the length of 'X').")
                 }
               }
             }
@@ -136,7 +140,10 @@ setMethod("Subset",
               if (length(unique(unlist(lapply(X@Data, function(x) {
                 dim(x)[2]
               })))) != 1) {
-                stop("Paramater 'Trials' is defined, but EPhysData stored in the set have different number or trials  'Trials' can only be used if all EPhysData have the same number of trials.")
+                ntr <- range(unlist(lapply(X@Data, function(x) {
+                  dim(x)[2]
+                })))
+                stop("Paramater 'Trials' is defined, but Items selected have differing number or trials (Ranging from ", ntr[1], " to ", ntr[2], "). 'Trials' can only be used if all items (EPhysData) have the same number of trials.")
               }
             }
 
@@ -145,19 +152,22 @@ setMethod("Subset",
                 Time = range(TimeTrace(x))
               }
               if (is.null(Trials) && !Raw){
-                Trials = !Rejected(x)
+                curr.Trials = !Rejected(x)
               } else {
                 if (is.null(Trials)){
-                  Trials <- !logical(dim(X@Data[[1]])[2])
+                  curr.Trials <- !logical(dim(x)[2])
+                } else {
+                  curr.Trials<-Trials
                 }
               }
-              X<-Subset(
+              x<-Subset(
                 X = x,
                 Time = Time,
                 TimeExclusive = TimeExclusive,
-                Trials = Trials,
+                Trials = curr.Trials,
                 Raw = Raw
               )
+              return(x)
             })
 
             if(nrow(Metadata(X)) == 1 && Simplify == T){
