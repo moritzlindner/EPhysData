@@ -12,7 +12,7 @@
 #'                Numeric index/indices or a logical vector of the same length as trials stored.
 #' @return `Subset`: An \code{EPhysData} or an \code{EPhysSet} object representing the subsetted data.
 #'
-#' @details The \code{Subset} function creates a new \code{EPhysData} or \code{EPhysSet} object containing a subset of the data (and metadata for \code{EPhysSet}) from the original object, based on the provided parameters.
+#' @details The \code{Subset} function creates a new \code{EPhysData} or \code{EPhysSet} object containing a subset of the data (and metadata for \code{EPhysSet}) from the original object, based on the provided parameters. If subsetting by time, the filter function stored in the \code{EPhysData} object gets reset.
 #' @family EPhysData-methods
 #' @family Subsetting_Dataextraction
 #' @name Subset
@@ -60,6 +60,15 @@ setMethod("Subset",
               Raw = Raw
             )
 
+            if (!isTRUE(all.equal(Time, range(TimeTrace(X)))) || TimeExclusive) {
+              filter.fx <- function(x) {
+                return(x)
+              }
+              message("Data is subsetted by time, thus resetting filter function.")
+            } else {
+              filter.fx <- FilterFunction(X)
+            }
+
             if(is.null(Trials)){
               Trials<-!Rejected(X, return.fx = F)
             }
@@ -80,13 +89,24 @@ setMethod("Subset",
             }
 
             if(!Raw){
-              rejected.fx<-function(x) {
+              rejected.fx <- function(x) {
                 return(FALSE)
               }
             } else {
-              rejected.fx<-function(x) {
-                return(Rejected(X)[Trials])
+              fx <- Rejected(X)[Trials]
+              function_string <-
+                paste0("function(x) { return(c(", paste(fx, collapse = ", "), ")) }")
+              rejected.fx <- eval(parse(text = function_string))
+            }
+
+            # if x is changed, then dont keep filter
+
+            if (!Raw) {
+              average.fx <- function(x) {
+                return(x)
               }
+            } else {
+              average.fx <- AverageFunction(X)
             }
 
             out <- new(
@@ -95,6 +115,8 @@ setMethod("Subset",
               TimeTrace = Time,
               StimulusTrace = StimulusTrace,
               Rejected = rejected.fx,
+              average.fx = average.fx,
+              filter.fx = filter.fx,
               Created = X@Created
             )
             if (validObject(out)) {
@@ -106,6 +128,7 @@ setMethod("Subset",
 
 #' @importFrom units as_units
 #' @importFrom methods validObject
+#' @importFrom stringr str_extract
 #' @rdname Subset-methods
 setMethod("Subset",
           "EPhysSet",
@@ -133,6 +156,8 @@ setMethod("Subset",
               }
             }
 
+            md.orig<-Metadata(X)
+
             X@Metadata<-Metadata(X)[SetItems,, drop=FALSE]
             X@Data<-X@Data[SetItems]
 
@@ -147,29 +172,32 @@ setMethod("Subset",
               }
             }
 
-            X@Data <- lapply(X@Data, function(x) {
-              if (is.null(Time)){
-                Time = range(TimeTrace(x))
-              }
-              if (is.null(Trials) && !Raw){
-                curr.Trials = !Rejected(x)
-              } else {
-                if (is.null(Trials)){
-                  curr.Trials <- !logical(dim(x)[2])
-                } else {
-                  curr.Trials<-Trials
+            tryCatch({
+              X@Data <- lapply(X@Data, function(x) {
+                if (is.null(Time)){
+                  Time = range(TimeTrace(x))
                 }
-              }
-              x<-Subset(
-                X = x,
-                Time = Time,
-                TimeExclusive = TimeExclusive,
-                Trials = curr.Trials,
-                Raw = Raw
-              )
-              return(x)
+                if (is.null(Trials) && !Raw){
+                  curr.Trials = !Rejected(x)
+                } else {
+                  if (is.null(Trials)){
+                    curr.Trials <- !logical(dim(x)[2])
+                  } else {
+                    curr.Trials<-Trials
+                  }
+                }
+                x<-Subset(
+                  X = x,
+                  Time = Time,
+                  TimeExclusive = TimeExclusive,
+                  Trials = curr.Trials,
+                  Raw = Raw
+                )
+                return(x)
+              })
+            }, error = function (e){
+              stop("Subsetting EPhysSet failed for recording ", Metadata(X)[as.integer(str_extract(e, "(?<=\\[\\[)\\d+(?=L\\]\\])")),1], )
             })
-
             if(nrow(Metadata(X)) == 1 && Simplify == T){
               X<-X@Data[[1]]
             }

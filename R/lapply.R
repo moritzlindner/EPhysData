@@ -28,7 +28,7 @@ setMethod("lapply",
                 stop(
                   paste(
                     "Applying to EPhysSet",
-                    deparse(substitute(object)),
+                    deparse(substitute(X)),
                     "failed. No valid EPhysSet object returned"
                   )
                 )

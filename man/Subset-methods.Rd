@@ -68,7 +68,7 @@ Numeric index/indices or a logical vector of the same length as trials stored.}
 This method subsets an \code{EPhysData} or an \code{EPhysSet} object into a new object of the same class.
 }
 \details{
-The \code{Subset} function creates a new \code{EPhysData} or \code{EPhysSet} object containing a subset of the data (and metadata for \code{EPhysSet}) from the original object, based on the provided parameters.
+The \code{Subset} function creates a new \code{EPhysData} or \code{EPhysSet} object containing a subset of the data (and metadata for \code{EPhysSet}) from the original object, based on the provided parameters. If subsetting by time, the filter function stored in the \code{EPhysData} object gets reset.
 }
 \section{Functions}{
 \itemize{

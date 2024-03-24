@@ -205,7 +205,7 @@ Load.EPhysData <- function(con) {
     eval(parse(text = Rejected))
   }, error = function(e) {
     warning(
-      "Function stored for rejection of recordings could not be imported.",
+      "Function stored for rejection of recordings could not be imported",
       warnstring1,
       fxstr,
       warnstring2
@@ -220,7 +220,7 @@ Load.EPhysData <- function(con) {
     eval(parse(text = filter.fx))
   }, error = function(e) {
     warning(
-      "Function stored for filtering of individual recordings could not be imported.",
+      "Function stored for filtering of individual recordings could not be imported",
       warnstring1,
       fxstr,
       warnstring2
