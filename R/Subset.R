@@ -3,7 +3,7 @@
 #' This method subsets an \code{EPhysData} or an \code{EPhysSet} object into a new object of the same class.
 #'
 #' @inheritParams GetData
-#' @inheritParams as.data.frame-method
+#' @inheritParams as.data.frame
 #' @param i,j Indices specifying elements to extract.
 #' @param Simplify Logical if 'True' will return \code{EPhysData} instead of \code{EPhysSet} if only one \code{EPhysData} is left in the set.
 #' @param ... currently unused.

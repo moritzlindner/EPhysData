@@ -14,7 +14,7 @@ ggEPhysData(X, Raw = T, ShowFiltered = T)
 \arguments{
 \item{X}{An \code{EPhysData} object}
 
-\item{Raw}{Logical indicating whether to get raw data or processed (filtered, averaged) data.}
+\item{Raw}{Logical indicating whether to get raw data or processed (filtered - see: \link{FilterFunction}, averaged - see: \link{AverageFunction}) data.}
 
 \item{ShowFiltered}{Apply the filter to the raw traces before showing them.}
 }

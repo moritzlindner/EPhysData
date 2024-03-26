@@ -34,9 +34,9 @@ Default is the entire time range (i.e., keep all data).}
 \item{Trials}{Specifies which of the repeated measurements (if any) to use for extraction.
 It can be either a numeric vector specifying the indices of the repeated measurements,
 a logical vector of the same length as trials stored, where \code{TRUE} indicates using that column for extraction, or
-NULL, indicating that the function stored in the Rejected slot will be used (default).}
+NULL, indicating that the function stored in the Rejected (\link{Rejected}) slot will be used (default).}
 
-\item{Raw}{Logical indicating whether to get raw data or processed (filtered, averaged) data.}
+\item{Raw}{Logical indicating whether to get raw data or processed (filtered - see: \link{FilterFunction}, averaged - see: \link{AverageFunction}) data.}
 }
 \value{
 A data matrix containing either raw or processed (filtered, averaged) values.
@@ -47,6 +47,7 @@ This method extracts raw or processed data from an \code{EPhysData} object.
 \details{
 The \code{GetData} function extracts the recorded data from an \code{EPhysData} or related object.
 By default, the resulting data matrix contains unfiltered data from all repeated measurements.
+Note, the main difference to the \link{as.data.frame}-Method is that this function returns a matrix in the wide format and without a time and stimulus trace.
 }
 \examples{
 myEPhysData <- makeExampleEPhysData(sample_points = sample(seq(1, 400, 10), 1),replicate_count = sample(1:5, 1))

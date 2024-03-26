@@ -3,7 +3,7 @@
 #' Converts an \link{EPhysData} or \link{EPhysSet} object to a data frame format. Each repeat of the data will be represented in a long format with columns for repeat number, time, stimulus (if avaliable), and value.
 #'
 #' @param x An \link{EPhysData} or \link{EPhysSet} object.
-#' @param Raw Logical. If \code{TRUE}, raw data will be used; if \code{FALSE}, processed data will be used.
+#' @inheritParams GetData
 #' @param IncludeRejected Logical. If \code{TRUE}, rejected trials will be included; if \code{FALSE} (default), rejected trials will be dropped.
 #' @param ... currently unused.
 #'
@@ -23,11 +23,13 @@
 #'
 #' @importFrom tidyr pivot_longer starts_with
 #' @importFrom units drop_units as_units
-#' @name as.data.frame-method
+#' @docType method
+#' @name as.data.frame
+#' @rdname as.data.frame-methods
 NULL
 
-#' @describeIn as.data.frame-method Method for EPhysData
-#' @exportMethod as.data.frame
+#' @describeIn as.data.frame-methods Method for EPhysData
+#' @export as.data.frame
 setMethod("as.data.frame",
           "EPhysData",
           function(x,
@@ -83,8 +85,8 @@ setMethod("as.data.frame",
             return(as.data.frame(dat))
           })
 
-#' @describeIn as.data.frame-method Method for EPhysSet
-#' @exportMethod as.data.frame
+#' @describeIn as.data.frame-methods Method for EPhysSet
+#' @export as.data.frame
 setMethod("as.data.frame",
           "EPhysSet",
           function(x,

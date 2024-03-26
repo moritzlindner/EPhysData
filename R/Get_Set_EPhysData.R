@@ -65,7 +65,7 @@ setMethod("Rejected", signature = "EPhysData", function(X, return.fx = F) {
       }
       out
     }, error = function(e){
-      stop("The function stored in the 'Rejected' slot could not be applied. A lkely reason is that the function is malformed or does not fit to the data stored in the object. Object has: ", dim(X)[2]," repeated measurements. Function string is: '", deparse1(X@Rejected),"' and returned error message is '", e,"' " )
+      stop("The function stored in the 'Rejected' slot could not be applied. A likely reason is that the function is malformed or does not fit to the data stored in the object. Object has: ", dim(X)[2]," repeated measurements. Function string is: '", deparse1(X@Rejected),"' and returned error message is '", e,"' " )
     })
   } else{
     return(X@Rejected)
@@ -101,7 +101,7 @@ setMethod("Rejected<-", signature = "EPhysData", function(X, value) {
     if(success){
       X@Rejected <- value
     } else {
-      warning("Can't set a Rejected function for 'X', either because 'X' contains no, or to few trials or because the function isn't appropriate. It must return a logical vector of the same length as trials (dim(X)[2]) in the object. Keeping all.")
+      warning("Can't set a Rejected function for 'X', either because 'X' contains no, or too few trials or because the function isn't appropriate. It must return a logical vector of the same length as trials (dim(X)[2]) in the object. Keeping all.")
       value <- logical(dim(X)[2])
     }
   } else{
@@ -208,30 +208,36 @@ setGeneric(
 #' @rdname GetSet-methods
 #' @aliases `AverageFunction<-`,EPhysData,ANY-method
 setMethod("AverageFunction<-", signature = "EPhysData", function(X, value) {
-  success <- tryCatch({
-    ret <- TRUE
-    out<-apply(X@Data, 1, value, simplify = T)
-    ret <- (!all(is.na(out)))
-    if (!is.null(dim(out))) {
-      if (dim(out)[1] != dim(X)[1]) {
-        ret <- FALSE
+    success <- tryCatch({
+      ret <- TRUE
+      out <- apply(X@Data, 1, value, simplify = T)
+      ret <- (!all(is.na(out)))
+      if (!is.null(dim(out))) {
+        if (dim(out)[1] != dim(X)[1]) {
+          ret <- FALSE
+        }
+        if (dim(out)[2] != 1) {
+          ret <- FALSE
+        }
+      } else{
+        if (length(out) != dim(X)[1]) {
+          ret <- FALSE
+        }
       }
-      if (dim(out)[2] != 1) {
-        ret <- FALSE
-      }
-    } else{
-      if (length(out) != dim(X)[1]) {
-        ret <- FALSE
+      ret
+    }, error = function(e) {
+      FALSE
+    })
+    if (!success) {
+      if (dim(X)[[2]] == 1) {
+        warning("Object only contains single trial. The function you are trying to set is not valid and cant be set.")
+      } else {
+        stop(
+          "Can't set averaging function for 'X', either because 'X' contains too few trials or because the function isn't appropriate. Function must return a single value when applied to a vector."
+        )
       }
     }
-    ret
-  }, error = function(e) {
-    FALSE
-  })
-  if(!success){
-    stop("Can't set averaging function for 'X', either because 'X' contains no, or to few trials or because the function isn't appropriate. Function must return a single value when applied to a vector.")
-  }
-  X@average.fx <- value
+    X@average.fx <- value
   if (validEPhysData(X)) {
     return(X)
   }

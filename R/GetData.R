@@ -9,16 +9,17 @@
 #' @param Trials Specifies which of the repeated measurements (if any) to use for extraction.
 #'                It can be either a numeric vector specifying the indices of the repeated measurements,
 #'                a logical vector of the same length as trials stored, where `TRUE` indicates using that column for extraction, or
-#'                NULL, indicating that the function stored in the Rejected slot will be used (default).
-#' @param Raw Logical indicating whether to get raw data or processed (filtered, averaged) data.
+#'                NULL, indicating that the function stored in the Rejected (\link{Rejected}) slot will be used (default).
+#'
+#' @param Raw Logical indicating whether to get raw data or processed (filtered - see: \link{FilterFunction}, averaged - see: \link{AverageFunction}) data.
 #' @return A data matrix containing either raw or processed (filtered, averaged) values.
 #'
 #' @details The `GetData` function extracts the recorded data from an `EPhysData` or related object.
 #'          By default, the resulting data matrix contains unfiltered data from all repeated measurements.
+#'          Note, the main difference to the \link{as.data.frame}-Method is that this function returns a matrix in the wide format and without a time and stimulus trace.
 #'
 #' @seealso \code{\link{EPhysData-class}} \code{\link{TimeTrace}}, \code{\link{Rejected}}
-#'
-#' @name GetData
+#' @docType methods
 #' @examples
 #' myEPhysData <- makeExampleEPhysData(sample_points = sample(seq(1, 400, 10), 1),replicate_count = sample(1:5, 1))
 #' myEPhysData
@@ -31,6 +32,7 @@
 #' head(filtered_and_averaged_data)
 #' @export
 #' @docType methods
+#' @name GetData
 #' @rdname GetData-methods
 setGeneric(
   name = "GetData",

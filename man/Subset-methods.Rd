@@ -51,7 +51,7 @@ Default is the entire time range (i.e., keep all data).}
 \item{Trials}{If X is an EPhysSet, this parameter can only be used if all EPhysData contained in the set has the same number of trials.
 Numeric index/indices or a logical vector of the same length as trials stored.}
 
-\item{Raw}{Logical indicating whether to get raw data or processed (filtered, averaged) data.}
+\item{Raw}{Logical indicating whether to get raw data or processed (filtered - see: \link{FilterFunction}, averaged - see: \link{AverageFunction}) data.}
 
 \item{SetItems}{Which items of the set to subset/keep.}
 
