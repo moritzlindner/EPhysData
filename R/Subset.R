@@ -60,6 +60,20 @@ setMethod("Subset",
               Raw = Raw
             )
 
+            if (!("units" %in% class(Time))) {
+              stop("'Time' must be of class 'units'")
+            }
+
+            convertibel.to.s <- tryCatch({
+              set_units(Time, "s")
+              TRUE
+            }, error = function(e) {
+              FALSE
+            })
+            if (!convertibel.to.s) {
+              stop("'Time' must be of convertible to seconds.")
+            }
+
             if (!isTRUE(all.equal(Time, range(TimeTrace(X)))) || TimeExclusive) {
               filter.fx <- function(x) {
                 return(x)
