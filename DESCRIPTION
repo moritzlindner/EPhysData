@@ -1,25 +1,28 @@
-Package: EPhysData
 Type: Package
+Package: EPhysData
 Title: EPhysData - Package for Handling Electrophysiological Data
 Version: 0.9.4
-Author: person("Moritz", "Lindner", email = "moritz@lindnerlab.de", role = c("aut", "cre"))
+Author: person("Moritz", "Lindner", email = "moritz@lindnerlab.de", role =
+    c("aut", "cre"))
 Maintainer: Moritz Lindner <moritz@lindnerlab.de>
-Description: This package provides classes and methods for handling electrophysiological data.
+Description: This package provides classes and methods for handling
+    electrophysiological data.
 License: GPL (>= 3)
-Remotes:
-    github::moritzlindner/EPhysMethods
 Depends:
     units
 Imports:
-    remotes,
-    tidyr,
-    methods,
     ggplot2,
     ggpubr,
     hdf5r,
+    methods,
+    remotes,
     stringr,
-    EPhysMethods (>= 0.3.0)
+    tidyr
+Suggests: 
+    EPhysMethods
+Remotes:
+    github::moritzlindner/EPhysMethods
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.2.3
 Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
