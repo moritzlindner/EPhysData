@@ -44,7 +44,7 @@
 NULL
 
 
-#' @details \code{Rejected}: These functions set or get a function returning a logical vector indicating which of the repeated measurements stored in an \link{EPhysData} object to exclude from averaging. The following function from the EPhysMethods package may be helpful: \link[EPhysMethods:autoreject.by.distance]{EPhysMethods::autoreject.by.distance}, \link[EPhysMethods:autoreject.by.signalfree]{EPhysMethods::autoreject.by.signalfree}
+#' @details \code{Rejected}: These functions set or get a function returning a logical vector indicating which of the repeated measurements stored in an \link{EPhysData} object to exclude from averaging. The following function from the EPhysMethods package may be helpful: \link[EPhysMethods:autoreject.by.distance]{EPhysMethods::autoreject.by.distance}, \link[EPhysMethods:autoreject.by.signalfree]{EPhysMethods::autoreject.by.signalfree}. The function is applied after runnning the filter set with \link[FilterFunction]{FilterFunction}
 #' @export
 #' @docType methods
 #' @rdname GetSet-methods
@@ -59,7 +59,7 @@ setGeneric(
 setMethod("Rejected", signature = "EPhysData", function(X, return.fx = F) {
   if (!return.fx) {
     tryCatch({
-      out<-as.vector(X@Rejected(X@Data))
+      out<-as.vector(X@Rejected(FilterFunction(X)(X@Data)))
       if(length(out)!=dim(X)[2]){
         stop("Function call does not return vector of correct length.")
       }
