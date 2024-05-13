@@ -6,7 +6,7 @@
 #' @inheritParams base::pretty
 #' @return An object of class \link{EPhysData} or \link{EPhysSet} after downsampling
 #'
-#' @details The \code{Downsample} function samples the time trace of the input object and applies a filter function to the data. The sampling is based on the \link[base:pretty]{bsae::pretty} function, which creates a sequence of about 250 equally spaced, nice values that cover the range of the input time trace. The filter function applied is a simple identity function, which does not modify the data.
+#' @details The \code{Downsample} function samples the time trace of the input object and applies a filter function to the data. The sampling is based on the \link[base:pretty]{bsae::pretty} function, which creates a sequence of about equally spaced values that cover the range of the input time trace. The filter function stored in the object is applied before downsampling and gets relaced  by an identity function.
 #'
 #' @examples
 #' # For an EPhysData object
@@ -40,7 +40,7 @@ setMethod("Downsample",
             X@Data <- as_units(apply(X@Data, 2, FilterFunction(X))[sample, 1:dim(X)[2], drop = FALSE], unitbuffer)
             X@TimeTrace <- Xt[sample]
             FilterFunction(X) <- function(x) x
-            message("The filter function is reset upon downsampling.")
+            # message("The filter function is reset upon downsampling.")
             return(X)
           })
 
