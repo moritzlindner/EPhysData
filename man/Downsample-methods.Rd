@@ -26,7 +26,7 @@ An object of class \link{EPhysData} or \link{EPhysSet} after downsampling
 This method downsamples an \link{EPhysData} or an \link{EPhysSet} object by sampling the time trace and applying a filter function.
 }
 \details{
-The \code{Downsample} function samples the time trace of the input object and applies a filter function to the data. The sampling is based on the \link[base:pretty]{bsae::pretty} function, which creates a sequence of about 250 equally spaced, nice values that cover the range of the input time trace. The filter function applied is a simple identity function, which does not modify the data.
+The \code{Downsample} function samples the time trace of the input object and applies a filter function to the data. The sampling is based on the \link[base:pretty]{bsae::pretty} function, which creates a sequence of about equally spaced values that cover the range of the input time trace. The filter function stored in the object is applied before downsampling and gets relaced  by an identity function.
 }
 \examples{
 # For an EPhysData object
