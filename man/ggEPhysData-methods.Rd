@@ -7,9 +7,9 @@
 \alias{ggEPhysData,EPhysData,ANY-method}
 \title{Generate a ggplot2 plot for EPhysData objects}
 \usage{
-ggEPhysData(X, Raw = T, ShowFiltered = T, SetSIPrefix = "auto")
+ggEPhysData(X, Raw = T, ShowFiltered = T, SetSIPrefix = "keep")
 
-\S4method{ggEPhysData}{EPhysData}(X, Raw = T, ShowFiltered = T, SetSIPrefix = "auto")
+\S4method{ggEPhysData}{EPhysData}(X, Raw = T, ShowFiltered = T, SetSIPrefix = "keep")
 }
 \arguments{
 \item{X}{An \code{EPhysData} object}

@@ -21,7 +21,7 @@
 #' @rdname ggEPhysData-methods
 setGeneric(
   name = "ggEPhysData",
-  def = function(X, Raw = T, ShowFiltered = T, SetSIPrefix="auto") {
+  def = function(X, Raw = T, ShowFiltered = T, SetSIPrefix="keep") {
     standardGeneric("ggEPhysData")
   }
 )
@@ -31,7 +31,7 @@ setGeneric(
 #' @aliases ggEPhysData,EPhysData,ANY-method
 setMethod("ggEPhysData",
           "EPhysData",
-          function(X, Raw = T, ShowFiltered = T, SetSIPrefix="auto") {
+          function(X, Raw = T, ShowFiltered = T, SetSIPrefix="keep") {
             X<-SetSIPrefix(X,SetSIPrefix)
             if (Raw) {
               if(ShowFiltered){
