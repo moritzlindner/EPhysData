@@ -7,9 +7,9 @@
 \alias{ggEPhysData,EPhysData,ANY-method}
 \title{Generate a ggplot2 plot for EPhysData objects}
 \usage{
-ggEPhysData(X, Raw = T, ShowFiltered = T)
+ggEPhysData(X, Raw = T, ShowFiltered = T, SetSIPrefix = "auto")
 
-\S4method{ggEPhysData}{EPhysData}(X, Raw = T, ShowFiltered = T)
+\S4method{ggEPhysData}{EPhysData}(X, Raw = T, ShowFiltered = T, SetSIPrefix = "auto")
 }
 \arguments{
 \item{X}{An \code{EPhysData} object}
@@ -17,6 +17,8 @@ ggEPhysData(X, Raw = T, ShowFiltered = T)
 \item{Raw}{Logical indicating whether to get raw data or processed (filtered - see: \link{FilterFunction}, averaged - see: \link{AverageFunction}) data.}
 
 \item{ShowFiltered}{Apply the filter to the raw traces before showing them.}
+
+\item{SetSIPrefix}{Change the SI prefix. Set to \code{keep} (default), for not to change anything, to \code{auto} for using the \link{BestSIPrefix-methods} to minimize the number of relevant digits or to any SI prefix to use that. Calls the \link{SetSIPrefix}method}
 }
 \value{
 A ggplot2 plot visualizing the EPhysData.
@@ -29,4 +31,5 @@ ephys_data <- makeExampleEPhysData(,replicate_count = 15)  # Create an EPhysData
 Rejected(ephys_data) <- c(rep(c(FALSE,FALSE,TRUE),5)) # randomly reject some
 AverageFunction(ephys_data) <- mean
 ggEPhysData(ephys_data)  # Generate a ggplot2 plot
+ggEPhysData(ephys_data,SetSIPrefix="k")  # Generate a ggplot2 plot
 }

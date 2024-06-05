@@ -4,6 +4,7 @@
 #'
 #' @inheritParams GetData
 #' @param ShowFiltered Apply the filter to the raw traces before showing them.
+#' @param SetSIPrefix Change the SI prefix. Set to \code{keep} (default), for not to change anything, to \code{auto} for using the \link{BestSIPrefix-methods} to minimize the number of relevant digits or to any SI prefix to use that. Calls the \link{SetSIPrefix}method
 #'
 #' @return A ggplot2 plot visualizing the EPhysData.
 #' @importFrom ggplot2 ggplot aes geom_line scale_alpha_manual scale_color_manual labs
@@ -13,13 +14,14 @@
 #' Rejected(ephys_data) <- c(rep(c(FALSE,FALSE,TRUE),5)) # randomly reject some
 #' AverageFunction(ephys_data) <- mean
 #' ggEPhysData(ephys_data)  # Generate a ggplot2 plot
+#' ggEPhysData(ephys_data,SetSIPrefix="k")  # Generate a ggplot2 plot
 #' @name ggEPhysData
 #' @export
 #' @docType methods
 #' @rdname ggEPhysData-methods
 setGeneric(
   name = "ggEPhysData",
-  def = function(X, Raw = T, ShowFiltered = T) {
+  def = function(X, Raw = T, ShowFiltered = T, SetSIPrefix="auto") {
     standardGeneric("ggEPhysData")
   }
 )
@@ -29,7 +31,8 @@ setGeneric(
 #' @aliases ggEPhysData,EPhysData,ANY-method
 setMethod("ggEPhysData",
           "EPhysData",
-          function(X, Raw = T, ShowFiltered = T) {
+          function(X, Raw = T, ShowFiltered = T, SetSIPrefix="auto") {
+            X<-SetSIPrefix(X,SetSIPrefix)
             if (Raw) {
               if(ShowFiltered){
                 X.tmp<-X
@@ -83,11 +86,6 @@ setMethod("ggEPhysData",
               df.rej$Type <- "Raw"
               df.rej$Rejected <- "Yes"
               df.rej$Repeat<-length(unique(df$Repeat))+df.rej$Repeat
-              # Rejected(X) <- !rej
-              # df.rej <- as.data.frame(X, Raw = T)
-              # df.rej$Type <- "RAW"
-              # df.rej$Rejected <- "YES"
-              # df.rej$Repeat<-length(unique(df$Repeat))+df.rej$Repeat
               df <- rbind(df, df.rej)
             }
 
