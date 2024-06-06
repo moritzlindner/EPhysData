@@ -21,6 +21,9 @@ There are two classes for storing the data. The \code{EPhysData} class stores  d
 \item \link[=AverageFunction<-]{AverageFunction<-} (for \link[=EPhysData]{EPhysData} objects) \cr
 \item \link[=FilterFunction<-]{FilterFunction<-} (for \link[=EPhysData]{EPhysData} objects) \cr
 \item \link[=Rejected<-]{Rejected<-} (for \link[=EPhysData]{EPhysData} objects) \cr\cr
+#'
+\item \link[=BestSIPrefix]{BestSIPrefix} (for \link[=EPhysData]{EPhysSet} and \link[=EPhysData]{EPhysSet}  objects) \cr
+\item \link[=SetSIPrefix]{SetSIPrefix} (for \link[=EPhysData]{EPhysSet} and \link[=EPhysData]{EPhysSet}  objects) \cr\cr
 \item \link[=AddData]{AddData<-} (for \link[=EPhysSet]{EPhysSet} objects) \cr
 \item \link[=Metadata]{Metadata<-} (for \link[=EPhysSet]{EPhysSet} objects) \cr
 \item \link[=AddMetadata]{AddMetadata} (for \link[=EPhysSet]{EPhysSet} objects) \cr

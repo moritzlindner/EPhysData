@@ -9,7 +9,7 @@
 #' @importFrom methods setGeneric setMethod
 #' @return The EPhysData or EPhysSet object with units converted to the new SI prefix.
 #' @docType methods
-#' @name BestSIPrefix-methods
+#' @name SetSIPrefix-methods
 #' @examples
 #' ## BestSIPrefix
 #' X<-makeExampleEPhysData()
@@ -36,13 +36,13 @@ setGeneric(
     standardGeneric("BestSIPrefix")
   }
 )
-#' @rdname BestSIPrefix-methods
+#' @rdname SetSIPrefix-methods
 #' @aliases BestSIPrefix,EPhysData,EPhysSet,ANY-method
 setMethod("BestSIPrefix", signature = "EPhysData", function(X) {
   X@Data<-best_si_prefix(X@Data)
   X
 })
-#' @rdname BestSIPrefix-methods
+#' @rdname SetSIPrefix-methods
 setMethod("BestSIPrefix", signature = "EPhysSet", function(X) {
   X<-lapply(X,BestSIPrefix)
   X
@@ -50,14 +50,14 @@ setMethod("BestSIPrefix", signature = "EPhysSet", function(X) {
 
 #' @export
 #' @docType methods
-#' @rdname BestSIPrefix-methods
+#' @rdname SetSIPrefix-methods
 setGeneric(
   name = "SetSIPrefix",
   def = function(X, value) {
     standardGeneric("SetSIPrefix")
   }
 )
-#' @rdname BestSIPrefix-methods
+#' @rdname SetSIPrefix-methods
 #' @aliases SetSIPrefix,EPhysData,EPhysSet,ANY-method
 setMethod("SetSIPrefix", signature = "EPhysData", function(X, value) {
   if(value=="auto"){
@@ -74,7 +74,7 @@ setMethod("SetSIPrefix", signature = "EPhysData", function(X, value) {
     stop("SI Prefix provided is invalid.")
   }
 })
-#' @rdname BestSIPrefix-methods
+#' @rdname SetSIPrefix-methods
 setMethod("SetSIPrefix", signature = "EPhysSet", function(X,value) {
   X<-lapply(X,function(x){SetSIPrefix(x,value)})
   X

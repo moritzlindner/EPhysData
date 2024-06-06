@@ -12,6 +12,9 @@
 #' * \link[=AverageFunction<-]{AverageFunction<-} (for \link[=EPhysData]{EPhysData} objects) \cr
 #' * \link[=FilterFunction<-]{FilterFunction<-} (for \link[=EPhysData]{EPhysData} objects) \cr
 #' * \link[=Rejected<-]{Rejected<-} (for \link[=EPhysData]{EPhysData} objects) \cr\cr
+#' #'
+#' * \link[=BestSIPrefix]{BestSIPrefix} (for \link[=EPhysData]{EPhysSet} and \link[=EPhysData]{EPhysSet}  objects) \cr
+#' * \link[=SetSIPrefix]{SetSIPrefix} (for \link[=EPhysData]{EPhysSet} and \link[=EPhysData]{EPhysSet}  objects) \cr\cr
 #'
 #' * \link[=AddData]{AddData<-} (for \link[=EPhysSet]{EPhysSet} objects) \cr
 #' * \link[=Metadata]{Metadata<-} (for \link[=EPhysSet]{EPhysSet} objects) \cr
