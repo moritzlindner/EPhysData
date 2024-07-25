@@ -128,8 +128,10 @@ Save.EPhysData <- function (con, X) {
   con[["StimulusTrace"]] <- drop_units(X@StimulusTrace)
   con[["StimulusUnit"]] <- deparse_unit(X@StimulusTrace)
   con[["Rejected"]] <- iconv(deparse1(X@Rejected), "UTF-8", "UTF-8", sub = '')
-  con[["filter.fx"]] <- deparse1(X@filter.fx)
-  con[["average.fx"]] <- deparse1(X@average.fx)
+  tmp.fx<-deparse(X@filter.fx)
+  con[["filter.fx"]] <- paste(tmp.fx, collapse = "\n")
+  tmp.fx<-deparse(X@average.fx)
+  con[["average.fx"]] <- paste(tmp.fx, collapse = "\n")
   con[["Created"]] <- X@Created
   con[["Type"]] <- "EPhysData"
   con[["EPhysDataVersion"]] <- as.character(packageVersion('EPhysData'))
