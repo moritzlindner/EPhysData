@@ -9,12 +9,12 @@
 An object of class \code{EPhysData}
 }
 \description{
-This class represents the most fundamental unit of electrophysiological data acquisition, typically obtained in response to a one single type of stimulus. It includes repeated measurements, time and stimulus traces, units, as well as information on post-processing steps (such as filtering and averaging) that can be applied to the data.
+This class represents the most fundamental unit of electrophysiological data acquisition, typically obtained in response to a one single type of stimulus. It includes data (trials in columns), time and stimulus traces, units, as well as information on post-processing steps (such as filtering and averaging) that can be applied to the data.
 }
 \section{Slots}{
 
 \describe{
-\item{\code{Data}}{A 2D array representing the  electrophysiological data with columns for repeated measurements}
+\item{\code{Data}}{A 2D array representing the  electrophysiological data. trials (i.e. linked data with a common time basis, like repeated measurements) are represented by columns. Trials may be equivalent to “segments”, “episodes”, “runs”, “recordings”, depending on the nature of the data.}
 
 \item{\code{TimeTrace}}{A numeric vector containing the time trace of the electrophysiological data.}
 
@@ -22,11 +22,11 @@ This class represents the most fundamental unit of electrophysiological data acq
 
 \item{\code{Created}}{A POSIXct object representing the creation date and time of the object.}
 
-\item{\code{Rejected}}{A logical vector indicating which repeated measurements to exclude from averaging.}
+\item{\code{Rejected}}{A logical vector indicating which trials to exclude from averaging.}
 
-\item{\code{filter.fx}}{A function that can be applied to each repeated measurement By default, it leaves the data unchanged.}
+\item{\code{filter.fx}}{A function that can be applied to each segment. By default, it leaves the data unchanged.}
 
-\item{\code{average.fx}}{A function describing how averaging across repeated measurement should be performed. By default, repeated measurements are returned and no averaging is performed.}
+\item{\code{average.fx}}{A function describing how averaging across trials should be performed. By default, each segment is returned and no averaging is performed.}
 }}
 
 \seealso{

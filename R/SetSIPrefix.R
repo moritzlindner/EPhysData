@@ -127,18 +127,17 @@ get_si_unit <- function(units_obj) {
 #' @keywords internal
 best_si_prefix <- function(X) {
   si_unit<-get_si_unit(X)
-  X <- set_units(X, get_si_unit(X), mode = "standard")
+  X <- set_units(X, si_unit, mode = "standard")
   X<-drop_units(X)
 
   decimals<-log10(si_prefixes())
-  dec_best <- decimals[which.min(abs(decimals - median(as.numeric(
-    str_sub(format(X, scientific = T),
-            (
-              str_locate(format(X, scientific = T),
-                         "e[\\+\\-]")
-            )
+  X.str<-c(format(X, scientific = T))
+  dec_best <- decimals[which.min(abs(decimals - median(as.numeric(unique(
+    str_sub(X.str,
+            (str_locate(X.str,
+                        "e[\\+\\-]"))
             [, 2])
-  ))))]
+  )))))]
   X <- as_units(X, si_unit, mode = "standard")
   X <- set_units(X,paste0(names(dec_best),si_unit),mode="standard")
   X

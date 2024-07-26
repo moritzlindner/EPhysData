@@ -243,7 +243,8 @@ Load.EPhysData <- function(con) {
       "Function stored for averaging of recordings could not be imported",
       warnstring1,
       fxstr,
-      warnstring2
+      warnstring2,
+      ". One reason could be that not all packages that the function depends on are loaded. e.g. Try 'require(EPhysMethods)' before loading the data. "
     )
   })
 

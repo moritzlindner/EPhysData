@@ -81,7 +81,7 @@ The \code{Subset} function creates a new \code{EPhysData} or \code{EPhysSet} obj
 # Subset EPhysData
 myEPhysData <- makeExampleEPhysData(replicate_count = 3)
 
-## Get subsetted data based on time range and repeated measurements
+## Get subsetted data based on time range and trials
 subsetted_myEPhysData <- Subset(myEPhysData, Time = TimeTrace(myEPhysData)[c(1, 3)], Trials = c(1, 2))
 subsetted_myEPhysData
 

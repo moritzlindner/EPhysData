@@ -44,7 +44,7 @@
 NULL
 
 
-#' @details \code{Rejected}: These functions set or get a function returning a logical vector indicating which of the repeated measurements stored in an \link{EPhysData} object to exclude from averaging. The following function from the EPhysMethods package may be helpful: \link[EPhysMethods:autoreject.by.distance]{EPhysMethods::autoreject.by.distance}, \link[EPhysMethods:autoreject.by.signalfree]{EPhysMethods::autoreject.by.signalfree}. The function is applied after runnning the filter set with \link[FilterFunction]{FilterFunction}
+#' @details \code{Rejected}: These functions set or get a function returning a logical vector indicating which of the trials stored in an \link{EPhysData} object to exclude from averaging. The following function from the EPhysMethods package may be helpful: \link[EPhysMethods:autoreject.by.distance]{EPhysMethods::autoreject.by.distance}, \link[EPhysMethods:autoreject.by.signalfree]{EPhysMethods::autoreject.by.signalfree}. The function is applied after runnning the filter set with \link[FilterFunction]{FilterFunction}
 #' @export
 #' @docType methods
 #' @rdname GetSet-methods
@@ -65,7 +65,7 @@ setMethod("Rejected", signature = "EPhysData", function(X, return.fx = F) {
       }
       out
     }, error = function(e){
-      stop("The function stored in the 'Rejected' slot could not be applied. A likely reason is that the function is malformed or does not fit to the data stored in the object. Object has: ", dim(X)[2]," repeated measurements. Function string is: '", deparse1(X@Rejected),"' and returned error message is '", e,"' " )
+      stop("The function stored in the 'Rejected' slot could not be applied. A likely reason is that the function is malformed or does not fit to the data stored in the object. Object has: ", dim(X)[2]," trials. Function string is: '", deparse1(X@Rejected),"' and returned error message is '", e,"' " )
     })
   } else{
     return(X@Rejected)
@@ -122,7 +122,7 @@ setMethod("Rejected<-", signature = "EPhysData", function(X, value) {
   }
 })
 
-#' @details \code{FilterFunction}: Set  a function for filtering each individual of the repeated measurements in the \link{EPhysData} object. Could be downsampling or noise removal, for instance. The following functions from the EPhysMethods package may be helpful: \link[EPhysMethods:filter.bandpass]{EPhysMethods::filter.bandpass}, \link[EPhysMethods:filter.detrend]{EPhysMethods::filter.detrend},
+#' @details \code{FilterFunction}: Set  a function for filtering each individual of the trials in the \link{EPhysData} object. Could be downsampling or noise removal, for instance. The following functions from the EPhysMethods package may be helpful: \link[EPhysMethods:filter.bandpass]{EPhysMethods::filter.bandpass}, \link[EPhysMethods:filter.detrend]{EPhysMethods::filter.detrend},
 #' @export
 #' @docType methods
 #' @rdname GetSet-methods
@@ -178,7 +178,7 @@ setMethod("FilterFunction<-", signature = "EPhysData", function(X, value) {
   }
 })
 
-#' @details \code{AverageFunction}: Set a function describing how averaging across repeated measurement should be performed in the \link{EPhysData} object. Usually, \link[base:mean]{mean} can be a good start.
+#' @details \code{AverageFunction}: Set a function describing how averaging across trials measurement should be performed in the \link{EPhysData} object. Usually, \link[base:mean]{mean} can be a good start.
 #' @export
 #' @docType methods
 #' @rdname GetSet-methods

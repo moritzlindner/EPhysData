@@ -31,8 +31,8 @@ Default is the entire time range (i.e., keep all data).}
 
 \item{TimeExclusive}{Keep only the two points stated under 'Time', not the range.}
 
-\item{Trials}{Specifies which of the repeated measurements (if any) to use for extraction.
-It can be either a numeric vector specifying the indices of the repeated measurements,
+\item{Trials}{Specifies which of the trials (if more than one) to use .
+It can be either a numeric vector specifying the indices of the trials,
 a logical vector of the same length as trials stored, where \code{TRUE} indicates using that column for extraction, or
 NULL, indicating that the function stored in the Rejected (\link{Rejected}) slot will be used (default).}
 
@@ -46,7 +46,7 @@ This method extracts raw or processed data from an \code{EPhysData} object.
 }
 \details{
 The \code{GetData} function extracts the recorded data from an \code{EPhysData} or related object.
-By default, the resulting data matrix contains unfiltered data from all repeated measurements.
+By default, the resulting data matrix contains unfiltered data from all trials.
 Note, the main difference to the \link{as.data.frame}-Method is that this function returns a matrix in the wide format and without a time and stimulus trace.
 }
 \examples{
