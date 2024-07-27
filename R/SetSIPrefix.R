@@ -120,7 +120,7 @@ get_si_unit <- function(units_obj) {
       }
     }
   }
-  return("") # No SI prefix found
+  return(unit_str) # No SI prefix found
 }
 
 #' @noMd
