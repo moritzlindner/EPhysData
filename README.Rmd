@@ -42,8 +42,6 @@ remotes::install_github("moritzlindner/EPhysMethods")
 
 ## Example
 
-This is a basic example which shows you how to solve a common problem:
-
 ```{r example}
 # Load the EPhysData package
 library(EPhysData)

@@ -1,4 +1,3 @@
-
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
 # EPhysData R Package
@@ -26,60 +25,52 @@ class can be subsetted, extended or modified in other ways.
 
 You can install the development version of EPhysData like so:
 
-``` r
-if (!requireNamespace("remotes", quietly = TRUE)){
-  install.packages("remotes")
-}
-remotes::install_github("moritzlindner/EPhysData")
-```
+    if (!requireNamespace("remotes", quietly = TRUE)){
+      install.packages("remotes")
+    }
+    remotes::install_github("moritzlindner/EPhysData")
 
 Note that `EPhysData` recommends the github-deposited R Package
 `EPhysMethods`. Installation usually works automatically. Updating,
 however may fail. If this is the case, update manually using the
 following line of code:
 
-``` r
-remotes::install_github("moritzlindner/EPhysMethods")
-```
+    remotes::install_github("moritzlindner/EPhysMethods")
 
 ## Example
 
-This is a basic example which shows you how to solve a common problem:
+    # Load the EPhysData package
+    library(EPhysData)
 
-``` r
-# Load the EPhysData package
-library(EPhysData)
+    # Create an example EPhysData object
+    data <- makeExampleEPhysData()
 
-# Create an example EPhysData object
-data <- makeExampleEPhysData()
+    # Get data
+    GetData(data, Raw = T)
 
-# Get data
-GetData(data, Raw = T)
+    # Get time trace data
+    TimeTrace(data)
 
-# Get time trace data
-TimeTrace(data)
+    # Set Averaging and function for the data
+    FilterFunction(data)<-function(x){x/max(x)}
+    GetData(data, Raw = F)
+    #> Warning in GetData(data, Raw = F): Averaging function function (x) { x} returns more than a single value per time point. Has a valid
+    #> function been set? Try e.g.: AverageFunction(X)<-mean
+    AverageFunction(data)<-function(x){mean(x)}
+    GetData(data, Raw = F)
 
-# Set Averaging and function for the data
-FilterFunction(data)<-function(x){x/max(x)}
-GetData(data, Raw = F)
-#> Warning in GetData(data, Raw = F): Averaging function function (x) { x} returns more than a single value per time point. Has a valid function been
-#> set? Try e.g.: AverageFunction(X)<-mean
-AverageFunction(data)<-function(x){mean(x)}
-GetData(data, Raw = F)
-
-# Create an EPhysSet object
-ephysSet <-
-  newEPhysSet(
-    Data = list(
-      makeExampleEPhysData(),
-      makeExampleEPhysData(),
-      makeExampleEPhysData(),
-      makeExampleEPhysData()
-    ),
-    Metadata = data.frame(StepID = c("A1", "A2", "A3", "A4"))
-  )
-ephysSet
-```
+    # Create an EPhysSet object
+    ephysSet <-
+      newEPhysSet(
+        Data = list(
+          makeExampleEPhysData(),
+          makeExampleEPhysData(),
+          makeExampleEPhysData(),
+          makeExampleEPhysData()
+        ),
+        Metadata = data.frame(StepID = c("A1", "A2", "A3", "A4"))
+      )
+    ephysSet
 
 ## Documentation
 
