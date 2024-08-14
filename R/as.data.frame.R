@@ -37,9 +37,9 @@ setMethod("as.data.frame",
                    IncludeRejected = F,
                    ...) {
             if(IncludeRejected){
-              dat <- GetData(x, Raw = Raw, Trials = !logical(dim(x)[2]))
-            } else {
               dat <- GetData(x, Raw = Raw)
+            } else {
+              dat <- GetData(x, Raw = Raw, Trials = !Rejected(x))
             }
             time <- TimeTrace(x)
             stim <-

@@ -9,8 +9,7 @@
 #' @param Trials Specifies which of the trials (if more than one) to use .
 #'                It can be either a numeric vector specifying the indices of the trials,
 #'                a logical vector of the same length as trials stored, where `TRUE` indicates using that column for extraction, or
-#'                NULL, indicating that the function stored in the Rejected (\link{Rejected}) slot will be used (default).
-#'
+#'                NULL. if \code{Trials = NULL} and \code{Raw = false}(see below), then the function stored in the Rejected (\link{Rejected}) slot will be used (default), if \code{Raw = false} then all Trials are returned.
 #' @param Raw Logical indicating whether to get raw data or processed (filtered - see: \link{FilterFunction}, averaged - see: \link{AverageFunction}) data.
 #' @return A data matrix containing either raw or processed (filtered, averaged) values.
 #'
@@ -118,7 +117,11 @@ setMethod("GetData",
 
             # subset by Trials
             if(is.null(Trials)){
-              TrialsLogical<-!Rejected(X, return.fx = T)(out)
+              if (!Raw) {
+                TrialsLogical <- !Rejected(X, return.fx = T)(out)
+              } else {
+                TrialsLogical <- !logical(dim(X)[2])
+              }
             }
             out<-out[TimeTrace(X) %in% Time,TrialsLogical,drop=F]
 

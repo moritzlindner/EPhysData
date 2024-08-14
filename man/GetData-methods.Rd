@@ -34,7 +34,7 @@ Default is the entire time range (i.e., keep all data).}
 \item{Trials}{Specifies which of the trials (if more than one) to use .
 It can be either a numeric vector specifying the indices of the trials,
 a logical vector of the same length as trials stored, where \code{TRUE} indicates using that column for extraction, or
-NULL, indicating that the function stored in the Rejected (\link{Rejected}) slot will be used (default).}
+NULL. if \code{Trials = NULL} and \code{Raw = false}(see below), then the function stored in the Rejected (\link{Rejected}) slot will be used (default), if \code{Raw = false} then all Trials are returned.}
 
 \item{Raw}{Logical indicating whether to get raw data or processed (filtered - see: \link{FilterFunction}, averaged - see: \link{AverageFunction}) data.}
 }
