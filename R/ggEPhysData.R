@@ -40,13 +40,13 @@ setMethod("ggEPhysData",
                 out<-apply(X.tmp@Data, 2, FilterFunction(X.tmp), simplify = T)
                 X.tmp@Data<-as_units(out,unit.buffer)
                 rej <- Rejected(X.tmp)
-                df <- as.data.frame(X.tmp, Raw = T)
+                df <- as.data.frame(X.tmp, Raw = T, IncludeRejected = T)
               } else {
                 rej <- Rejected(X)
-                df <- as.data.frame(X, Raw = T)
+                df <- as.data.frame(X, Raw = T, IncludeRejected = T)
               }
               df$Type <- "Raw"
-              df$Rejected <- "No"
+              df$Rejected <- rej[df$Repeat]
             } else {
               rej <- Rejected(X)
             }
@@ -57,7 +57,7 @@ setMethod("ggEPhysData",
               if (length(unique(df.avg$Repeat) == 1)) {
                 df.avg$Repeat <- paste0("AVG", df.avg$Repeat)
                 df.avg$Type <- "Averaged"
-                df.avg$Rejected <- "No"
+                df.avg$Rejected <- FALSE
                 if (Raw) {
                   df <- rbind(df, df.avg)
                 } else{
@@ -71,23 +71,6 @@ setMethod("ggEPhysData",
                 stop("No averaging function set.")
               }
             }
-            if (any(rej) & Raw) {
-              if(ShowFiltered){
-                X.tmp<-X
-                Rejected(X.tmp) <- !rej
-                unit.buffer<-deparse_unit(X.tmp@Data)
-                out<-apply(X.tmp@Data, 2, FilterFunction(X.tmp), simplify = T)
-                X.tmp@Data<-as_units(out,unit.buffer)
-                df.rej <- as.data.frame(X.tmp, Raw = T)
-              } else {
-                Rejected(X) <- !rej
-                df.rej <- as.data.frame(X, Raw = T)
-              }
-              df.rej$Type <- "Raw"
-              df.rej$Rejected <- "Yes"
-              df.rej$Repeat<-length(unique(df$Repeat))+df.rej$Repeat
-              df <- rbind(df, df.rej)
-            }
 
             out <- ggplot(data = df,
                           aes(
@@ -99,7 +82,7 @@ setMethod("ggEPhysData",
                           )) +
               geom_line() +
               scale_alpha_manual(values = c("Raw" = 1/sqrt(length(unique(df$Repeat))), "Averaged" = 1)) +
-              scale_color_manual(values = c("Yes" = "red", "No" = "black")) +
+              scale_color_manual(values = c("TRUE" = "red", "FALSE" = "black")) +
               labs(color = "Rejected", alpha = "Type") +
               theme_pubr()
             return(out)

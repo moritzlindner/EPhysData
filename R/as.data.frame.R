@@ -23,7 +23,7 @@
 #'
 #' @importFrom tidyr pivot_longer starts_with
 #' @importFrom units drop_units as_units
-#' @docType method
+#' @docType methods
 #' @name as.data.frame
 #' @rdname as.data.frame-methods
 NULL
