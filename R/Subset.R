@@ -21,7 +21,7 @@
 #' myEPhysData <- makeExampleEPhysData(replicate_count = 3)
 #'
 #' ## Get subsetted data based on time range and trials
-#' subsetted_myEPhysData <- Subset(myEPhysData, Time = TimeTrace(myEPhysData)[c(1, 3)], Trials = c(1, 2))
+#' subsetted_myEPhysData <- Subset(myEPhysData, Time = TimeTrace(myEPhysData)[c(1, 3)], Trials = c(1,2))
 #' subsetted_myEPhysData
 #'
 #' # Subset EPhysSet
@@ -49,7 +49,7 @@ setMethod("Subset",
           function(X,
                    Time = range(TimeTrace(X)),
                    TimeExclusive = FALSE,
-                   Trials = !Rejected(X),
+                   Trials = NULL,
                    Raw = T,
                    ...) {
             Data <- GetData(
@@ -83,8 +83,11 @@ setMethod("Subset",
               filter.fx <- FilterFunction(X)
             }
 
-            if(is.null(Trials)){
-              Trials<-!Rejected(X, return.fx = F)
+            if(!is.null(Trials)){
+              warning("Subsetting by trials: resetting rejection function.")
+              rejected.fx <- function(x) {
+                return(rep(FALSE, dim(x)[2]))
+              }
             }
 
             Time <- condition_time(X, Time, TimeExclusive)
@@ -106,11 +109,6 @@ setMethod("Subset",
               rejected.fx <- function(x) {
                 return(FALSE)
               }
-            } else {
-              fx <- Rejected(X)[Trials]
-              function_string <-
-                paste0("function(x) { return(c(", paste(fx, collapse = ", "), ")) }")
-              rejected.fx <- eval(parse(text = function_string))
             }
 
             # if x is changed, then dont keep filter
