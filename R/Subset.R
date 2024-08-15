@@ -88,6 +88,8 @@ setMethod("Subset",
               rejected.fx <- function(x) {
                 return(rep(FALSE, dim(x)[2]))
               }
+            } else {
+              rejected.fx<-Rejected(X,return.fx = T)
             }
 
             Time <- condition_time(X, Time, TimeExclusive)
@@ -189,26 +191,27 @@ setMethod("Subset",
                 if (is.null(Time)){
                   Time = range(TimeTrace(x))
                 }
-                if (is.null(Trials) && !Raw){
-                  curr.Trials = !Rejected(x)
-                } else {
-                  if (is.null(Trials)){
-                    curr.Trials <- !logical(dim(x)[2])
-                  } else {
-                    curr.Trials<-Trials
-                  }
-                }
+                # if (is.null(Trials) && !Raw){
+                #   curr.Trials = !Rejected(x)
+                # } else {
+                #   if (is.null(Trials)){
+                #     curr.Trials <- !logical(dim(x)[2])
+                #   } else {
+                #     curr.Trials<-Trials
+                #   }
+                # }
                 x<-Subset(
                   X = x,
                   Time = Time,
                   TimeExclusive = TimeExclusive,
-                  Trials = curr.Trials,
+                  Trials = Trials,
                   Raw = Raw
                 )
                 return(x)
               })
             }, error = function (e){
-              stop("Subsetting EPhysSet failed for recording ", Metadata(X)[as.integer(str_extract(e, "(?<=\\[\\[)\\d+(?=L\\]\\])")),1], )
+              stop(e)
+              #stop("Subsetting EPhysSet failed for recording ", Metadata(X)[as.integer(str_extract(e$message, "(?<=\\[\\[)\\d+(?=L\\]\\])")),1], )
             })
             if(nrow(Metadata(X)) == 1 && Simplify == T){
               X<-X@Data[[1]]
