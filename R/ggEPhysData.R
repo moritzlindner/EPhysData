@@ -34,21 +34,20 @@ setMethod("ggEPhysData",
           function(X, Raw = T, ShowFiltered = T, SetSIPrefix="keep") {
             X<-SetSIPrefix(X,SetSIPrefix)
             if (Raw) {
-              if(ShowFiltered){
-                X.tmp<-X
-                unit.buffer<-deparse_unit(X.tmp@Data)
-                out<-apply(X.tmp@Data, 2, FilterFunction(X.tmp), simplify = T)
-                X.tmp@Data<-as_units(out,unit.buffer)
-                rej <- Rejected(X.tmp)
-                df <- as.data.frame(X.tmp, Raw = T, IncludeRejected = T)
-              } else {
-                rej <- Rejected(X)
+              rej <- Rejected(X)
+              if(!ShowFiltered){
                 df <- as.data.frame(X, Raw = T, IncludeRejected = T)
+              } else {
+                dat<-X@Data
+                unit.buffer<-deparse_unit(dat)
+                dat<-apply(dat, 2, FilterFunction(X), simplify = T)
+                dat<-as_units(dat,unit.buffer)
+                X.tmp<-X
+                X.tmp@Data<-dat
+                df <- as.data.frame(X.tmp, Raw = T, IncludeRejected = T)
               }
               df$Type <- "Raw"
               df$Rejected <- rej[df$Repeat]
-            } else {
-              rej <- Rejected(X)
             }
             Time<-Value<-Type<-Repeat<-NULL
 
