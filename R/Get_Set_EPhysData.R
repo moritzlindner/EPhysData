@@ -59,7 +59,11 @@ setGeneric(
 setMethod("Rejected", signature = "EPhysData", function(X, return.fx = F) {
   if (!return.fx) {
     tryCatch({
-      out<-as.vector(X@Rejected(FilterFunction(X)(X@Data)))
+      dat<-X@Data
+      unit.buffer<-deparse_unit(dat)
+      dat<-apply(dat, 2, FilterFunction(X), simplify = T)
+      dat<-as_units(dat,unit.buffer)
+      out<-as.vector(X@Rejected(dat))
       if(length(out)!=dim(X)[2]){
         stop("Function call does not return vector of correct length.")
       }
