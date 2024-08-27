@@ -18,7 +18,7 @@ Subset(X, ...)
   X,
   Time = range(TimeTrace(X)),
   TimeExclusive = FALSE,
-  Trials = !Rejected(X),
+  Trials = NULL,
   Raw = T,
   ...
 )
@@ -82,7 +82,7 @@ The \code{Subset} function creates a new \code{EPhysData} or \code{EPhysSet} obj
 myEPhysData <- makeExampleEPhysData(replicate_count = 3)
 
 ## Get subsetted data based on time range and trials
-subsetted_myEPhysData <- Subset(myEPhysData, Time = TimeTrace(myEPhysData)[c(1, 3)], Trials = c(1, 2))
+subsetted_myEPhysData <- Subset(myEPhysData, Time = TimeTrace(myEPhysData)[c(1, 3)], Trials = c(1,2))
 subsetted_myEPhysData
 
 # Subset EPhysSet

@@ -47,14 +47,14 @@ setMethod("ggEPhysData",
                 df <- as.data.frame(X.tmp, Raw = T, IncludeRejected = T)
               }
               df$Type <- "Raw"
-              df$Rejected <- rej[df$Repeat]
+              df$Rejected <- rej[df$Trial]
             }
-            Time<-Value<-Type<-Repeat<-NULL
+            Time<-Value<-Type<-Trial<-NULL
 
             df.avg <- as.data.frame(X, Raw = F)
-            if (length(unique(df.avg$Repeat)) != dim(X)[2]) {
-              if (length(unique(df.avg$Repeat) == 1)) {
-                df.avg$Repeat <- paste0("AVG", df.avg$Repeat)
+            if (length(unique(df.avg$Trial)) != dim(X)[2]) {
+              if (length(unique(df.avg$Trial) == 1)) {
+                df.avg$Trial <- paste0("AVG", df.avg$Trial)
                 df.avg$Type <- "Averaged"
                 df.avg$Rejected <- FALSE
                 if (Raw) {
@@ -77,10 +77,10 @@ setMethod("ggEPhysData",
                             y = Value,
                             alpha = (Type),
                             colour = Rejected,
-                            group = Repeat
+                            group = Trial
                           )) +
               geom_line() +
-              scale_alpha_manual(values = c("Raw" = 1/sqrt(length(unique(df$Repeat))), "Averaged" = 1)) +
+              scale_alpha_manual(values = c("Raw" = 1/sqrt(length(unique(df$Trial))), "Averaged" = 1)) +
               scale_color_manual(values = c("TRUE" = "red", "FALSE" = "black")) +
               labs(color = "Rejected", alpha = "Type") +
               theme_pubr()

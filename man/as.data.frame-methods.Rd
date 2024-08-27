@@ -24,7 +24,7 @@
 A data frame representing the \link{EPhysData} object in long format. Note that, by default, rejected Trials are excluded.
 }
 \description{
-Converts an \link{EPhysData} or \link{EPhysSet} object to a data frame format. Each repeat of the data will be represented in a long format with columns for repeat number, time, stimulus (if avaliable), and value.
+Converts an \link{EPhysData} or \link{EPhysSet} object to a data frame in a long format with columns for trial number, time, stimulus (if avaliable), and value.
 }
 \section{Functions}{
 \itemize{

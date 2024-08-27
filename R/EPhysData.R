@@ -81,6 +81,6 @@
 #'
 #' @author \href{https://www.lindnerlab.de}{Moritz Lindner}
 #' @aliases EPhysData-package
-#' @docType package
+#' @docType _PACKAGE
 #' @name EPhysData-package
 NULL

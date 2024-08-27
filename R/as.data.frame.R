@@ -1,6 +1,6 @@
 #' as.data.frame for EPhysData and EPhysSet
 #'
-#' Converts an \link{EPhysData} or \link{EPhysSet} object to a data frame format. Each repeat of the data will be represented in a long format with columns for repeat number, time, stimulus (if avaliable), and value.
+#' Converts an \link{EPhysData} or \link{EPhysSet} object to a data frame in a long format with columns for trial number, time, stimulus (if avaliable), and value.
 #'
 #' @param x An \link{EPhysData} or \link{EPhysSet} object.
 #' @inheritParams GetData
@@ -60,28 +60,28 @@ setMethod("as.data.frame",
             dat <- as.data.frame(drop_units(dat))
             time <- as.vector(drop_units(time))
             colnames(dat) <-
-              paste0("Repeat_", 1:length(colnames(dat)))
+              paste0("Trial_", 1:length(colnames(dat)))
             dat$Time <- time
             if (!is.null(stim)) {
               dat$Stimulus <- stim
             }
             dat <- pivot_longer(
               dat,
-              starts_with("Repeat_"),
-              names_prefix = "Repeat_",
-              names_to = "Repeat",
-              names_transform = list(Repeat = as.numeric),
+              starts_with("Trial_"),
+              names_prefix = "Trial_",
+              names_to = "Trial",
+              names_transform = list(Trial = as.numeric),
               values_to = "Value"
             )
             dat$Value <- as_units(dat$Value, dat_units)
             dat$Time <- as_units(dat$Time, time_units)
             if (!is.null(stim)) {
               dat$Stimulus <- as_units(dat$Stimulus, stim_units)
-              dat <- dat[, c("Repeat", "Time", "Stimulus", "Value")]
+              dat <- dat[, c("Trial", "Time", "Stimulus", "Value")]
             }else{
-              dat <- dat[, c("Repeat", "Time", "Value")]
+              dat <- dat[, c("Trial", "Time", "Value")]
             }
-            dat <- dat[order(dat$Repeat, dat$Time), ]
+            dat <- dat[order(dat$Trial, dat$Time), ]
             return(as.data.frame(dat))
           })
 
