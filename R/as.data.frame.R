@@ -90,8 +90,12 @@ setMethod("as.data.frame",
 setMethod("as.data.frame",
           "EPhysSet",
           function(x,
-                   Raw = T) {
-            data.list <- lapply(x, as.data.frame, ReturnEPhysSet = F)
+                   Raw = T,
+                   IncludeRejected = F) {
+            data.list <-
+              lapply(x, function(y) {
+                as.data.frame(y, IncludeRejected = IncludeRejected)
+              }, ReturnEPhysSet = F)
             for (i in 1:length(data.list)) {
               metadata_cols <- Metadata(x)[i, , drop = F]
               metadata_cols <-

@@ -3,6 +3,7 @@
 \docType{methods}
 \name{SetSIPrefix-methods}
 \alias{SetSIPrefix-methods}
+\alias{BestSIPrefix}
 \alias{BestSIPrefix,EPhysData-method}
 \alias{BestSIPrefix,EPhysData,EPhysSet,ANY-method}
 \alias{BestSIPrefix,EPhysSet-method}
@@ -26,6 +27,8 @@ SetSIPrefix(X, value)
 }
 \arguments{
 \item{X}{An EPhysData or EPhysSet object}
+
+\item{value}{SI prefix as a character string, "auto" to choose the best SI prefix or "keep", for keeping the current SI prefix.}
 }
 \value{
 The EPhysData or EPhysSet object with units converted to the new SI prefix.

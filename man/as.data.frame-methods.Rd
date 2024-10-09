@@ -9,7 +9,7 @@
 \usage{
 \S4method{as.data.frame}{EPhysData}(x, Raw = T, IncludeRejected = F, ...)
 
-\S4method{as.data.frame}{EPhysSet}(x, Raw = T)
+\S4method{as.data.frame}{EPhysSet}(x, Raw = T, IncludeRejected = F)
 }
 \arguments{
 \item{x}{An \link{EPhysData} or \link{EPhysSet} object.}

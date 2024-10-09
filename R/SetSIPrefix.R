@@ -3,6 +3,7 @@
 #' Sets the SI prefix to a user-define value or so that it minimizes the number of relevant digits for a vector of units.
 #'
 #' @param X An EPhysData or EPhysSet object
+#' @param value SI prefix as a character string, "auto" to choose the best SI prefix or "keep", for keeping the current SI prefix.
 #' @importFrom units deparse_unit set_units drop_units as_units
 #' @importFrom stats median
 #' @importFrom stringr str_sub str_locate
@@ -10,6 +11,7 @@
 #' @return The EPhysData or EPhysSet object with units converted to the new SI prefix.
 #' @docType methods
 #' @name SetSIPrefix-methods
+#' @aliases BestSIPrefix
 #' @examples
 #' ## BestSIPrefix
 #' X<-makeExampleEPhysData()
