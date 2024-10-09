@@ -89,23 +89,32 @@ setGeneric(
 #' @aliases `Rejected<-`,EPhysData,ANY-method
 setMethod("Rejected<-", signature = "EPhysData", function(X, value) {
   if ("function" %in% class(value)) {
+    if (dim(X)[2]>1){
     # test if function is defined for a matrix of the given size of X
-    success <- tryCatch({
-      out<-value(X@Data)
-      if (!all(is.na(out)))
-      {
-        TRUE
-      } else {
-        FALSE
-      }
+      success <- tryCatch({
+        out <- value(X@Data)
+        if (!all(is.na(out)))
+        {
+          TRUE
+        } else {
+          FALSE
+        }
 
-    }, error = function(e) {
-      FALSE
-    })
-    if(success){
-      X@Rejected <- value
+      }, error = function(e) {
+        FALSE
+      })
+      if (success) {
+        X@Rejected <- value
+      } else {
+        warning(
+          "Can't set a Rejected function for 'X', either because 'X' contains no, or too few trials or because the function isn't appropriate. It must return a logical vector of the same length as trials (dim(X)[2]) in the object. Keeping all."
+        )
+        value <- logical(dim(X)[2])
+      }
     } else {
-      warning("Can't set a Rejected function for 'X', either because 'X' contains no, or too few trials or because the function isn't appropriate. It must return a logical vector of the same length as trials (dim(X)[2]) in the object. Keeping all.")
+      message(
+        "Can't set a Rejected function for 'X', because 'X' contains only one trial. Keeping it."
+      )
       value <- logical(dim(X)[2])
     }
   } else{
