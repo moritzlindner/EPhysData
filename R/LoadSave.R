@@ -127,11 +127,11 @@ Save.EPhysData <- function (con, X) {
   con[["TimeUnit"]] <- deparse_unit(X@TimeTrace)
   con[["StimulusTrace"]] <- drop_units(X@StimulusTrace)
   con[["StimulusUnit"]] <- deparse_unit(X@StimulusTrace)
-  tmp.fx<-deparse(X@Rejected)
+  tmp.fx<-deparse(local(X@Rejected))
   con[["Rejected"]] <- iconv(paste(tmp.fx, collapse = "\n"), "UTF-8", "UTF-8", sub = '')
-  tmp.fx<-deparse(X@filter.fx)
+  tmp.fx<-deparse(local(X@filter.fx))
   con[["filter.fx"]] <- paste(tmp.fx, collapse = "\n")
-  tmp.fx<-deparse(X@average.fx)
+  tmp.fx<-deparse(local(X@average.fx))
   con[["average.fx"]] <- paste(tmp.fx, collapse = "\n")
   con[["Created"]] <- X@Created
   con[["Type"]] <- "EPhysData"

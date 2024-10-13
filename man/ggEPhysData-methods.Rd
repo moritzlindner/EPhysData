@@ -12,7 +12,7 @@ ggEPhysData(X, Raw = T, ShowFiltered = T, SetSIPrefix = "keep")
 \S4method{ggEPhysData}{EPhysData}(X, Raw = T, ShowFiltered = T, SetSIPrefix = "keep")
 }
 \arguments{
-\item{X}{An \code{EPhysData} object}
+\item{X}{An \link{EPhysData} object}
 
 \item{Raw}{Logical indicating whether to get raw data or processed (filtered - see: \link{FilterFunction}, averaged - see: \link{AverageFunction}) data.}
 

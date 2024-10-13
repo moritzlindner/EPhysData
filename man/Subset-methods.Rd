@@ -39,7 +39,7 @@ Subset(X, ...)
 \S4method{[}{EPhysData}(x, i, j)
 }
 \arguments{
-\item{X}{An \code{EPhysData} object}
+\item{X}{An \link{EPhysData} object}
 
 \item{...}{currently unused.}
 

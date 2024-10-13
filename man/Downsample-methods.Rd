@@ -14,7 +14,7 @@ Downsample(X, n = 250)
 \S4method{Downsample}{EPhysSet}(X, n = 250)
 }
 \arguments{
-\item{X}{An \code{EPhysData} object}
+\item{X}{An \link{EPhysData} object}
 
 \item{n}{integer giving the \emph{desired} number of
     intervals.  Non-integer values are rounded down.}

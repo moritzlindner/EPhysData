@@ -24,7 +24,7 @@ GetData(
 )
 }
 \arguments{
-\item{X}{An \code{EPhysData} object}
+\item{X}{An \link{EPhysData} object}
 
 \item{Time}{Numeric vector of length 2 representing the time range for data extraction.
 Default is the entire time range (i.e., keep all data).}

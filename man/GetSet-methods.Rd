@@ -62,19 +62,31 @@ StimulusTrace(X)
 \S4method{StimulusTrace}{EPhysData}(X)
 }
 \arguments{
-\item{X}{An \code{EPhysData} object}
+\item{X}{An \link{EPhysData} object}
 
-\item{return.fx}{For \code{Rejected()}: Whether to return the function or the resulting logical vector. Default is \code{FALSE}, i.e. to return the function.}
+\item{return.fx}{For \code{Rejected()}: Whether to return the function or the resulting logical vector. Default is \code{FALSE}, i.e. to return the function. Not then when value is set to a function that requires parameters not contained in the \code{EPhysData} object itself, these must be either constants or, if expressions, they need to be evaluated when the function is created. i.e. those expressions should be called inside local() (\link[base:local]{base:local}).}
 
 \item{...}{Currently unused.}
 
-\item{value}{A value (usually a function) to set.}
+\item{value}{A value to set, which must be a function (for \code{'Rejected()<-'}, for \code{'FilterFunction()<-'}, or for \code{'AverageFunction()<-'}) or, for \code{'Rejected()<-'} either a function or a logical vector.}
 }
 \description{
-These methods are used to get and set the non-data slots from \link{EPhysData} objects.
+These methods are used to get and set the non-data slots from \link{EPhysData} objects, including functions for filtering, averaging, and rejecting trials. They are applied before retrieving data from the object (e.g. using When calling \link{GetData}, \link{as.data.frame}, or \link{ggEPhysData})
 }
 \details{
-\code{Rejected}: These functions set or get a function returning a logical vector indicating which of the trials stored in an \link{EPhysData} object to exclude from averaging. The following function from the EPhysMethods package may be helpful: \link[EPhysMethods:autoreject.by.distance]{EPhysMethods::autoreject.by.distance}, \link[EPhysMethods:autoreject.by.signalfree]{EPhysMethods::autoreject.by.signalfree}. The function is applied after runnning the filter set with \link[FilterFunction]{FilterFunction}
+The Functions assigned using the methods described herein will be applied before retrieving data from an \link{EPhysData} object in the following order:
+\enumerate{
+  \item \code{'FilterFunction()'}
+  \item \code{'Rejected()'}
+  \item \code{'AverageFunction()'}
+}
+ The Functions to \code{value} need to follow a few rules in order to work in general and also to be compatible with \link{Save}/\link{Load} in particular:
+ \itemize{
+ \item{Functions must be able to run with a single argument, which is a 2D numeric array for \code{'Rejected()'} and a numeric vector in case of \code{'FilterFunction()'} and \code{'AverageFunction()'}. Further explanation is given below}
+ \item{If a function should use more parameters upon creation, it must be ensured that these are stored as values inside the function instead just referencing a variable in the current namespace (as the namespace is not persevered upon saving the object). This can be achieved by encapsulating the function in an \code{eval(substitute())} statement, and pass these additional variables on to \code{substitute()} as the second parameter. See also \link[base:substitute]{base:substitute()} and \link[base:eval]{base:eval()}. }
+}
+
+\code{Rejected}: These methods set or get a function returning a logical vector indicating which of the trials stored in an \link{EPhysData} object to exclude from averaging. The function set needs to be able to run with a single argument, which will receive the numeric 2D array stored in the data slot of the \link{EPhysData} object  as input. It is applied after running the filter set with \link[FilterFunction]{FilterFunction}. The following functions from the EPhysMethods package may be helpful: \link[EPhysMethods:autoreject.by.distance]{EPhysMethods::autoreject.by.distance}, \link[EPhysMethods:autoreject.by.signalfree]{EPhysMethods::autoreject.by.signalfree}.
 
 \code{FilterFunction}: Set  a function for filtering each individual of the trials in the \link{EPhysData} object. Could be downsampling or noise removal, for instance. The following functions from the EPhysMethods package may be helpful: \link[EPhysMethods:filter.bandpass]{EPhysMethods::filter.bandpass}, \link[EPhysMethods:filter.detrend]{EPhysMethods::filter.detrend},
 
@@ -86,16 +98,18 @@ These methods are used to get and set the non-data slots from \link{EPhysData} o
 }
 \examples{
 # Create an EPhysData object with example data
-myEPhysData <- makeExampleEPhysData()
+myEPhysData <- makeExampleEPhysData(replicate_count = sample(5:8, 1))
 
 # Get the "Rejected" slot
 Rejected(myEPhysData)
-head(GetData(myEPhysData))
+Rejected(myEPhysData, return.fx=T)
+head(GetData(myEPhysData)) # the error can be ignored, as no averaging function has yet been set
 
 # Set the "Rejected" slot
 Rejected(myEPhysData) <- sample(c(TRUE,FALSE), dim(myEPhysData)[2], TRUE)
 Rejected(myEPhysData)
-head(GetData(myEPhysData))
+Rejected(myEPhysData, return.fx=T)
+head(GetData(myEPhysData))  # the error can be ignored, as no averaging function has yet been set
 head(GetData(myEPhysData,Trials=1:dim(myEPhysData)[2]))
 
 # Get the "filter.fx" slot
@@ -103,6 +117,14 @@ FilterFunction(myEPhysData)
 
 # Set the "filter.fx" slot
 FilterFunction(myEPhysData) <- scale
+FilterFunction(myEPhysData)
+
+# Set a fucntion to the "filter.fx" slot that depends on a variable upon creation
+value = sample(c(TRUE,FALSE),1)
+FilterFunction(myEPhysData)<- eval(substitute(function(x) {
+  scale(x, center= VALUE)
+}, list(VALUE = value)))
+rm(value)
 FilterFunction(myEPhysData)
 
 # Get the "average.fx" slot
@@ -117,5 +139,5 @@ head(GetData(myEPhysData,Raw=T))
 
 }
 \seealso{
-\link[EPhysMethods:autoreject.by.distance]{EPhysMethods::autoreject.by.distance}, \link[EPhysMethods:autoreject.by.signalfree]{EPhysMethods::autoreject.by.signalfree}, \link[EPhysMethods:filter.bandpass]{EPhysMethods::filter.bandpass}, \link[EPhysMethods:filter.detrend]{EPhysMethods::filter.detrend},
+\link[base:substitute]{base:substitute} \link[base:eval]{base:eval} \link[EPhysMethods:autoreject.by.distance]{EPhysMethods::autoreject.by.distance}, \link[EPhysMethods:autoreject.by.signalfree]{EPhysMethods::autoreject.by.signalfree}, \link[EPhysMethods:filter.bandpass]{EPhysMethods::filter.bandpass}, \link[EPhysMethods:filter.detrend]{EPhysMethods::filter.detrend},
 }

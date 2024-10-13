@@ -1,7 +1,7 @@
 Type: Package
 Package: EPhysData
 Title: EPhysData - Package for Handling Electrophysiological Data
-Version: 0.9.6
+Version: 0.9.7
 Author: person("Moritz", "Lindner", email = "moritz@lindnerlab.de", role =
     c("aut", "cre"))
 Maintainer: Moritz Lindner <moritz@lindnerlab.de>
