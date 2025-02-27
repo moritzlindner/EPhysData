@@ -111,6 +111,9 @@ setMethod("Subset",
               rejected.fx <- function(x) {
                 return(FALSE)
               }
+              filter.fx <- function(x) {
+                return(x)
+              }
             }
 
             # if x is changed, then dont keep filter
