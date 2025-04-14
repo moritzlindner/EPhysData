@@ -139,7 +139,7 @@ setMethod("Subset",
             if (validObject(out)) {
               return(out)
             } else{
-              stop("No valid PhysRAW object could be created.")
+              stop("No valid EPhysData object could be created.")
             }
           })
 
