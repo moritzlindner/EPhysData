@@ -1,42 +1,57 @@
-#' Get/Set methods for EPhysData objects
+#' Get/Set methods and accessors for EPhysData / EPhysContainer
 #'
-#' These methods are used to get and set the non-data slots from \link{EPhysData} objects, including functions for filtering, averaging, and rejecting trials. They are applied before retrieving data from the object (e.g. using When calling \link{GetData}, \link{as.data.frame}, or \link{ggEPhysData})
+#' These methods get and set non-data slots of \link{EPhysData} (filtering,
+#' trial rejection, averaging) and provide accessors for
+#' \link{EPhysContainer}-like classes (time/stimulus traces, units, channels,
+#' metadata lists). In addition, setter methods are provided for the stimulus
+#' trace and its units in \link{EPhysContainer}.
 #'
-#' @param X An \link{EPhysData} object
-#' @param value A value to set, which must be a function (for \code{'Rejected()<-'}, for \code{'FilterFunction()<-'}, or for \code{'AverageFunction()<-'}) or, for \code{'Rejected()<-'} either a function or a logical vector.
-#' @param return.fx For \code{Rejected()}: Whether to return the function or the resulting logical vector. Default is \code{FALSE}, i.e. to return the function. Not then when value is set to a function that requires parameters not contained in the \code{EPhysData} object itself, these must be either constants or, if expressions, they need to be evaluated when the function is created. i.e. those expressions should be called inside local() (\link[base:local]{base:local}).
-#' @param ... Currently unused.
-#' @details
-#' The Functions assigned using the methods described herein will be applied before retrieving data from an \link{EPhysData} object in the following order:
+#' When retrieving data (e.g., via \link{GetData} or \link{as.data.frame}),
+#' the following functions are applied **in order**:
 #' \enumerate{
-#'   \item \code{'FilterFunction()'}
-#'   \item \code{'Rejected()'}
-#'   \item \code{'AverageFunction()'}
-#' }
-#'  The Functions to \code{value} need to follow a few rules in order to work in general and also to be compatible with \link{Save}/\link{Load} in particular:
-#'  \itemize{
-#'  \item{Functions must be able to run with a single argument, which is a 2D numeric array for \code{'Rejected()'} and a numeric vector in case of \code{'FilterFunction()'} and \code{'AverageFunction()'}. Further explanation is given below}
-#'  \item{If a function should use more parameters upon creation, it must be ensured that these are stored as values inside the function instead just referencing a variable in the current namespace (as the namespace is not persevered upon saving the object). This can be achieved by encapsulating the function in an \code{eval(substitute())} statement, and pass these additional variables on to \code{substitute()} as the second parameter. See also \link[base:substitute]{base:substitute()} and \link[base:eval]{base:eval()}. }
+#'   \item \code{FilterFunction()}
+#'   \item \code{Rejected()}
+#'   \item \code{AverageFunction()}
 #' }
 #'
-#' @name Get_Set_EPhysData
-#' @rdname GetSet-methods
-#' @seealso \link[base:substitute]{base:substitute} \link[base:eval]{base:eval} \link[EPhysMethods:autoreject.by.distance]{EPhysMethods::autoreject.by.distance}, \link[EPhysMethods:autoreject.by.signalfree]{EPhysMethods::autoreject.by.signalfree}, \link[EPhysMethods:filter.bandpass]{EPhysMethods::filter.bandpass}, \link[EPhysMethods:filter.detrend]{EPhysMethods::filter.detrend},
-#' @docType methods
-#' @noMd
+#' @param X An \link{EPhysData} or \link{EPhysContainer} instance, depending on the method.
+#' @param value A value to set. For \code{Rejected<-}: a function **or** a logical
+#'   vector. For \code{FilterFunction<-} and \code{AverageFunction<-}: a function.
+#'   For \code{StimulusTrace<-}: numeric or a \pkg{units} vector (unit captured).
+#'   For \code{StimulusUnits<-}: unit string (e.g., \code{"ms"}, \code{"Hz"}, \code{"V"})
+#'   or a \pkg{units} object (its unit string is captured).
+#' @param return.fx For \code{Rejected()}: if \code{TRUE}, return the stored function;
+#'   otherwise (default) return its computed logical vector.
+#' @param ... Currently unused.
+#'
+#' @details
+#' Functions assigned to \code{value} must accept a single argument:
+#' a 2D numeric matrix for \code{Rejected()}, and a numeric vector for
+#' \code{FilterFunction()} and \code{AverageFunction()}.
+#' If your function depends on external values at creation time, embed those
+#' values inside the function (e.g., with \code{eval(substitute(...))} or
+#' \code{\link[base:local]{local}}) so they survive save/load.
+#'
+#' @seealso
+#' \link[base:substitute]{substitute}, \link[base:eval]{eval},
+#' \link[EPhysMethods:autoreject.by.distance]{EPhysMethods::autoreject.by.distance},
+#' \link[EPhysMethods:autoreject.by.signalfree]{EPhysMethods::autoreject.by.signalfree},
+#' \link[EPhysMethods:filter.bandpass]{EPhysMethods::filter.bandpass},
+#' \link[EPhysMethods:filter.detrend]{EPhysMethods::filter.detrend}
+#'
 #' @examples
 #' # Create an EPhysData object with example data
 #' myEPhysData <- makeExampleEPhysData(replicate_count = sample(5:8, 1))
 #'
 #' # Get the "Rejected" slot
 #' Rejected(myEPhysData)
-#' Rejected(myEPhysData, return.fx=T)
+#' Rejected(myEPhysData, return.fx=TRUE)
 #' head(GetData(myEPhysData)) # the error can be ignored, as no averaging function has yet been set
 #'
 #' # Set the "Rejected" slot
 #' Rejected(myEPhysData) <- sample(c(TRUE,FALSE), dim(myEPhysData)[2], TRUE)
 #' Rejected(myEPhysData)
-#' Rejected(myEPhysData, return.fx=T)
+#' Rejected(myEPhysData, return.fx=TRUE)
 #' head(GetData(myEPhysData))  # the error can be ignored, as no averaging function has yet been set
 #' head(GetData(myEPhysData,Trials=1:dim(myEPhysData)[2]))
 #'
@@ -63,261 +78,309 @@
 #' AverageFunction(myEPhysData) <- median
 #' AverageFunction(myEPhysData)
 #' head(GetData(myEPhysData))
-#' head(GetData(myEPhysData,Raw=T))
+#' head(GetData(myEPhysData,Raw=TRUE))
 #'
+#' @docType methods
+#' @name GetSet-methods
+#' @rdname GetSet-methods
+#' @noMd
+#' @importFrom units deparse_unit as_units drop_units set_units
 NULL
 
+# ---- Generics: EPhysData Get/Set (no guards) ----
 
-#' @details \code{Rejected}: These methods set or get a function returning a logical vector indicating which of the trials stored in an \link{EPhysData} object to exclude from averaging. The function set needs to be able to run with a single argument, which will receive the numeric 2D array stored in the data slot of the \link{EPhysData} object  as input. It is applied after running the filter set with \link[FilterFunction]{FilterFunction}. The following functions from the EPhysMethods package may be helpful: \link[EPhysMethods:autoreject.by.distance]{EPhysMethods::autoreject.by.distance}, \link[EPhysMethods:autoreject.by.signalfree]{EPhysMethods::autoreject.by.signalfree}.
+#' @rdname GetSet-methods
 #' @export
-#' @docType methods
+setGeneric("Rejected", function(X, return.fx = FALSE, ...) standardGeneric("Rejected"))
+
 #' @rdname GetSet-methods
-setGeneric(
-  name = "Rejected",
-  def = function(X, return.fx = F, ...) {
-    standardGeneric("Rejected")
-  }
-)
+#' @export
+setGeneric("Rejected<-", function(X, ..., value) standardGeneric("Rejected<-"))
+
 #' @rdname GetSet-methods
-#' @aliases Rejected,EPhysData,ANY-method
-setMethod("Rejected", signature = "EPhysData", function(X, return.fx = F) {
+#' @export
+setGeneric("FilterFunction", function(X, ...) standardGeneric("FilterFunction"))
+
+#' @rdname GetSet-methods
+#' @export
+setGeneric("FilterFunction<-", function(X, ..., value) standardGeneric("FilterFunction<-"))
+
+#' @rdname GetSet-methods
+#' @export
+setGeneric("AverageFunction", function(X, ...) standardGeneric("AverageFunction"))
+
+#' @rdname GetSet-methods
+#' @export
+setGeneric("AverageFunction<-", function(X, ..., value) standardGeneric("AverageFunction<-"))
+
+
+# ---- Generics: EPhysContainer accessors (no guards) ----
+
+#' @rdname GetSet-methods
+#' @export
+setGeneric("TimeTrace", function(X) standardGeneric("TimeTrace"))
+
+#' @rdname GetSet-methods
+#' @export
+setGeneric("StimulusTrace", function(X) standardGeneric("StimulusTrace"))
+
+#' @rdname GetSet-methods
+#' @export
+setGeneric("TimeUnits", function(X) standardGeneric("TimeUnits"))
+
+#' @rdname GetSet-methods
+#' @export
+setGeneric("StimulusUnits", function(X) standardGeneric("StimulusUnits"))
+
+#' @rdname GetSet-methods
+#' @export
+setGeneric("Channels", function(X) standardGeneric("Channels"))
+
+#' @rdname GetSet-methods
+#' @export
+setGeneric("ExamInfo", function(X) standardGeneric("ExamInfo"))
+
+#' @rdname GetSet-methods
+#' @export
+setGeneric("SubjectInfo", function(X) standardGeneric("SubjectInfo"))
+
+#' @rdname GetSet-methods
+#' @export
+setGeneric("Imported", function(X) standardGeneric("Imported"))
+
+# Replacement generics for EPhysContainer
+#' @rdname GetSet-methods
+#' @export
+setGeneric("StimulusTrace<-", function(X, value) standardGeneric("StimulusTrace<-"))
+
+#' @rdname GetSet-methods
+#' @export
+setGeneric("StimulusUnits<-", function(X, value) standardGeneric("StimulusUnits<-"))
+
+
+# ---- Methods: EPhysData Get/Set ----
+
+#' @describeIn GetSet-methods Get the rejection function or its computed logical vector.
+#' @export
+setMethod("Rejected", signature = "EPhysData", function(X, return.fx = FALSE) {
   if (!return.fx) {
     tryCatch({
-      dat<-X@Data
-      unit.buffer<-deparse_unit(dat)
-      dat<-apply(dat, 2, FilterFunction(X), simplify = T)
-      dat<-as_units(dat,unit.buffer)
-      out<-as.vector(X@Rejected(dat))
-      if(length(out)!=dim(X)[2]){
+      dat <- X@Data
+      unit.buffer <- deparse_unit(dat)
+      dat <- apply(dat, 2, FilterFunction(X), simplify = TRUE)
+      dat <- as_units(dat, unit.buffer)
+      out <- as.vector(X@Rejected(dat))
+      if (length(out) != dim(X)[2]) {
         stop("Function call does not return vector of correct length.")
       }
       out
-    }, error = function(e){
-      stop("The function stored in the 'Rejected' slot could not be applied. A likely reason is that the function is malformed or does not fit to the data stored in the object. Object has: ", dim(X)[2]," trials. Function string is: '", deparse1(X@Rejected),"' and returned error message is '", e,"' " )
+    }, error = function(e) {
+      stop("The function stored in the 'Rejected' slot could not be applied. ",
+           "Object has: ", dim(X)[2], " trials. Function string is: '",
+           deparse1(X@Rejected), "' and returned error message is '", e, "' ")
     })
-  } else{
-    return(X@Rejected)
+  } else {
+    X@Rejected
   }
 })
 
+#' @describeIn GetSet-methods Set the rejection function or a logical vector.
 #' @export
-#' @docType methods
-#' @rdname GetSet-methods
-setGeneric(
-  name = "Rejected<-",
-  def = function(X, ..., value) {
-    standardGeneric("Rejected<-")
-  }
-)
-#' @rdname GetSet-methods
-#' @aliases `Rejected<-`,EPhysData,ANY-method
 setMethod("Rejected<-", signature = "EPhysData", function(X, value) {
-  if ("function" %in% class(value)) {
-    if (dim(X)[2]>1){
-    # test if function is defined for a matrix of the given size of X
+  if (is.function(value)) {
+    if (dim(X)[2] > 1) {
       success <- tryCatch({
         out <- value(X@Data)
-        if (!all(is.na(out)))
-        {
-          TRUE
-        } else {
-          FALSE
-        }
-
-      }, error = function(e) {
-        FALSE
-      })
+        !all(is.na(out))
+      }, error = function(e) FALSE)
       if (success) {
         X@Rejected <- value
       } else {
-        warning(
-          "Can't set a Rejected function for 'X', either because 'X' contains no, or too few trials or because the function isn't appropriate. It must return a logical vector of the same length as trials (dim(X)[2]) in the object. Keeping all."
-        )
+        warning("Can't set a Rejected function for 'X'. ",
+                "It must return a logical vector of length dim(X)[2]. Keeping all.")
         value <- logical(dim(X)[2])
       }
     } else {
-      message(
-        "Can't set a Rejected function for 'X', because 'X' contains only one trial. Keeping it."
-      )
+      message("Can't set a Rejected function because 'X' contains only one trial. Keeping it.")
       value <- logical(dim(X)[2])
     }
-  } else{
-    if ("logical" %in% class(value)) {
-      if (length(value) == dim(X)[2]) {
-        X@Rejected <- eval(substitute(function(x) {
-          return(VALUE)
-        }, list(VALUE = value)))
-      } else{
-        stop("Incorrect length of logical vector.")
-      }
-    } else{
-      stop("Incorrect data type; must be logical or function.")
+  } else if (is.logical(value)) {
+    if (length(value) == dim(X)[2]) {
+      X@Rejected <- eval(substitute(function(x) VALUE, list(VALUE = value)))
+    } else {
+      stop("Incorrect length of logical vector.")
     }
+  } else {
+    stop("Incorrect data type; must be logical or function.")
   }
-  if (validEPhysData(X)) {
-    return(X)
-  }
+  if (validEPhysData(X)) X
 })
 
-#' @details \code{FilterFunction}: Set  a function for filtering each individual of the trials in the \link{EPhysData} object. Could be downsampling or noise removal, for instance. The following functions from the EPhysMethods package may be helpful: \link[EPhysMethods:filter.bandpass]{EPhysMethods::filter.bandpass}, \link[EPhysMethods:filter.detrend]{EPhysMethods::filter.detrend},
+#' @details \code{FilterFunction}: Set a function for filtering each trial in the
+#' \link{EPhysData} object (e.g., downsampling or noise removal).
+#' @describeIn GetSet-methods Get the per-trial filter function.
 #' @export
-#' @docType methods
-#' @rdname GetSet-methods
-setGeneric(
-  name = "FilterFunction",
-  def = function(X, ...) {
-    standardGeneric("FilterFunction")
-  }
-)
-#' @rdname GetSet-methods
-#' @aliases FilterFunction,EPhysData,ANY-method
-setMethod("FilterFunction", signature = "EPhysData", function(X) {
-  return(X@filter.fx)
-})
+setMethod("FilterFunction", signature = "EPhysData", function(X) X@filter.fx)
 
+#' @describeIn GetSet-methods Set the per-trial filter function.
 #' @export
-#' @docType methods
-#' @rdname GetSet-methods
-setGeneric(
-  name = "FilterFunction<-",
-  def = function(X, ..., value) {
-    standardGeneric("FilterFunction<-")
-  }
-)
-#' @rdname GetSet-methods
-#' @aliases `FilterFunction<-`,EPhysData,ANY-method
 setMethod("FilterFunction<-", signature = "EPhysData", function(X, value) {
   success <- tryCatch({
-    out<-apply(X@Data, 2, value, simplify = T)
-    ret<-T
-    if (!all(is.na(out)))
-    {
-      ret<-TRUE
-    } else {
-      ret<-FALSE
-    }
-    if(dim(out)[1]!=dim(X)[1]){
-      ret<-FALSE
-    }
-    if(dim(out)[2]!=dim(out)[2]){
-      ret<-FALSE
-    }
-    ret
-  }, error = function(e) {
-    FALSE
-  })
-  if(!success){
-    warning("Can't set filter function for 'X', likely because the function isn't appropriate. Must return a vector of the same length as the template vector.")
+    out <- apply(X@Data, 2, value, simplify = TRUE)
+    ok <- !all(is.na(out))
+    if (!ok) return(FALSE)
+    if (!is.matrix(out)) return(FALSE)
+    if (nrow(out) != dim(X)[1]) return(FALSE)
+    if (ncol(out) != dim(X)[2]) return(FALSE)  # fixed dimension check
+    TRUE
+  }, error = function(e) FALSE)
+  if (!success) {
+    warning("Can't set filter function for 'X'; it must return a matrix with the ",
+            "same dimensions as X@Data (per-trial, column-wise).")
   }
   X@filter.fx <- value
-  if (validEPhysData(X)) {
-    return(X)
-  }
+  if (validEPhysData(X)) X
 })
 
-#' @details \code{AverageFunction}: Set a function describing how averaging across trials measurement should be performed in the \link{EPhysData} object. Usually, \link[base:mean]{mean} can be a good start.
+#' @describeIn GetSet-methods Get the averaging function across trials.
 #' @export
-#' @docType methods
-#' @rdname GetSet-methods
-setGeneric(
-  name = "AverageFunction",
-  def = function(X, ...) {
-    standardGeneric("AverageFunction")
-  }
-)
+setMethod("AverageFunction", signature = "EPhysData", function(X) X@average.fx)
 
-#' @rdname GetSet-methods
-#' @aliases AverageFunction,EPhysData,ANY-method
-setMethod("AverageFunction", signature = "EPhysData", function(X) {
-  return(X@average.fx)
-})
-
+#' @describeIn GetSet-methods Set the averaging function across trials.
 #' @export
-#' @docType methods
-#' @rdname GetSet-methods
-setGeneric(
-  name = "AverageFunction<-",
-  def = function(X, ..., value) {
-    standardGeneric("AverageFunction<-")
-  }
-)
-
-#' @rdname GetSet-methods
-#' @aliases `AverageFunction<-`,EPhysData,ANY-method
 setMethod("AverageFunction<-", signature = "EPhysData", function(X, value) {
-    success <- tryCatch({
-      ret <- TRUE
-      out <- apply(X@Data, 1, value, simplify = T)
-      ret <- (!all(is.na(out)))
-      if (!is.null(dim(out))) {
-        if (dim(out)[1] != dim(X)[1]) {
-          ret <- FALSE
-        }
-        if (dim(out)[2] != 1) {
-          ret <- FALSE
-        }
-      } else{
-        if (length(out) != dim(X)[1]) {
-          ret <- FALSE
-        }
-      }
-      ret
-    }, error = function(e) {
-      FALSE
-    })
-    if (!success) {
-      if (dim(X)[[2]] == 1) {
-        warning("Object only contains single trial. The function you are trying to set is not valid and cant be set.")
-      } else {
-        stop(
-          "Can't set averaging function for 'X', either because 'X' contains too few trials or because the function isn't appropriate. Function must return a single value when applied to a vector."
-        )
-      }
+  success <- tryCatch({
+    out <- apply(X@Data, 1, value, simplify = TRUE)
+    if (!is.null(dim(out))) {
+      if (nrow(out) != dim(X)[1]) return(FALSE)
+      if (ncol(out) != 1) return(FALSE)
+    } else {
+      if (length(out) != dim(X)[1]) return(FALSE)
     }
-    X@average.fx <- value
-  if (validEPhysData(X)) {
-    return(X)
+    !all(is.na(out))
+  }, error = function(e) FALSE)
+  if (!success) {
+    if (dim(X)[2] == 1) {
+      warning("Object contains a single trial; the provided averaging function is not valid.")
+    } else {
+      stop("Can't set averaging function. It must return a single value for a vector (per row).")
+    }
   }
+  X@average.fx <- value
+  if (validEPhysData(X)) X
 })
 
-#' @details \code{TimeTrace}: These functions set or get the time trace belonging to the measurements stored in an \link{EPhysData} object.
+#' @describeIn GetSet-methods Return the time trace (EPhysData).
 #' @export
-#' @docType methods
-#' @rdname GetSet-methods
-setGeneric(
-  name = "TimeTrace",
-  def = function(X) {
-    standardGeneric("TimeTrace")
-  }
-)
+setMethod("TimeTrace", signature = "EPhysData", function(X) X@TimeTrace)
 
-#' @rdname GetSet-methods
-#' @aliases TimeTrace,EPhysData,ANY-method
-setMethod("TimeTrace", signature = "EPhysData", function(X) {
-  return(X@TimeTrace)
+#' @describeIn GetSet-methods Return the stimulus trace (EPhysData).
+#' @export
+setMethod("StimulusTrace", signature = "EPhysData", function(X) {
+  if (length(X@StimulusTrace) == 0) {
+    stop("No stimulus trace contained in 'EPhysData' object.")
+  }
+  X@StimulusTrace
 })
 
-#' @details \code{StimulusTrace}: These functions set or get the stimulus trace belonging to the measurements stored in an \link{EPhysData} object.
+
+# ---- Methods: EPhysContainer accessors ----
+
+#' @describeIn GetSet-methods Return the time trace (units applied via TimeUnits).
 #' @export
-#' @docType methods
-#' @rdname GetSet-methods
-setGeneric(
-  name = "StimulusTrace",
-  def = function(X)
-  {
-    standardGeneric("StimulusTrace")
+setMethod("TimeTrace", signature = "EPhysContainer", function(X) {
+  tt <- X@TimeTrace
+  u <- TimeUnits(X)
+  if (length(u) == 0) {
+    u <- ""
   }
+  tt <-
+    tryCatch(
+      set_units(tt, u, mode = "standard"),
+      error = function(e)
+        NULL
+    )
+  tt
+})
+
+#' @describeIn GetSet-methods Return the stimulus trace (units applied via StimulusUnits).
+#' @export
+setMethod("StimulusTrace", signature = "EPhysContainer", function(X) {
+  st <- X@StimulusTrace
+  u <- StimulusUnits(X)
+  if (length(u) == 0) {
+    u <- ""
+  }
+  st <-
+    tryCatch(
+      set_units(st, u, mode = "standard"),
+      error = function(e)
+        NULL
+    )
+  st
+})
+
+#' @describeIn GetSet-methods Returns the declared time units (udunits symbol).
+#' @export
+setMethod("TimeUnits", signature = "EPhysContainer", function(X) X@TimeUnits)
+
+#' @describeIn GetSet-methods Returns the declared stimulus units (udunits symbol).
+#' @export
+setMethod("StimulusUnits", signature = "EPhysContainer", function(X) X@StimulusUnits)
+
+#' @describeIn GetSet-methods Returns the channel names.
+#' @export
+setMethod("Channels", signature = "EPhysContainer", function(X) X@Channels)
+
+#' @describeIn GetSet-methods Returns the exam information list.
+#' @export
+setMethod("ExamInfo", signature = "EPhysContainer", function(X) X@ExamInfo)
+
+#' @describeIn GetSet-methods Returns the subject information list.
+#' @export
+setMethod("SubjectInfo", signature = "EPhysContainer", function(X) X@SubjectInfo)
+
+#' @describeIn GetSet-methods Returns the import timestamp (POSIXct).
+#' @export
+setMethod("Imported", signature = "EPhysContainer", function(X) X@Imported)
+
+
+# ---- Methods: EPhysContainer replacement (setters) ----
+
+#' @describeIn GetSet-methods Set the stimulus trace (units allowed; unit captured).
+#' @export
+setReplaceMethod("StimulusTrace",
+                 signature(X = "EPhysContainer", value = "ANY"),
+                 function(X, value) {
+                   if (inherits(value, "units")) {
+                     StimulusUnits(X) <- units::deparse_unit(value)
+                     value <- units::drop_units(value)
+                   }
+                   value <- as.numeric(value)
+                   tt_len <- tryCatch(length(TimeTrace(X)), error = function(e) NA_integer_)
+                   if (!is.na(tt_len) && length(value) != tt_len) {
+                     stop(sprintf("Length mismatch: StimulusTrace (%d) vs TimeTrace (%d).",
+                                  length(value), tt_len))
+                   }
+                   X@StimulusTrace <- value
+                   validObject(X)
+                   X
+                 }
 )
 
-#' @rdname GetSet-methods
-#' @aliases StimulusTrace,EPhysData,ANY-method
-setMethod("StimulusTrace",
-          "EPhysData",
-          function(X) {
-            if (length(X@StimulusTrace)!=0){
-              out<-X@StimulusTrace
-              return(out)
-            }else{
-              stop("No stimulus trace contained in 'EPhysData' object")
-            }
-          })
+#' @describeIn GetSet-methods Set the stimulus units (string or units object).
+#' @export
+setReplaceMethod("StimulusUnits",
+                 signature(X = "EPhysContainer", value = "ANY"),
+                 function(X, value) {
+                   if (inherits(value, "units")) {
+                     value <- units::deparse_unit(value)
+                   } else {
+                     tryCatch(units::as_units(value),
+                              error = function(e) stop("`value` is not a valid unit string for the units package."))
+                   }
+                   X@StimulusUnits <- as.character(value)
+                   validObject(X)
+                   X
+                 }
+)

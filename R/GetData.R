@@ -2,7 +2,7 @@
 #'
 #' This method extracts raw or processed data from an \code{EPhysData} object.
 #'
-#' @inheritParams Get_Set_EPhysData
+#' @inheritParams GetSet-methods
 #' @param Time Numeric vector of length 2 representing the time range for data extraction.
 #'             Default is the entire time range (i.e., keep all data).
 #' @param TimeExclusive Keep only the two points stated under 'Time', not the range.
