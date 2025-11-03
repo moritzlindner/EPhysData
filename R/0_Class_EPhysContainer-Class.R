@@ -45,7 +45,7 @@ validEPhysContainer <- function(object) {
   msgs <- character()
   md  <- object@Metadata
   dat <- object@Data
-    ch_names <- object@Channels
+  ch_names <- object@Channels
   ch_md <- object@Channel_Metadata
 
   if (!is.data.frame(md)) {
@@ -63,20 +63,48 @@ validEPhysContainer <- function(object) {
 
   if (!"RunUID" %in% names(md)) {
     msgs <- c(msgs, "`Metadata` must contain `RunUID` column.")
+  } else {
+    if (any(is.na(md$RunUID))) {
+      msgs <- c(msgs, "Column RunUID contains missing values.")
+    }
+  }
+
+  if (!"RecordingID" %in% names(md)) {
+    msgs <- c(msgs, "`Metadata` must contain `RecordingID` column.")
+  } else {
+    if (any(is.na(md$RecordingID))) {
+      msgs <- c(msgs, "Column RecordingID contains missing values.")
+    }
   }
 
   # Channel checks
+  ## In validEPhysContainer(), replace the current list-case block with:
+
   if (is.list(dat)) {
-    if (length(dat) > 0) {
-      trial_ch <- lapply(dat, names)
-      all_match <- all(vapply(trial_ch, function(x) setequal(x, ch_names), logical(1)))
-      if (!all_match) {
-        msgs <- c(msgs, "Not all Data[[i]] have same channel names as Channels slot.")
+    # top-level: one element per run
+    if (length(dat) != nrow(md)) {
+      msgs <- c(msgs, "`Data` (list) must have one element per run: length(Data) == nrow(Metadata).")
+    }
+
+    if (length(dat) > 0L) {
+      for (i in seq_along(dat)) {
+        rowdat <- dat[[i]]
+        if (!is.list(rowdat)) {
+          msgs <- c(msgs, sprintf("Data[[%d]] must be a list (one element per channel).", i))
+          break
+        }
+        if (length(rowdat) != length(ch_names)) {
+          msgs <- c(
+            msgs,
+            sprintf("Data[[%d]] must have length %d (one per channel); found %d.",
+                    i, length(ch_names), length(rowdat))
+          )
+          break
+        }
       }
     }
   } else if (is.array(dat)) {
     dch <- dim(dat)[3]
-    ch_names <- object@Channels
     if (length(ch_names) != dch) {
       msgs <- c(msgs, "Length of Channels slot must match third dimension of Data array.")
     }

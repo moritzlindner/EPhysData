@@ -18,7 +18,8 @@ Imports:
     remotes,
     stringr,
     tidyr,
-    cli
+    cli,
+    future.apply
 Suggests: 
     EPhysMethods
 Remotes:

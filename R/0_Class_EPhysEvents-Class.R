@@ -21,6 +21,7 @@ validEPhysEvents <- function(object) {
 
   md  <- object@Metadata
   dat <- object@Data
+  ch  <- object@Channels
 
   if (!is.data.frame(md)) {
     msgs <- c(msgs, "'Metadata' must be a data.frame.")
@@ -31,28 +32,43 @@ validEPhysEvents <- function(object) {
     for (i in seq_along(dat)) {
       rowdat <- dat[[i]]
       prefix <- paste0("Data[[", i, "]]")
-      if (!is.list(rowdat) || is.null(names(rowdat))) {
-        msgs <- c(msgs, paste0(prefix, " must be a named list (one element per channel)."))
+
+      # Must be a list
+      if (!is.list(rowdat)) {
+        msgs <- c(msgs, paste0(prefix, " must be a list (one element per channel)."))
+        next
+      }
+
+      # Must have exactly one entry per channel
+      if (length(rowdat) != length(ch)) {
+        msgs <- c(msgs, sprintf(
+          "%s must have length %d (one per channel), found %d.",
+          prefix, length(ch), length(rowdat)
+        ))
+      }
+
+      # Each channel entry must be numeric (possibly length 0)
+      for (ch_idx in seq_along(ch)) {
+        ts <- rowdat[[ch_idx]]
+        if (!is.numeric(ts)) {
+          msgs <- c(msgs, sprintf("%s[['%s']] must be a numeric vector of timestamps.", prefix, ch[[ch_idx]]))
+        }
       }
     }
   }
 
-  ## Additional check: no event outside the range of TimeTrace (if present)
+  ## Time range check (only if TimeTrace present)
   tt <- object@TimeTrace
   if (length(tt) > 0L && is.list(dat) && length(dat) == nrow(md)) {
     tmin <- min(tt, na.rm = TRUE)
     tmax <- max(tt, na.rm = TRUE)
-
     for (i in seq_along(dat)) {
       rowdat <- dat[[i]]
       if (!is.list(rowdat) || is.null(names(rowdat))) next
       for (ch_name in names(rowdat)) {
         ts <- rowdat[[ch_name]]
-        if (is.null(ts) || length(ts) == 0L) next
-        if (!is.numeric(ts)) {
-          msgs <- c(msgs, sprintf("Data[[%d]][['%s']] must be a numeric vector of timestamps.", i, ch_name))
-          next
-        }
+        if (length(ts) == 0L) next
+        if (!is.numeric(ts)) next  # already flagged above
         out <- which(ts < tmin | ts > tmax)
         if (length(out) > 0L) {
           msgs <- c(msgs, sprintf(
@@ -66,6 +82,7 @@ validEPhysEvents <- function(object) {
 
   if (length(msgs)) msgs else TRUE
 }
+
 
 
 #' EPhysEvents — event-type data (subclass of EPhysContainer)
@@ -125,7 +142,7 @@ newEPhysEvents <- function(Data,
            StimulusTrace = StimulusTrace,
            TimeUnits     = TimeUnits,
            StimulusUnits = StimulusUnits)
-  validEPhysContinuous(out)
+  validEPhysEvents(out)
   out
 }
 
