@@ -109,7 +109,8 @@ setMethod("lapply",
                 }
                 ch_out
               },
-              future.scheduling = 1  # suitable for both multicore and multisession
+              future.scheduling = 1,  # suitable for both multicore and multisession
+              future.seed = TRUE
             )
 
             names(results) <- run_names
@@ -189,7 +190,8 @@ setMethod(
         }
         ch_out
       },
-      future.scheduling = 1
+      future.scheduling = 1,
+      future.seed = T
     )
 
     names(results) <- run_names
