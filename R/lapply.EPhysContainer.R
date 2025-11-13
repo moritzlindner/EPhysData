@@ -1,28 +1,4 @@
-#' Apply a function over runs × channels of EPhys containers
-#'
-#' Applies `FUN` to each per-run×per-channel vector:
-#' - For **EPhysEvents**: each element is a numeric vector of event timestamps.
-#' - For **EPhysContinuous**: each element is the time series `Data[, run, channel]`.
-#'
-#' @name lapply-EPhysContainer
-#' @rdname lapply-EPhysContainer
-#' @param X   An `EPhysEvents` or `EPhysContinuous` object.
-#' @param FUN A function to apply to each vector (may be length 0 for events).
-#' @param parallel logical. If `TRUE`, use `future.apply::future_lapply()` over **runs**.
-#'   In parallel mode, any error stops the whole call.
-#' @param error one of `c("stop","warn")`. Only used in sequential mode. In `"warn"`
-#'   mode, errors are warned and the corresponding result is set to `NULL`.
-#' @param progress logical. Show a `cli` progress bar in sequential mode.
-#' @param ... Additional arguments passed to `FUN`.
-#'
-#' @return A nested list mirroring the run×channel structure:
-#'   `out[[run]][[channel]]`, with names taken from `dimnames(X@Data)$trial` (or `Metadata$RunUID`)
-#'   and `dimnames(X@Data)$channel` (or `X@Channels`), respectively.
-#'
-#' @importFrom cli cli_progress_bar cli_progress_update cli_progress_done cli_warn pb_bar pb_percent
-#' @importFrom future.apply future_lapply
-#' @exportMethod lapply
-
+#' @rdname lapply-EPhys
 setMethod("lapply",
           signature(X = "EPhysEvents", FUN = "function"),
           function(X,
@@ -117,7 +93,7 @@ setMethod("lapply",
             results
           })
 
-#' @exportMethod lapply
+#' @rdname lapply-EPhys
 setMethod(
   "lapply",
   signature(X = "EPhysContinuous", FUN = "function"),

@@ -7,7 +7,7 @@
 #' @param X An \code{EPhysContinuous} or \code{EPhysEvents} object.
 #' @param FUN A function of the form \code{function(mat, ...)}. See \emph{Details}
 #'   for the precise type of \code{mat} in each class.
-#' @inheritParams lapply-EPhysContainer
+#' @inheritParams lapply-EPhys
 #' @param ... Additional arguments passed to \code{FUN}.
 #'
 #' @return A nested list \code{out[[RecordingID]][[Channel]]}, where each leaf is

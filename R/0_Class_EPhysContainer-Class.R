@@ -61,20 +61,33 @@ validEPhysContainer <- function(object) {
 
   #Metadata checks
 
-  if (!"RunUID" %in% names(md)) {
-    msgs <- c(msgs, "`Metadata` must contain `RunUID` column.")
+  req_cols <- c("Experiment","Step","RecordingID","RunUID")
+  missing_cols <- setdiff(req_cols, names(md))
+  if (length(missing_cols)) {
+    msgs <- c(msgs, sprintf("`Metadata` must contain columns: %s.",
+                            paste(missing_cols, collapse = ", ")))
   } else {
-    if (any(is.na(md$RunUID))) {
-      msgs <- c(msgs, "Column RunUID contains missing values.")
-    }
-  }
+    if (!is.factor(md$Experiment))
+      msgs <- c(msgs, "Column `Experiment` must be a factor.")
+    if (any(is.na(md$Experiment)))
+      msgs <- c(msgs, "Column `Experiment` contains missing values.")
 
-  if (!"RecordingID" %in% names(md)) {
-    msgs <- c(msgs, "`Metadata` must contain `RecordingID` column.")
-  } else {
-    if (any(is.na(md$RecordingID))) {
-      msgs <- c(msgs, "Column RecordingID contains missing values.")
-    }
+    if (!is.ordered(md$Step))
+      msgs <- c(msgs, "Column `Step` must be an ordered factor.")
+    if (any(is.na(md$Step)))
+      msgs <- c(msgs, "Column `Step` contains missing values.")
+
+    if (!is.integer(md$RecordingID))
+      msgs <- c(msgs, "Column `RecordingID` must be of type integer.")
+    if (anyNA(md$RecordingID))
+      msgs <- c(msgs, "Column `RecordingID` contains missing values.")
+
+    if (!is.integer(md$RunUID))
+      msgs <- c(msgs, "Column `RunUID` must be of type integer.")
+    if (anyNA(md$RunUID))
+      msgs <- c(msgs, "Column `RunUID` contains missing values.")
+    if (anyDuplicated(md$RunUID))
+      msgs <- c(msgs, "Column `RunUID` must be unique (no duplicates).")
   }
 
   # Channel checks
@@ -191,7 +204,12 @@ validEPhysContainer <- function(object) {
 #' EPhysContainer: S4 class to hold per-run metadata, multi-channel data (as a list-of-lists or
 #' a 3D array), timing information, optional stimulus trace, and units.
 #'
-#' @slot Metadata \code{data.frame}. One row per run/recording.
+#' @slot Metadata \code{data.frame}. One row per run. Required columns:
+#'   \item \strong{Experiment}: *factor*. Factorized identifier for each Experiment. All recordings/runs acquired on the basis of an identical acquisition protocol can belong to the same Experiment.
+#'   \item \strong{Step}: *ordered*. Ordered identifier for each step. One Step corresponds to a single protocol stage within an Experiment; values are compared in their defined order to reflect the progression of the acquisition.
+#'   \item \strong{RecordingID}: *integer*. Identifier for each Recording. One Recording may have multiple runs.
+#'   \item \strong{RunUID}: *integer*. Unique run ID.
+#'   Any number of additional columns is allowed.
 #' @slot Data Either:
 #' \enumerate{
 #'   \item \strong{list}: A \emph{list} of length \code{nrow(Metadata)}; each \code{Data[[i]]} is a \emph{named list} with one element per channel. Each channel entry is a numeric vector of event timestamps; or

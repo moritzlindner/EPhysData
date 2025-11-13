@@ -11,7 +11,7 @@
 #'   \item \strong{EPhysSet}: Selects items from a set of \code{EPhysData}; optionally applies the
 #'         same time/trial subsetting to all items (when lengths allow); can simplify to a single
 #'         \code{EPhysData} via \code{Simplify=TRUE}.
-#'   \item \strong{EPhysEvents}: Filters trials by \code{Metadata} (e.g., intensity/type/repeat),
+#'   \item \strong{EPhysEvents}: Filters trials by \code{Metadata} (e.g., intensity/Experiment/repeat),
 #'         optionally keeps only selected \code{Channels}, applies a time window to event timestamps,
 #'         zero-shifts times by the lower bound, updates \code{Start}/\code{Stop}/\code{Diff} in
 #'         \code{Metadata} if present, and drops runs with no remaining spikes.
@@ -42,7 +42,7 @@
 #' \strong{EPhysEvents / EPhysContinuous}
 #' @param Intensity Optional numeric criterion. If length-2, treated as a closed range
 #'   \code{[min, max]}; otherwise matched via \code{\%in\%} to \code{Metadata$Intensity}.
-#' @param Type Optional character vector matched via \code{\%in\%} to \code{Metadata$Type}.
+#' @param Experiment Optional character vector matched via \code{\%in\%} to \code{Metadata$Experiment}.
 #' @param Repeat Optional numeric criterion; same range vs. \code{\%in\%} behavior as \code{Intensity}.
 #' @param RecordingID Optional numeric criterion; same behavior as \code{Intensity}.
 #' @param Channels Optional character vector of channel names to keep. Requested order is preserved.
@@ -63,7 +63,7 @@
 #' \itemize{
 #'   \item \strong{Range vs. membership matching}: For numeric \code{Intensity}, \code{Repeat},
 #'         and \code{RecordingID}, a length-2 vector is interpreted as \code{[min, max]} (closed);
-#'         any other length uses \code{\%in\%}. \code{Type} is always matched via \code{\%in\%}.
+#'         any other length uses \code{\%in\%}. \code{Experiment} is always matched via \code{\%in\%}.
 #'   \item \strong{Units}: \code{Time} and \code{TimeRange} can be plain numeric (interpreted in
 #'         the same unit as \code{TimeTrace(X)}) or \pkg{units} vectors convertible to that unit.
 #'   \item \strong{Stimulus alignment}: When \code{length(StimulusTrace(X)) == length(TimeTrace(X))},
@@ -299,8 +299,8 @@ setMethod("Subset",
 #' @keywords internal
 .subset_common_container <- function(
     X,
-    Intensity    = NULL,
-    Type         = NULL,
+    Step    = NULL,
+    Experiment         = NULL,
     Repeat       = NULL,
     RecordingID  = NULL,
     Channels     = NULL,
@@ -319,8 +319,14 @@ setMethod("Subset",
 
   # ---- trial filtering via Metadata ----
   keep <- rep(TRUE, nrow(md))
-  if (!is.null(Intensity))   keep <- keep & match_numeric(md$Intensity,   Intensity)
-  if (!is.null(Type))        keep <- keep & (md$Type %in% Type)
+  if (!is.null(Step)){
+    Step<- as.character(Step)
+    if (!all(Step %in% as.character(levels(md$Step)))){
+      stop ("Not all values of 'Step' exist in the repsecitve metadata column.")
+    }
+    keep <- keep & (as.character(md$Step) %in% Step)
+  }
+  if (!is.null(Experiment))        keep <- keep & (as.character(md$Experiment) %in% Experiment)
   if (!is.null(Repeat))      keep <- keep & match_numeric(md$Repeat,       Repeat)
   if (!is.null(RecordingID)) keep <- keep & match_numeric(md$RecordingID, RecordingID)
 
@@ -416,8 +422,8 @@ setMethod(
   "Subset",
   signature(X = "EPhysEvents"),
   function(X,
-           Intensity    = NULL,
-           Type         = NULL,
+           Step    = NULL,
+           Experiment         = NULL,
            Repeat       = NULL,
            RecordingID  = NULL,
            Channels     = NULL,
@@ -425,7 +431,7 @@ setMethod(
            ...) {
 
     cmm <- .subset_common_container(
-      X, Intensity = Intensity, Type = Type, Repeat = Repeat,
+      X, Step = Step, Experiment = Experiment, Repeat = Repeat,
       RecordingID = RecordingID, Channels = Channels, TimeRange = TimeRange
     )
 
@@ -479,7 +485,7 @@ setMethod(
   signature(X = "EPhysContinuous"),
   function(X,
            Intensity    = NULL,
-           Type         = NULL,
+           Experiment         = NULL,
            Repeat       = NULL,
            RecordingID  = NULL,
            Channels     = NULL,
@@ -489,7 +495,7 @@ setMethod(
     stopifnot(is.array(X@Data), length(dim(X@Data)) == 3L)
 
     cmm <- .subset_common_container(
-      X, Intensity = Intensity, Type = Type, Repeat = Repeat,
+      X, Intensity = Intensity, Experiment = Experiment, Repeat = Repeat,
       RecordingID = RecordingID, Channels = Channels, TimeRange = TimeRange
     )
 

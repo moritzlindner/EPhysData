@@ -6,8 +6,8 @@
 \usage{
 .subset_common_container(
   X,
-  Intensity = NULL,
-  Type = NULL,
+  Step = NULL,
+  Experiment = NULL,
   Repeat = NULL,
   RecordingID = NULL,
   Channels = NULL,

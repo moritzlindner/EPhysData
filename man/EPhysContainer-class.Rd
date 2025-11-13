@@ -24,7 +24,12 @@ for details on the required \code{Data} shape and additional validity checks.
 \section{Slots}{
 
 \describe{
-\item{\code{Metadata}}{\code{data.frame}. One row per run/recording.}
+\item{\code{Metadata}}{\code{data.frame}. One row per run. Required columns:
+\item \strong{Experiment}: \emph{factor}. Factorized identifier for each Experiment. All recordings/runs acquired on the basis of an identical acquisition protocol can belong to the same Experiment.
+\item \strong{Step}: \emph{ordered}. Ordered identifier for each step. One Step corresponds to a single protocol stage within an Experiment; values are compared in their defined order to reflect the progression of the acquisition.
+\item \strong{RecordingID}: \emph{integer}. Identifier for each Recording. One Recording may have multiple runs.
+\item \strong{RunUID}: \emph{integer}. Unique run ID.
+Any number of additional columns is allowed.}
 
 \item{\code{Data}}{Either:
 \enumerate{

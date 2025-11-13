@@ -38,8 +38,8 @@ Subset(X, ...)
 
 \S4method{Subset}{EPhysEvents}(
   X,
-  Intensity = NULL,
-  Type = NULL,
+  Step = NULL,
+  Experiment = NULL,
   Repeat = NULL,
   RecordingID = NULL,
   Channels = NULL,
@@ -50,7 +50,7 @@ Subset(X, ...)
 \S4method{Subset}{EPhysContinuous}(
   X,
   Intensity = NULL,
-  Type = NULL,
+  Experiment = NULL,
   Repeat = NULL,
   RecordingID = NULL,
   Channels = NULL,
@@ -89,10 +89,7 @@ that \code{EPhysData} instead of an \code{EPhysSet}.
 
 \strong{EPhysEvents / EPhysContinuous}}
 
-\item{Intensity}{Optional numeric criterion. If length-2, treated as a closed range
-\code{[min, max]}; otherwise matched via \code{\%in\%} to \code{Metadata$Intensity}.}
-
-\item{Type}{Optional character vector matched via \code{\%in\%} to \code{Metadata$Type}.}
+\item{Experiment}{Optional character vector matched via \code{\%in\%} to \code{Metadata$Experiment}.}
 
 \item{Repeat}{Optional numeric criterion; same range vs. \code{\%in\%} behavior as \code{Intensity}.}
 
@@ -103,6 +100,9 @@ that \code{EPhysData} instead of an \code{EPhysSet}.
 \item{TimeRange}{Length-2 numeric or \pkg{units} vector giving \code{[start, end]} in the
 \code{TimeTrace} unit (converted if \pkg{units}-aware). Returned \code{TimeTrace} (and aligned
 \code{StimulusTrace}, if lengths match) is zero-shifted by \code{start}.}
+
+\item{Intensity}{Optional numeric criterion. If length-2, treated as a closed range
+\code{[min, max]}; otherwise matched via \code{\%in\%} to \code{Metadata$Intensity}.}
 
 \item{x}{An \link{EPhysData}, \link{EPhysSet}, \link{EPhysContinuous}, or
 \link{EPhysEvents} object.}
@@ -131,7 +131,7 @@ the stored per-trial \code{FilterFunction} is reset; when subsetting by trials, 
 \item \strong{EPhysSet}: Selects items from a set of \code{EPhysData}; optionally applies the
 same time/trial subsetting to all items (when lengths allow); can simplify to a single
 \code{EPhysData} via \code{Simplify=TRUE}.
-\item \strong{EPhysEvents}: Filters trials by \code{Metadata} (e.g., intensity/type/repeat),
+\item \strong{EPhysEvents}: Filters trials by \code{Metadata} (e.g., intensity/Experiment/repeat),
 optionally keeps only selected \code{Channels}, applies a time window to event timestamps,
 zero-shifts times by the lower bound, updates \code{Start}/\code{Stop}/\code{Diff} in
 \code{Metadata} if present, and drops runs with no remaining spikes.
@@ -143,7 +143,7 @@ with \code{TimeTrace} when lengths match (otherwise left unchanged with a warnin
 \itemize{
 \item \strong{Range vs. membership matching}: For numeric \code{Intensity}, \code{Repeat},
 and \code{RecordingID}, a length-2 vector is interpreted as \code{[min, max]} (closed);
-any other length uses \code{\%in\%}. \code{Type} is always matched via \code{\%in\%}.
+any other length uses \code{\%in\%}. \code{Experiment} is always matched via \code{\%in\%}.
 \item \strong{Units}: \code{Time} and \code{TimeRange} can be plain numeric (interpreted in
 the same unit as \code{TimeTrace(X)}) or \pkg{units} vectors convertible to that unit.
 \item \strong{Stimulus alignment}: When \code{length(StimulusTrace(X)) == length(TimeTrace(X))},

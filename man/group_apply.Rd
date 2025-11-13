@@ -21,13 +21,19 @@ group_apply(
 \item{FUN}{A function of the form \code{function(mat, ...)}. See \emph{Details}
 for the precise type of \code{mat} in each class.}
 
-\item{parallel}{logical. If \code{TRUE}, use \code{future.apply::future_lapply()} over \strong{runs}.
-In parallel mode, any error stops the whole call.}
+\item{parallel}{logical.
+For \code{EPhysEvents} / \code{EPhysContinuous} methods only:
+if \code{TRUE}, use \code{future.apply::future_lapply()} over runs.}
 
-\item{error}{one of \code{c("stop","warn")}. Only used in sequential mode. In \code{"warn"}
-mode, errors are warned and the corresponding result is set to \code{NULL}.}
+\item{error}{character.
+For \code{EPhysEvents} / \code{EPhysContinuous} methods only:
+one of \code{c("stop", "warn")}. Used in sequential mode; in
+\code{"warn"} mode, errors are warned and the corresponding result
+is set to \code{NULL}.}
 
-\item{progress}{logical. Show a \code{cli} progress bar in sequential mode.}
+\item{progress}{logical.
+For \code{EPhysEvents} / \code{EPhysContinuous} methods only:
+show a \code{cli} progress bar in sequential mode.}
 
 \item{...}{Additional arguments passed to \code{FUN}.}
 }
