@@ -11,7 +11,7 @@
 #'   \item \strong{EPhysSet}: Selects items from a set of \code{EPhysData}; optionally applies the
 #'         same time/trial subsetting to all items (when lengths allow); can simplify to a single
 #'         \code{EPhysData} via \code{Simplify=TRUE}.
-#'   \item \strong{EPhysEvents}: Filters trials by \code{Metadata} (e.g., intensity/Experiment/repeat),
+#'   \item \strong{EPhysEvents}: Filters trials by \code{Metadata} (e.g., Step/Experiment/repeat),
 #'         optionally keeps only selected \code{Channels}, applies a time window to event timestamps,
 #'         zero-shifts times by the lower bound, updates \code{Start}/\code{Stop}/\code{Diff} in
 #'         \code{Metadata} if present, and drops runs with no remaining spikes.
@@ -40,11 +40,11 @@
 #'   that \code{EPhysData} instead of an \code{EPhysSet}.
 #'
 #' \strong{EPhysEvents / EPhysContinuous}
-#' @param Intensity Optional numeric criterion. If length-2, treated as a closed range
-#'   \code{[min, max]}; otherwise matched via \code{\%in\%} to \code{Metadata$Intensity}.
+#' @param Step Optional numeric criterion. If length-2, treated as a closed range
+#'   \code{[min, max]}; otherwise matched via \code{\%in\%} to \code{Metadata$Step}.
 #' @param Experiment Optional character vector matched via \code{\%in\%} to \code{Metadata$Experiment}.
-#' @param Repeat Optional numeric criterion; same range vs. \code{\%in\%} behavior as \code{Intensity}.
-#' @param RecordingID Optional numeric criterion; same behavior as \code{Intensity}.
+#' @param Repeat Optional numeric criterion; same range vs. \code{\%in\%} behavior as \code{Step}.
+#' @param RecordingID Optional numeric criterion; same behavior as \code{Step}.
 #' @param Channels Optional character vector of channel names to keep. Requested order is preserved.
 #' @param TimeRange Length-2 numeric or \pkg{units} vector giving \code{[start, end]} in the
 #'   \code{TimeTrace} unit (converted if \pkg{units}-aware). Returned \code{TimeTrace} (and aligned
@@ -61,7 +61,7 @@
 #'
 #' @details
 #' \itemize{
-#'   \item \strong{Range vs. membership matching}: For numeric \code{Intensity}, \code{Repeat},
+#'   \item \strong{Range vs. membership matching}: For numeric \code{Step}, \code{Repeat},
 #'         and \code{RecordingID}, a length-2 vector is interpreted as \code{[min, max]} (closed);
 #'         any other length uses \code{\%in\%}. \code{Experiment} is always matched via \code{\%in\%}.
 #'   \item \strong{Units}: \code{Time} and \code{TimeRange} can be plain numeric (interpreted in
@@ -484,7 +484,7 @@ setMethod(
   "Subset",
   signature(X = "EPhysContinuous"),
   function(X,
-           Intensity    = NULL,
+           Step    = NULL,
            Experiment         = NULL,
            Repeat       = NULL,
            RecordingID  = NULL,
@@ -495,7 +495,7 @@ setMethod(
     stopifnot(is.array(X@Data), length(dim(X@Data)) == 3L)
 
     cmm <- .subset_common_container(
-      X, Intensity = Intensity, Experiment = Experiment, Repeat = Repeat,
+      X, Step = Step, Experiment = Experiment, Repeat = Repeat,
       RecordingID = RecordingID, Channels = Channels, TimeRange = TimeRange
     )
 

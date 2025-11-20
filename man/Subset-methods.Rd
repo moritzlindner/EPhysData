@@ -49,7 +49,7 @@ Subset(X, ...)
 
 \S4method{Subset}{EPhysContinuous}(
   X,
-  Intensity = NULL,
+  Step = NULL,
   Experiment = NULL,
   Repeat = NULL,
   RecordingID = NULL,
@@ -89,20 +89,20 @@ that \code{EPhysData} instead of an \code{EPhysSet}.
 
 \strong{EPhysEvents / EPhysContinuous}}
 
+\item{Step}{Optional numeric criterion. If length-2, treated as a closed range
+\code{[min, max]}; otherwise matched via \code{\%in\%} to \code{Metadata$Step}.}
+
 \item{Experiment}{Optional character vector matched via \code{\%in\%} to \code{Metadata$Experiment}.}
 
-\item{Repeat}{Optional numeric criterion; same range vs. \code{\%in\%} behavior as \code{Intensity}.}
+\item{Repeat}{Optional numeric criterion; same range vs. \code{\%in\%} behavior as \code{Step}.}
 
-\item{RecordingID}{Optional numeric criterion; same behavior as \code{Intensity}.}
+\item{RecordingID}{Optional numeric criterion; same behavior as \code{Step}.}
 
 \item{Channels}{Optional character vector of channel names to keep. Requested order is preserved.}
 
 \item{TimeRange}{Length-2 numeric or \pkg{units} vector giving \code{[start, end]} in the
 \code{TimeTrace} unit (converted if \pkg{units}-aware). Returned \code{TimeTrace} (and aligned
 \code{StimulusTrace}, if lengths match) is zero-shifted by \code{start}.}
-
-\item{Intensity}{Optional numeric criterion. If length-2, treated as a closed range
-\code{[min, max]}; otherwise matched via \code{\%in\%} to \code{Metadata$Intensity}.}
 
 \item{x}{An \link{EPhysData}, \link{EPhysSet}, \link{EPhysContinuous}, or
 \link{EPhysEvents} object.}
@@ -131,7 +131,7 @@ the stored per-trial \code{FilterFunction} is reset; when subsetting by trials, 
 \item \strong{EPhysSet}: Selects items from a set of \code{EPhysData}; optionally applies the
 same time/trial subsetting to all items (when lengths allow); can simplify to a single
 \code{EPhysData} via \code{Simplify=TRUE}.
-\item \strong{EPhysEvents}: Filters trials by \code{Metadata} (e.g., intensity/Experiment/repeat),
+\item \strong{EPhysEvents}: Filters trials by \code{Metadata} (e.g., Step/Experiment/repeat),
 optionally keeps only selected \code{Channels}, applies a time window to event timestamps,
 zero-shifts times by the lower bound, updates \code{Start}/\code{Stop}/\code{Diff} in
 \code{Metadata} if present, and drops runs with no remaining spikes.
@@ -141,7 +141,7 @@ with \code{TimeTrace} when lengths match (otherwise left unchanged with a warnin
 }
 
 \itemize{
-\item \strong{Range vs. membership matching}: For numeric \code{Intensity}, \code{Repeat},
+\item \strong{Range vs. membership matching}: For numeric \code{Step}, \code{Repeat},
 and \code{RecordingID}, a length-2 vector is interpreted as \code{[min, max]} (closed);
 any other length uses \code{\%in\%}. \code{Experiment} is always matched via \code{\%in\%}.
 \item \strong{Units}: \code{Time} and \code{TimeRange} can be plain numeric (interpreted in
