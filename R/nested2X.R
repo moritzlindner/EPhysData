@@ -43,9 +43,13 @@ nested2df <- function(X, nestedlist) {
     df <- do.call(rbind, rows)
 
     # use a proper Channel column (don’t touch rownames)
-    chan <- if (!is.null(names(run))) names(run) else ch[seq_len(nrow(df))]
-    df$Channel <- chan
-    df$RunUID  <- if (!is.null(names(nestedlist))) names(nestedlist)[i] else md$RunUID[i]
+    chan_names <- if (!is.null(names(run))) names(run) else ch[seq_along(run)]
+    n_per_chan <- vapply(rows, nrow, integer(1))
+
+    df$Channel <- rep(chan_names, times = n_per_chan)
+    runid <- if (!is.null(names(nestedlist))) names(nestedlist)[i] else md$RunUID[i]
+    df$RunUID  <- rep(runid, nrow(df))
+
     df
   })
 
