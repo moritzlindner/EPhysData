@@ -66,7 +66,7 @@ nested2df <- function(X, nestedlist) {
 
 
 
-#' Pack nested per-recording/channel vectors into a [time × trial × channel] array
+#' Pack nested per-recording/channel vectors into a time × trial × channel array
 #'
 #' Converts a nested list indexed by \emph{RecordingID × Channel} into a numeric
 #' array matching the \code{EPhysContinuous@Data} convention \code{[time × trial × channel]}.

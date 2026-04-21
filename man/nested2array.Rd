@@ -2,7 +2,7 @@
 % Please edit documentation in R/nested2X.R
 \name{nested2array}
 \alias{nested2array}
-\title{Pack nested per-recording/channel vectors into a \link{time × trial × channel} array}
+\title{Pack nested per-recording/channel vectors into a time × trial × channel array}
 \usage{
 nested2array(nestedlist)
 }

@@ -15,6 +15,17 @@ setMethod("lapply",
             n_runs <- length(dat)
             run_names <- names(dat)
 
+            mc <- match.call()
+            fun_expr <- mc$FUN
+
+            fun_name <- if (is.null(fun_expr)) {
+              "<unknown>"
+            } else if (is.symbol(fun_expr)) {
+              as.character(fun_expr)
+            } else {
+              paste(deparse(fun_expr), collapse = " ")
+            }
+
             # --- Sequential path -----------------------------------------------------
             if (!isTRUE(parallel)) {
               if (progress) {
@@ -41,7 +52,8 @@ setMethod("lapply",
                     do.call(FUN, c(list(ts), dots)),
                     error = function(e) {
                       msg <- sprintf(
-                        "FUN error at run %s (index %d), channel '%s': %s",
+                        "FUN '%s' error at run %s (index %d), channel '%s': %s",
+                        fun_name,
                         if (is.null(run_names))
                           as.character(i)
                         else
@@ -100,6 +112,18 @@ setMethod(
   function(X, FUN, parallel = FALSE, error = c("stop","warn")[1], progress = interactive(), ...) {
 
     dots <- list(...)
+
+    mc <- match.call()
+    fun_expr <- mc$FUN
+
+    fun_name <- if (is.null(fun_expr)) {
+      "<unknown>"
+    } else if (is.symbol(fun_expr)) {
+      as.character(fun_expr)
+    } else {
+      paste(deparse(fun_expr), collapse = " ")
+    }
+
     err_mode <- match.arg(error, c("stop","warn"))
 
     d <- X@Data
@@ -131,8 +155,10 @@ setMethod(
           res <- tryCatch(
             do.call(FUN, c(list(ts), dots)),
             error = function(e) {
-              msg <- sprintf("FUN error at run %s (index %d), channel '%s': %s",
-                             run_names[[i]], i, ch_names[[j]], conditionMessage(e))
+              msg <- sprintf(
+                "FUN '%s' error at run %s (index %d), channel '%s': %s",
+                fun_name, run_names[[i]], i, ch_names[[j]], conditionMessage(e)
+              )
               if (identical(err_mode, "stop")) stop(msg, call. = FALSE)
               cli_warn(msg)
               NULL

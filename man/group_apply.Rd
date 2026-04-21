@@ -44,7 +44,7 @@ outer level are the distinct \code{RecordingID}s; inner names are
 \code{Channels(X)}.
 }
 \description{
-For EPhysContinuous, FUN receives a numeric matrix \link{time × runs_in_recording}.
+For EPhysContinuous, FUN receives a numeric matrix time × runs_in_recording.
 For EPhysEvents, FUN receives a list of numeric vectors (timestamps), one per run.
 }
 \section{Methods}{

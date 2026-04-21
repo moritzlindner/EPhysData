@@ -1,6 +1,6 @@
 #' Apply over repeated runs for an individual Recording
 #'
-#' For EPhysContinuous, FUN receives a numeric matrix [time × runs_in_recording].
+#' For EPhysContinuous, FUN receives a numeric matrix time × runs_in_recording.
 #' For EPhysEvents, FUN receives a list of numeric vectors (timestamps), one per run.
 #'
 #'
