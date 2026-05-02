@@ -65,7 +65,9 @@ Subset(X, ...)
 \arguments{
 \item{X}{An \link{EPhysData} or \link{EPhysContainer} instance, depending on the method.}
 
-\item{...}{Currently unused.
+\item{...}{Reserved for method compatibility. For \code{EPhysEvents} and
+\code{EPhysContinuous}, any unused arguments passed through \code{...}
+cause an error.
 
 \strong{EPhysData / EPhysSet}}
 

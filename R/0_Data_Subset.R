@@ -24,7 +24,9 @@
 #' @inheritParams as.data.frame
 #'
 #' @param i,j Indices specifying elements to extract.
-#' @param ... Currently unused.
+#' @param ... Reserved for method compatibility. For \code{EPhysEvents} and
+#'   \code{EPhysContinuous}, any unused arguments passed through \code{...}
+#'   cause an error.
 #'
 #' \strong{EPhysData / EPhysSet}
 #' @param Time A length-2 vector giving the time window; may be plain numeric in the same unit
@@ -413,6 +415,35 @@ setMethod("Subset",
   )
 }
 
+#' Check for dot arguments
+#' @keywords internal
+.check_unused_dots <- function(..., .fun = "Subset") {
+  dots <- as.list(substitute(list(...)))[-1L]
+
+  if (length(dots) == 0L) {
+    return(invisible(NULL))
+  }
+
+  dot_names <- names(dots)
+  dot_labels <- ifelse(
+    nzchar(dot_names),
+    dot_names,
+    vapply(dots, deparse, character(1), width.cutoff = 500L)
+  )
+
+  msg <- paste0(
+    .fun, " received unused argument(s): ",
+    paste(sprintf("'%s'", dot_labels), collapse = ", "),
+    "."
+  )
+
+  if ("Channel" %in% dot_labels) {
+    msg <- paste0(msg, " Did you mean 'Channels'?")
+  }
+
+  stop(msg, call. = FALSE)
+}
+
 # ---- Methods: Subset for EPhysEvents / EPhysContinuous -----------------------
 
 #' @rdname Subset-methods
@@ -429,6 +460,8 @@ setMethod(
            Channels     = NULL,
            TimeRange    = c(0, Inf),
            ...) {
+
+    .check_unused_dots(..., .fun = "Subset,EPhysEvents")
 
     cmm <- .subset_common_container(
       X, Step = Step, Experiment = Experiment, Repeat = Repeat,
@@ -461,7 +494,6 @@ setMethod(
       })
     })
 
-
     new("EPhysEvents",
         Metadata          = cmm$new_md,
         Data              = new_data,
@@ -491,6 +523,8 @@ setMethod(
            Channels     = NULL,
            TimeRange    = c(0, Inf),
            ...) {
+
+    .check_unused_dots(..., .fun = "Subset,EPhysEvents")
 
     stopifnot(is.array(X@Data), length(dim(X@Data)) == 3L)
 
