@@ -3,6 +3,14 @@
 #' Get or modify the \code{Channel_Metadata} slot of an \code{EPhysContainer}.
 #' Optionally fetch a single column by name (returned as a vector aligned to \code{Channels}).
 #'
+#' @param X An \code{EPhysContainer} object.
+#' @param column Optional metadata column name.
+#' @param columnName Name of the column to add.
+#' @param columnData One value per channel in \code{Channels(X)} order.
+#' @param value A data frame with one row per channel, or an empty data frame.
+#'   Rows can be keyed by row names or a \code{Channel} column. Automatic row
+#'   names without a key are interpreted in \code{Channels(X)} order.
+#' @param ... Reserved for method compatibility.
 #' @name ChannelMetadata
 #' @title Channel Metadata Accessors for EPhysContainer
 #' @return
@@ -31,90 +39,78 @@ setGeneric("AddChannelMetadata", function(X, columnName, columnData, ...)
 setGeneric("ChannelMetadata<-", function(X, value)
   standardGeneric("ChannelMetadata<-"))
 
-## Accessor ----
+.ephys_align_channel_metadata <- function(value, channels, operation) {
+  if (!is.data.frame(value)) {
+    .ephys_abort(sprintf("%s requires a data frame. Received %s.",
+                         operation, paste(class(value), collapse = "/")))
+  }
+  if (!nrow(value)) return(data.frame(row.names = channels))
+  if (nrow(value) != length(channels)) {
+    .ephys_abort(sprintf("%s received %d rows. Expected %d, one per channel.",
+                         operation, nrow(value), length(channels)))
+  }
+
+  keys <- rownames(value)
+  if ("Channel" %in% names(value)) {
+    column_keys <- as.character(value$Channel)
+    if (setequal(keys, channels) && !identical(keys, column_keys)) {
+      .ephys_abort(paste(operation, "found conflicting row names and Channel values."))
+    }
+    keys <- column_keys
+  } else if (.row_names_info(value, type = 1L) < 0L) {
+    keys <- channels
+  }
+  if (anyDuplicated(keys) || !setequal(keys, channels)) {
+    missing <- setdiff(channels, keys)
+    unexpected <- setdiff(keys, channels)
+    .ephys_abort(sprintf("%s requires one unique key per channel. Missing: %s. Unexpected: %s.",
+                         operation, toString(shQuote(missing)), toString(shQuote(unexpected))))
+  }
+  out <- value[match(channels, keys), , drop = FALSE]
+  rownames(out) <- channels
+  out
+}
+
 #' @rdname ChannelMetadata
-#' @noRd
 #' @aliases ChannelMetadata,EPhysContainer-method
 #' @export
 setMethod("ChannelMetadata", "EPhysContainer", function(X, column = NULL, ...) {
-  chm <-
-    X@Channel_Metadata
-  if (!is.data.frame(chm) ||
-      nrow(chm) == 0L) {
-    chm <-
-      data.frame(row.names = X@Channels)
+  operation <- sprintf("ChannelMetadata(%s)", class(X)[1L])
+  metadata <- .ephys_align_channel_metadata(X@Channel_Metadata, Channels(X), operation)
+  if (is.null(column)) return(metadata)
+  if (!is.character(column) || length(column) != 1L || is.na(column)) {
+    .ephys_abort(paste(operation, "requires one column name."))
   }
-  if (!is.null(rownames(chm)) &&
-      setequal(rownames(chm), X@Channels)) {
-    chm <-
-      chm[match(X@Channels, rownames(chm)), , drop = FALSE]
-  } else if ("Channel" %in% names(chm) &&
-             setequal(chm$Channel, X@Channels)) {
-    chm <-
-      chm[match(X@Channels, chm$Channel), , drop = FALSE]
-    rownames(chm) <-
-      X@Channels
-  } else if (nrow(chm) == length(X@Channels) &&
-             is.null(rownames(chm))) {
-    rownames(chm) <-
-      X@Channels
+  if (!column %in% names(metadata)) {
+    .ephys_abort(sprintf("%s could not find column %s.", operation, shQuote(column)))
   }
-  if (!is.null(column)) {
-    if (!(is.character(column) &&
-          length(column) == 1L))
-      stop("column must be a single character string.")
-    if (!(column %in% colnames(chm)))
-      stop(sprintf("Column '%s' not found in Channel_Metadata.", column))
-    return(chm[[column]])
-  }
-  chm
+  metadata[[column]]
 })
-## Adder ----
+
 #' @rdname ChannelMetadata
-#' @noRd
 #' @aliases AddChannelMetadata,EPhysContainer-method
 #' @export
 setMethod("AddChannelMetadata", "EPhysContainer", function(X, columnName, columnData, ...) {
-  if (!(is.character(columnName) &&
-        length(columnName) == 1L))
-    stop("columnName must be a single character string.")
-  if (length(columnData) != length(X@Channels))
-    stop("columnData length must match length(Channels(X)).")
-  chm <-
-    ChannelMetadata(X)
-  chm[[columnName]] <-
-    columnData
-  X@Channel_Metadata <- chm
-  validObject(X)
+  if (!is.character(columnName) || length(columnName) != 1L ||
+      is.na(columnName) || !nzchar(columnName)) {
+    .ephys_abort("AddChannelMetadata() requires one non-empty columnName.")
+  }
+  if (length(columnData) != length(Channels(X))) {
+    .ephys_abort(sprintf("AddChannelMetadata() received %d values for %s. Expected %d.",
+                         length(columnData), shQuote(columnName), length(Channels(X))))
+  }
+  metadata <- ChannelMetadata(X)
+  metadata[[columnName]] <- columnData
+  ChannelMetadata(X) <- metadata
   X
 })
-## Replacement ----
+
 #' @rdname ChannelMetadata
-#' @noRd
 #' @aliases ChannelMetadata<-,EPhysContainer-method
 #' @export
 setReplaceMethod("ChannelMetadata", signature(X = "EPhysContainer"), function(X, value) {
-  if (!is.data.frame(value))
-    stop("New channel metadata must be a data.frame.")
-  if (nrow(value) != length(X@Channels))
-      stop("New channel metadata must have the same number of rows as length(Channels(X)).")
-  if (!is.null(rownames(value)) &&
-      setequal(rownames(value), X@Channels)) {
-    value <-
-      value[match(X@Channels, rownames(value)), , drop = FALSE]
-  } else if ("Channel" %in% names(value) &&
-             setequal(value$Channel, X@Channels)) {
-    value <-
-      value[match(X@Channels, value$Channel), , drop = FALSE]
-    rownames(value) <-
-        X@Channels
-  } else if (is.null(rownames(value))) {
-    rownames(value) <-
-      X@Channels
-  } else {
-    stop("Row names (or a 'Channel' column) of new channel metadata must match Channels(X).")
-  }
-  X@Channel_Metadata <- value
+  operation <- sprintf("ChannelMetadata<-(%s)", class(X)[1L])
+  X@Channel_Metadata <- .ephys_align_channel_metadata(value, Channels(X), operation)
   validObject(X)
   X
 })

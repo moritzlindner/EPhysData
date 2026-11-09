@@ -194,13 +194,13 @@ myEPhysData <- makeExampleEPhysData(replicate_count = sample(5:8, 1))
 # Get the "Rejected" slot
 Rejected(myEPhysData)
 Rejected(myEPhysData, return.fx=TRUE)
-head(GetData(myEPhysData)) # the error can be ignored, as no averaging function has yet been set
+head(GetData(myEPhysData))
 
 # Set the "Rejected" slot
-Rejected(myEPhysData) <- sample(c(TRUE,FALSE), dim(myEPhysData)[2], TRUE)
+Rejected(myEPhysData) <- seq_len(ncol(myEPhysData)) == 1L
 Rejected(myEPhysData)
 Rejected(myEPhysData, return.fx=TRUE)
-head(GetData(myEPhysData))  # the error can be ignored, as no averaging function has yet been set
+head(GetData(myEPhysData))
 head(GetData(myEPhysData,Trials=1:dim(myEPhysData)[2]))
 
 # Get the "filter.fx" slot
@@ -211,9 +211,9 @@ FilterFunction(myEPhysData) <- scale
 FilterFunction(myEPhysData)
 
 # Set a fucntion to the "filter.fx" slot that depends on a variable upon creation
-value = sample(c(TRUE,FALSE),1)
+value <- TRUE
 FilterFunction(myEPhysData)<- eval(substitute(function(x) {
-  scale(x, center= VALUE)
+  scale(x, center = VALUE)
 }, list(VALUE = value)))
 rm(value)
 FilterFunction(myEPhysData)

@@ -45,9 +45,9 @@ if \code{TRUE}, use \code{future.apply::future_lapply()} over runs.}
 
 \item{error}{character.
 For \code{EPhysEvents} / \code{EPhysContinuous} methods only:
-one of \code{c("stop", "warn")}. Used in sequential mode; in
+one of \code{c("stop", "warn")}, in both serial and parallel modes. In
 \code{"warn"} mode, errors are warned and the corresponding result
-is set to \code{NULL}.}
+keeps its run and channel names and is set to \code{NULL}.}
 
 \item{progress}{logical.
 For \code{EPhysEvents} / \code{EPhysContinuous} methods only:

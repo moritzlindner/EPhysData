@@ -16,7 +16,7 @@ Save(X, filename, overwrite = F)
 
 \S4method{Save}{EPhysSet}(X, filename, overwrite = F)
 
-Load(filename)
+Load(filename, restore_callbacks = FALSE)
 }
 \arguments{
 \item{X}{A \linkS4class{EPhysData} or \linkS4class{EPhysSet} object.}
@@ -24,6 +24,10 @@ Load(filename)
 \item{filename}{Path the data is read from or written to.}
 
 \item{overwrite}{Should existing files be overwritten?}
+
+\item{restore_callbacks}{Restore saved R callback definitions. Defaults to
+\code{FALSE}, which loads data with built-in callbacks. Use \code{TRUE}
+only for files you trust. Restored callback bodies can execute R code when used.}
 }
 \value{
 \itemize{
@@ -49,12 +53,11 @@ SampleData
 rm(SampleData)
 SampleData<-Load(fn)
 SampleData
-require(EPhysMethods)
-Rejected(SampleData)<-autoreject.by.distance
+Rejected(SampleData) <- function(x) rep(FALSE, ncol(x))
 Save(SampleData, fn, overwrite = TRUE)
 SampleData
 rm(SampleData)
-SampleData<-Load(fn)
+SampleData<-Load(fn, restore_callbacks = TRUE)
 SampleData
 rm(SampleData)
 SampleData<-makeExampleEPhysSet()

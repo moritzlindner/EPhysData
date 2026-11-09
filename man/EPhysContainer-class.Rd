@@ -25,10 +25,12 @@ for details on the required \code{Data} shape and additional validity checks.
 
 \describe{
 \item{\code{Metadata}}{\code{data.frame}. One row per run. Required columns:
+\itemize{
 \item \strong{Experiment}: \emph{factor}. Factorized identifier for each Experiment. All recordings/runs acquired on the basis of an identical acquisition protocol can belong to the same Experiment.
 \item \strong{Step}: \emph{ordered}. Ordered identifier for each step. One Step corresponds to a single protocol stage within an Experiment; values are compared in their defined order to reflect the progression of the acquisition.
 \item \strong{RecordingID}: \emph{integer}. Identifier for each Recording. One Recording may have multiple runs.
 \item \strong{RunUID}: \emph{integer}. Unique run ID.
+}
 Any number of additional columns is allowed.}
 
 \item{\code{Data}}{Either:
@@ -55,7 +57,7 @@ exists it must match \code{Channels}.
 
 \item{\code{TimeUnits}}{\code{character}. A valid udunits \emph{symbol} (e.g., \code{"s"}, \code{"ms"}).}
 
-\item{\code{StimulusUnits}}{\code{character}. A valid udunits symbol; may be empty if \code{StimulusTrace} is empty.}
+\item{\code{StimulusUnits}}{\code{character}. A valid udunits symbol; may be empty when no stimulus unit was recorded.}
 }}
 
 \section{Validity}{
@@ -87,7 +89,7 @@ exists it must match \code{Channels}.
 \item \strong{Units}
 \itemize{
 \item \code{TimeUnits} and \code{StimulusUnits} (when provided) must be valid udunits \emph{symbols}, validated via \code{units::set_units()}.
-\item \code{StimulusUnits} may be empty if \code{StimulusTrace} is empty; if \code{StimulusTrace} is present but \code{StimulusUnits} is empty, a message is emitted.
+\item \code{StimulusUnits} may be empty when no stimulus unit was recorded.
 }
 }
 }

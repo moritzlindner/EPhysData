@@ -16,66 +16,25 @@
 #' @noRd
 #' @seealso \code{\link{validEPhysContainer}}
 validEPhysEvents <- function(object) {
-  msgs <- validEPhysContainer(object)
-  if (isTRUE(msgs)) msgs <- character()
-
-  md  <- object@Metadata
+  msgs <- character()
   dat <- object@Data
-  ch  <- object@Channels
+  if (!is.list(dat)) return("`Data` must be a list of event runs.")
 
-  if (!is.data.frame(md)) {
-    msgs <- c(msgs, "'Metadata' must be a data.frame.")
-  }
-  if (!is.list(dat) || length(dat) != nrow(md)) {
-    msgs <- c(msgs, "'Data' must be a list of length equal to nrow(Metadata).")
-  } else {
-    for (i in seq_along(dat)) {
-      rowdat <- dat[[i]]
-      prefix <- paste0("Data[[", i, "]]")
-
-      # Must be a list
-      if (!is.list(rowdat)) {
-        msgs <- c(msgs, paste0(prefix, " must be a list (one element per channel)."))
-        next
-      }
-
-      # Must have exactly one entry per channel
-      if (length(rowdat) != length(ch)) {
-        msgs <- c(msgs, sprintf(
-          "%s must have length %d (one per channel), found %d.",
-          prefix, length(ch), length(rowdat)
-        ))
-      }
-
-      # Each channel entry must be numeric (possibly length 0)
-      for (ch_idx in seq_along(ch)) {
-        ts <- rowdat[[ch_idx]]
-        if (!is.numeric(ts)) {
-          msgs <- c(msgs, sprintf("%s[['%s']] must be a numeric vector of timestamps.", prefix, ch[[ch_idx]]))
-        }
-      }
-    }
-  }
-
-  ## Time range check (only if TimeTrace present)
   tt <- object@TimeTrace
-  if (length(tt) > 0L && is.list(dat) && length(dat) == nrow(md)) {
-    tmin <- min(tt, na.rm = TRUE)
-    tmax <- max(tt, na.rm = TRUE)
-    for (i in seq_along(dat)) {
-      rowdat <- dat[[i]]
-      if (!is.list(rowdat) || is.null(names(rowdat))) next
-      for (ch_name in names(rowdat)) {
-        ts <- rowdat[[ch_name]]
-        if (length(ts) == 0L) next
-        if (!is.numeric(ts)) next  # already flagged above
-        out <- which(ts < tmin | ts > tmax)
-        if (length(out) > 0L) {
-          msgs <- c(msgs, sprintf(
-            "Found %d event(s) outside TimeTrace range [%g, %g] in Data[[%d]][['%s']].",
-            length(out), tmin, tmax, i, ch_name
-          ))
-        }
+  check_range <- length(tt) && all(is.finite(tt))
+  if (check_range) bounds <- range(tt)
+  for (i in seq_along(dat)) {
+    row <- dat[[i]]
+    if (!is.list(row)) next
+    for (j in seq_along(row)) {
+      ts <- row[[j]]
+      name <- if (is.null(names(row))) as.character(j) else shQuote(names(row)[j])
+      context <- sprintf("Data[[%d]][[%s]]", i, name)
+      if (!is.numeric(ts) || !is.null(dim(ts)) || any(!is.finite(ts))) {
+        msgs <- c(msgs, paste0(context, " must be a finite numeric vector of timestamps."))
+      } else if (check_range && any(ts < bounds[1L] | ts > bounds[2L])) {
+        msgs <- c(msgs, sprintf("%s has timestamps outside the TimeTrace range [%g, %g].",
+                                context, bounds[1L], bounds[2L]))
       }
     }
   }
@@ -142,7 +101,6 @@ newEPhysEvents <- function(Data,
            StimulusTrace = StimulusTrace,
            TimeUnits     = TimeUnits,
            StimulusUnits = StimulusUnits)
-  validEPhysEvents(out)
   out
 }
 
@@ -155,6 +113,8 @@ newEPhysEvents <- function(Data,
 #' @rdname EPhysContainer-class
 #' @noRd
 #' @export
+#' @importFrom methods show
+#' @importFrom utils head
 setMethod("show", "EPhysEvents", function(object) {
   cat("<EPhysEvents> object\n")
   n_events <- nrow(object@Metadata)

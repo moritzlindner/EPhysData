@@ -17,6 +17,7 @@
 #'
 #' @name lapply-EPhys
 #' @rdname lapply-EPhys
+#' @aliases lapply,EPhysSet,ANY-method
 #' @docType methods
 #'
 #' @param X
@@ -38,9 +39,9 @@
 #'
 #' @param error character.
 #'   For \code{EPhysEvents} / \code{EPhysContinuous} methods only:
-#'   one of \code{c("stop", "warn")}. Used in sequential mode; in
+#'   one of \code{c("stop", "warn")}, in both serial and parallel modes. In
 #'   \code{"warn"} mode, errors are warned and the corresponding result
-#'   is set to \code{NULL}.
+#'   keeps its run and channel names and is set to \code{NULL}.
 #'
 #' @param progress logical.
 #'   For \code{EPhysEvents} / \code{EPhysContinuous} methods only:
@@ -80,8 +81,6 @@
 #'   }
 #' }
 #'
-#' @importFrom cli cli_progress_bar cli_progress_update cli_progress_done cli_warn pb_bar pb_percent
-#' @importFrom future.apply future_lapply
 #' @importFrom methods validObject
 #'
 #' @exportMethod lapply

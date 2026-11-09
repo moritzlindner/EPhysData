@@ -15,13 +15,15 @@ Imports:
     ggpubr,
     hdf5r,
     methods,
-    remotes,
     stringr,
     tidyr,
     cli,
     future.apply
-Suggests: 
-    EPhysMethods
+Suggests:
+    EPhysMethods,
+    future,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
 Remotes:
     github::moritzlindner/EPhysMethods
 Encoding: UTF-8

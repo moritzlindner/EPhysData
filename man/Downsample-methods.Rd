@@ -14,10 +14,9 @@ Downsample(X, n = 250)
 \S4method{Downsample}{EPhysSet}(X, n = 250)
 }
 \arguments{
-\item{X}{An \link{EPhysData} or \link{EPhysContainer} instance, depending on the method.}
+\item{X}{An \link{EPhysData} or \link{EPhysSet} object.}
 
-\item{n}{integer giving the \emph{desired} number of
-    intervals.  Non-integer values are rounded down.}
+\item{n}{Maximum number of samples to retain per recording.}
 }
 \value{
 An object of class \link{EPhysData} or \link{EPhysSet} after downsampling
@@ -26,7 +25,9 @@ An object of class \link{EPhysData} or \link{EPhysSet} after downsampling
 This method downsamples an \link{EPhysData} or an \link{EPhysSet} object by sampling the time trace and applying a filter function.
 }
 \details{
-The \code{Downsample} function samples the time trace of the input object and applies a filter function to the data. The sampling is based on the \link[base:pretty]{bsae::pretty} function, which creates a sequence of about equally spaced values that cover the range of the input time trace. The filter function stored in the object is applied before downsampling and gets relaced  by an identity function.
+The stored filter is applied before selecting approximately equally
+spaced sample indices. Data, time and any stimulus trace use the same indices.
+The stored filter is then replaced by the identity function.
 }
 \examples{
 # For an EPhysData object

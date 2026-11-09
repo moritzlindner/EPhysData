@@ -32,6 +32,5 @@ Assumptions (no validation here):
 names across channels and runs.
 \item Values are scalar numerics (NA allowed).
 }
-Run labels are taken from the third array dim created by \code{melt()}—
-if absent, they will be auto-indexed.
+Run labels come from the outer list names or the corresponding metadata rows.
 }

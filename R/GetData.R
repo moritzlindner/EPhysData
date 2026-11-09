@@ -57,146 +57,84 @@ setMethod("GetData",
                    Trials = NULL,
                    Raw = F) {
 
-            # failsafe checks
-            ## Time Range
-            if (!(all(Time >= range(TimeTrace(X))[1]) &
-                  all(Time <= range(TimeTrace(X))[2]))) {
-              stop("'Time' outside range of X.")
+            operation <- "GetData(EPhysData)"
+            validObject(X)
+            if (!length(X@TimeTrace)) .ephys_abort(paste(operation, "found no time samples."))
+            Time <- .ephys_legacy_time(X, Time, operation)
+            if (!is.logical(Raw) || length(Raw) != 1L || is.na(Raw) ||
+                !is.logical(TimeExclusive) || length(TimeExclusive) != 1L || is.na(TimeExclusive)) {
+              .ephys_abort(paste(operation, "requires Raw and TimeExclusive to be TRUE or FALSE."))
             }
 
-            ## Trials
-            if(!is.null(Trials) && !is.numeric(Trials) && !is.logical(Trials)){
-              stop("'Trials must be NULL, 'numeric' or 'logical', but is ", class(Trials),".")
-            }
-            if(is.numeric(Trials)){
-              if (all(Trials > 0) && all(Trials <= dim(X@Data)[2])) {
-                TrialsLogical<-logical(dim(X)[2])
-                TrialsLogical[Trials] <- T
-              } else{
-                stop("'Trials' outside range of X.")
-              }
-            }
-            if(is.logical(Trials)){
-              if (length(Trials) == dim(X@Data)[2]) {
-                TrialsLogical <- Trials
-                if(!all(TrialsLogical == (!Rejected(X))) && !Raw){
-                  warning(
-                    "Manual subsetting by trials requested for retruning non-raw data ('Raw = F'). Usually the 'Rejected(X)' method should be used instead."
-                  )
-                }
-              } else{
-                stop("'Trials' has length ", length(Trials), " which is different from the number of trials stored in the EPhysData object 'X' (", dim(X)[2], "). ")
-              }
-            }
-            if ((dim(X@Data)[2]==1) & !is.null(Trials)){
-              if(!Trials){
-                stop("'Trials' must  be 'TRUE' if only one trace contained in object.")
-              }
-              TrialsLogical<-TRUE
-            }
-
-            # Time Ranges
-            Time <- condition_time(X, Time, TimeExclusive)
-
-            # extract data
-            out<-X@Data
-
-            # filter
-            if (!Raw) {
-              unit.buffer<-deparse_unit(out)
-              out <- tryCatch(
-                apply(out, 2, FilterFunction(X), simplify = T),
-                error = function (e) {
-                  stop("could not apply 'filter.fx' (",
-                       deparse(FilterFunction(X)),
-                       ") to data.")
-                }
-              )
-              out<-as_units(as.matrix(out),unit.buffer)
-            }
-
-            # subset by Trials
-            if(is.null(Trials)){
-              if (!Raw) {
-                TrialsLogical <- !Rejected(X, return.fx = T)(out)
+            n_trials <- ncol(X@Data)
+            if (!is.null(Trials)) {
+              if (is.numeric(Trials) && all(is.finite(Trials)) &&
+                  all(Trials == floor(Trials) & Trials >= 1 & Trials <= n_trials)) {
+                trial_mask <- seq_len(n_trials) %in% Trials
+              } else if (is.logical(Trials) && length(Trials) == n_trials && !anyNA(Trials)) {
+                trial_mask <- Trials
               } else {
-                TrialsLogical <- !logical(dim(X)[2])
+                .ephys_abort(sprintf("%s requires trial indices in 1..%d or %d non-missing logical values.",
+                                     operation, n_trials, n_trials))
               }
             }
-            out<-out[TimeTrace(X) %in% Time,TrialsLogical,drop=F]
-
-            if(any(dim(out)==0)){
-              stop("No data left after subsetting with the given parameters for 'Trials' and 'Time'.")
+            time <- condition_time(X, Time, TimeExclusive)
+            time_mask <- TimeTrace(X) %in% time
+            data <- if (Raw) X@Data else .ephys_filter_data(X, FilterFunction(X), operation)
+            if (is.null(Trials)) {
+              trial_mask <- if (Raw) rep(TRUE, n_trials) else
+                !.ephys_rejected(data, Rejected(X, return.fx = TRUE), operation)
             }
 
-            # averaging
-            if (!Raw){
-              tryCatch(
-                valid.avg.fx <- length(AverageFunction(X)(1:3))==1,
-                error = function (e) {
-                  stop("Could not apply 'average.fx' (",
-                       deparse(AverageFunction(X)),
-                       ") to test vector 'c(1:3)'")
-                }
-              )
-              if (dim(X)[2]>1 && !valid.avg.fx) {
-                warning(
-                  "Averaging function ",
-                  deparse(AverageFunction(X)),
-                  " returns more than a single value per time point. Has a valid function been set? Try e.g.: AverageFunction(X)<-mean"
-                )
-              }
-            } else {
-              valid.avg.fx <- T
+            data <- data[time_mask, trial_mask, drop = FALSE]
+            if (!nrow(data) || !ncol(data)) {
+              .ephys_abort(sprintf("%s selected %d samples and %d trials. Both must be non-empty.",
+                                   operation, nrow(data), ncol(data)))
             }
 
-
-            if (!Raw & ncol(out)>1 & valid.avg.fx) {
-              out <- tryCatch(
-                apply(out, 1, AverageFunction(X), simplify = T),
-                error = function (e) {
-                  stop("Could not apply 'average.fx' (",
-                       deparse(AverageFunction(X)),
-                       ") to data.")
-                }
-              )
-              out <- as.matrix(out)
-              colnames(out) <- "Averaged"
-              return(as_units(out, deparse_unit(X@Data)))
-            } else{
-              return(out)
+            average <- AverageFunction(X)
+            if (!Raw && ncol(data) > 1L && !.ephys_is_identity(average)) {
+              values <- .ephys_average_data(data, average, operation)
+              data <- as_units(matrix(values, ncol = 1L, dimnames = list(NULL, "Averaged")),
+                               deparse_unit(X@Data))
             }
+            data
           })
+
+.ephys_legacy_time <- function(X, Time, operation) {
+  if (!is.numeric(Time) || !length(Time) || any(!is.finite(Time))) {
+    .ephys_abort(paste(operation, "requires finite numeric Time values."))
+  }
+  unit <- deparse_unit(TimeTrace(X))
+  value <- tryCatch(
+    units::set_units(Time, unit, mode = "standard"),
+    error = function(e) .ephys_abort(sprintf("%s could not convert Time to %s.",
+                                            operation, shQuote(unit)), parent = e)
+  )
+  available <- range(as.numeric(TimeTrace(X)))
+  requested <- range(as.numeric(value))
+  if (requested[1L] < available[1L] || requested[2L] > available[2L]) {
+    .ephys_abort(sprintf("%s received Time [%g, %g] %s. Available range is [%g, %g] %s.",
+                         operation, requested[1L], requested[2L], unit,
+                         available[1L], available[2L], unit))
+  }
+  value
+}
 
 #' @keywords internal
 #' @noMd
 condition_time <- function(X, Time, TimeExclusive) {
-  if (!isTRUE(all.equal(Time, range(TimeTrace(X))))) {
-    if (!TimeExclusive | length(Time)==1) {
-      if (length(Time)>1){
-        Time <-
-          TimeTrace(X)[TimeTrace(X) >= Time[1] &
-                         TimeTrace(X) <= Time[2]]
-      }else{
-        if(length(Time)==0){
-          stop("'Time' argument is empty.")
-        }
-        Time <- TimeTrace(X)[which(abs(TimeTrace(X) - Time) == min(abs(TimeTrace(X) -
-                                                                         Time)))]
-      }
-    } else{
-      # if extracting exact time points. get closest to values entered
-      if(length(Time)==2){
-        Time[1] <-
-          TimeTrace(X)[which(abs(TimeTrace(X) - Time[1]) == min(abs(TimeTrace(X) -
-                                                                      Time[1])))]
-        Time[2] <-
-          TimeTrace(X)[which(abs(TimeTrace(X) - Time[2]) == min(abs(TimeTrace(X) -
-                                                                      Time[2])))]
-      }
-    }
-  } else{
-    Time <- TimeTrace(X)
+  trace <- TimeTrace(X)
+  if (isTRUE(all.equal(Time, range(trace))) && !TimeExclusive) return(trace)
+  if (length(Time) == 1L || (TimeExclusive && length(Time) == 2L)) {
+    positions <- vapply(seq_along(Time), function(i) {
+      which.min(abs(as.numeric(trace) - as.numeric(Time[i])))
+    }, integer(1))
+    return(trace[positions])
   }
-  return(Time)
+  if (TimeExclusive) return(Time)
+  if (length(Time) != 2L || Time[1L] > Time[2L]) {
+    .ephys_abort("GetData(EPhysData) requires two ordered bounds for a Time interval.")
+  }
+  trace[trace >= Time[1L] & trace <= Time[2L]]
 }

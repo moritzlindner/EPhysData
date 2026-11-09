@@ -2,8 +2,8 @@
 % Please edit documentation in R/0_Data_group_apply.R
 \name{group_apply}
 \alias{group_apply}
-\alias{group_apply,EPhysContinuous-method}
-\alias{group_apply,EPhysEvents-method}
+\alias{group_apply,EPhysContinuous,function-method}
+\alias{group_apply,EPhysEvents,function-method}
 \title{Apply over repeated runs for an individual Recording}
 \usage{
 group_apply(
@@ -27,9 +27,9 @@ if \code{TRUE}, use \code{future.apply::future_lapply()} over runs.}
 
 \item{error}{character.
 For \code{EPhysEvents} / \code{EPhysContinuous} methods only:
-one of \code{c("stop", "warn")}. Used in sequential mode; in
+one of \code{c("stop", "warn")}, in both serial and parallel modes. In
 \code{"warn"} mode, errors are warned and the corresponding result
-is set to \code{NULL}.}
+keeps its recording and channel names and is set to \code{NULL}.}
 
 \item{progress}{logical.
 For \code{EPhysEvents} / \code{EPhysContinuous} methods only:
@@ -50,8 +50,8 @@ For EPhysEvents, FUN receives a list of numeric vectors (timestamps), one per ru
 \section{Methods}{
 
 \itemize{
-\item \code{group_apply,EPhysContinuous-method}: builds the time-by-runs matrix.
-\item \code{group_apply,EPhysEvents-method}: builds the per-run timestamp list.
+\item \code{group_apply,EPhysContinuous,function-method}: builds the time-by-runs matrix.
+\item \code{group_apply,EPhysEvents,function-method}: builds the per-run timestamp list.
 }
 }
 

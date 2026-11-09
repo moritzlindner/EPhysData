@@ -4,6 +4,9 @@
 \alias{ChannelMetadata}
 \alias{AddChannelMetadata}
 \alias{ChannelMetadata<-}
+\alias{ChannelMetadata,EPhysContainer-method}
+\alias{AddChannelMetadata,EPhysContainer-method}
+\alias{ChannelMetadata<-,EPhysContainer-method}
 \title{Channel Metadata Accessors for EPhysContainer}
 \usage{
 ChannelMetadata(X, column = NULL, ...)
@@ -11,6 +14,16 @@ ChannelMetadata(X, column = NULL, ...)
 AddChannelMetadata(X, columnName, columnData, ...)
 
 ChannelMetadata(X) <- value
+}
+\arguments{
+\item{X}{An \code{EPhysContainer} object.}
+\item{column}{Optional metadata column name.}
+\item{columnName}{Name of the column to add.}
+\item{columnData}{One value per channel in \code{Channels(X)} order.}
+\item{value}{A data frame with one row per channel, or an empty data frame.
+Rows can be keyed by row names or a \code{Channel} column. Automatic row
+names without a key are interpreted in \code{Channels(X)} order.}
+\item{...}{Reserved for method compatibility.}
 }
 \value{
 \describe{

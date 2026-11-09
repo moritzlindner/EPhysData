@@ -76,7 +76,7 @@ newEPhysData <-
       )
     }
     if (inherits(TimeTrace, "units")) {
-      if (!is.null(TimeUnit) && Unit != deparse_unit(TimeTrace)) {
+      if (!is.null(TimeUnit) && TimeUnit != deparse_unit(TimeTrace)) {
         stop(
           "Units provided via the 'TimeUnit' argument (",
           TimeUnit,
@@ -125,19 +125,12 @@ newEPhysData <-
     }
 
 
-    out<-new(
+    new(
       "EPhysData",
       Data = Data,
       TimeTrace = TimeTrace,
       StimulusTrace = StimulusTrace,
-      Rejected = function(x) {
-        rep(FALSE, ncol(x))
-      },
+      Rejected = .ephys_reject_none,
       Created = as.POSIXct(Sys.time())
     )
-    if(validEPhysData(out)){
-      return(out)
-    }else{
-      stop("No valid PhysRAW object could be created.")
-    }
   }

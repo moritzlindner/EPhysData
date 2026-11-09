@@ -22,10 +22,8 @@
 #'         names across channels and runs.
 #'   \item Values are scalar numerics (NA allowed).
 #' }
-#' Run labels are taken from the third array dim created by \code{melt()}—
-#' if absent, they will be auto-indexed.
+#' Run labels come from the outer list names or the corresponding metadata rows.
 #'
-#' @importFrom reshape2 melt dcast
 #' @importFrom EPhysData Channels Metadata
 #' @export
 nested2df <- function(X, nestedlist) {

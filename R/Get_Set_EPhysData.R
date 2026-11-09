@@ -46,13 +46,13 @@
 #' # Get the "Rejected" slot
 #' Rejected(myEPhysData)
 #' Rejected(myEPhysData, return.fx=TRUE)
-#' head(GetData(myEPhysData)) # the error can be ignored, as no averaging function has yet been set
+#' head(GetData(myEPhysData))
 #'
 #' # Set the "Rejected" slot
-#' Rejected(myEPhysData) <- sample(c(TRUE,FALSE), dim(myEPhysData)[2], TRUE)
+#' Rejected(myEPhysData) <- seq_len(ncol(myEPhysData)) == 1L
 #' Rejected(myEPhysData)
 #' Rejected(myEPhysData, return.fx=TRUE)
-#' head(GetData(myEPhysData))  # the error can be ignored, as no averaging function has yet been set
+#' head(GetData(myEPhysData))
 #' head(GetData(myEPhysData,Trials=1:dim(myEPhysData)[2]))
 #'
 #' # Get the "filter.fx" slot
@@ -63,9 +63,9 @@
 #' FilterFunction(myEPhysData)
 #'
 #' # Set a fucntion to the "filter.fx" slot that depends on a variable upon creation
-#' value = sample(c(TRUE,FALSE),1)
+#' value <- TRUE
 #' FilterFunction(myEPhysData)<- eval(substitute(function(x) {
-#'   scale(x, center= VALUE)
+#'   scale(x, center = VALUE)
 #' }, list(VALUE = value)))
 #' rm(value)
 #' FilterFunction(myEPhysData)
@@ -160,64 +160,82 @@ setGeneric("StimulusUnits<-", function(X, value) standardGeneric("StimulusUnits<
 
 # ---- Methods: EPhysData Get/Set ----
 
+.ephys_check_callback <- function(value, operation) {
+  if (!is.function(value)) {
+    .ephys_abort(sprintf("%s requires a function. Received %s.",
+                         operation, paste(class(value), collapse = "/")))
+  }
+}
+
+.ephys_filter_data <- function(X, FUN, operation) {
+  data <- units::drop_units(X@Data)
+  cols <- base::lapply(seq_len(ncol(data)), function(i) {
+    context <- sprintf("%s filter failed for trial %d.", operation, i)
+    result <- .ephys_callback(FUN, list(data[, i]), context)
+    if (!is.numeric(result) || length(result) != nrow(data)) {
+      .ephys_abort(sprintf("%s Expected %d numeric samples, received %d values of type %s.",
+                           context, nrow(data), length(result), typeof(result)),
+                   "ephys_callback_error")
+    }
+    as.numeric(result)
+  })
+  filtered <- matrix(as.numeric(unlist(cols)), nrow(data), ncol(data), dimnames = dimnames(data))
+  as_units(filtered, deparse_unit(X@Data))
+}
+
+.ephys_rejected <- function(data, FUN, operation) {
+  context <- paste(operation, "rejection callback failed.")
+  result <- .ephys_callback(FUN, list(data), context)
+  if (!is.logical(result) || !is.null(dim(result)) ||
+      length(result) != ncol(data) || anyNA(result)) {
+    .ephys_abort(sprintf("%s Expected %d non-missing logical values, received %d values of type %s.",
+                         context, ncol(data), length(result), typeof(result)),
+                 "ephys_callback_error")
+  }
+  result
+}
+
+.ephys_average_data <- function(data, FUN, operation) {
+  data <- units::drop_units(data)
+  vapply(seq_len(nrow(data)), function(i) {
+    context <- sprintf("%s averaging callback failed at sample %d.", operation, i)
+    result <- .ephys_callback(FUN, list(data[i, ]), context)
+    if (!is.numeric(result) || length(result) != 1L) {
+      .ephys_abort(sprintf("%s Expected one numeric value, received %d values of type %s.",
+                           context, length(result), typeof(result)), "ephys_callback_error")
+    }
+    as.numeric(result)
+  }, numeric(1))
+}
+
 #' @describeIn GetSet-methods Get the rejection function or its computed logical vector.
 #' @export
 setMethod("Rejected", signature = "EPhysData", function(X, return.fx = FALSE) {
-  if (!return.fx) {
-    tryCatch({
-      dat <- X@Data
-      unit.buffer <- deparse_unit(dat)
-      dat <- apply(dat, 2, FilterFunction(X), simplify = TRUE)
-      dat <- as_units(dat, unit.buffer)
-      out <- as.vector(X@Rejected(dat))
-      if (length(out) != dim(X)[2]) {
-        stop("Function call does not return vector of correct length.")
-      }
-      out
-    }, error = function(e) {
-      stop("The function stored in the 'Rejected' slot could not be applied. ",
-           "Object has: ", dim(X)[2], " trials. Function string is: '",
-           deparse1(X@Rejected), "' and returned error message is '", e, "' ")
-    })
-  } else {
-    X@Rejected
-  }
+  if (return.fx) return(X@Rejected)
+  data <- .ephys_filter_data(X, X@filter.fx, "Rejected(EPhysData)")
+  .ephys_rejected(data, X@Rejected, "Rejected(EPhysData)")
 })
 
 #' @describeIn GetSet-methods Set the rejection function or a logical vector.
 #' @export
 setMethod("Rejected<-", signature = "EPhysData", function(X, value) {
+  operation <- "Rejected<-(EPhysData)"
   if (is.function(value)) {
-    if (dim(X)[2] > 1) {
-      success <- tryCatch({
-        out <- value(X@Data)
-        !all(is.na(out))
-      }, error = function(e) FALSE)
-      if (success) {
-        X@Rejected <- value
-      } else {
-        warning("Can't set a Rejected function for 'X'. ",
-                "It must return a logical vector of length dim(X)[2]. Keeping all.")
-        value <- logical(dim(X)[2])
-      }
-    } else {
-      message("Can't set a Rejected function because 'X' contains only one trial. Keeping it.")
-      value <- logical(dim(X)[2])
-    }
-  } else if (is.logical(value)) {
-    if (length(value) == dim(X)[2]) {
-      X@Rejected <- eval(substitute(function(x) VALUE, list(VALUE = value)))
-    } else {
-      stop("Incorrect length of logical vector.")
-    }
+    data <- .ephys_filter_data(X, X@filter.fx, operation)
+    .ephys_rejected(data, value, operation)
+  } else if (is.logical(value) && is.null(dim(value)) &&
+             length(value) == ncol(X@Data) && !anyNA(value)) {
+    value <- eval(substitute(function(x) MASK, list(MASK = value)))
   } else {
-    stop("Incorrect data type; must be logical or function.")
+    .ephys_abort(sprintf("%s requires a function or %d non-missing logical values. Received %d values of type %s.",
+                         operation, ncol(X@Data), length(value), typeof(value)))
   }
-  if (validEPhysData(X)) X
+  X@Rejected <- value
+  validObject(X)
+  X
 })
 
-#' @details \code{FilterFunction}: Set a function for filtering each trial in the
-#' \link{EPhysData} object (e.g., downsampling or noise removal).
+#' @details \code{FilterFunction}: Set a per-trial filter returning one numeric value per input sample.
 #' @describeIn GetSet-methods Get the per-trial filter function.
 #' @export
 setMethod("FilterFunction", signature = "EPhysData", function(X) X@filter.fx)
@@ -225,21 +243,12 @@ setMethod("FilterFunction", signature = "EPhysData", function(X) X@filter.fx)
 #' @describeIn GetSet-methods Set the per-trial filter function.
 #' @export
 setMethod("FilterFunction<-", signature = "EPhysData", function(X, value) {
-  success <- tryCatch({
-    out <- apply(X@Data, 2, value, simplify = TRUE)
-    ok <- !all(is.na(out))
-    if (!ok) return(FALSE)
-    if (!is.matrix(out)) return(FALSE)
-    if (nrow(out) != dim(X)[1]) return(FALSE)
-    if (ncol(out) != dim(X)[2]) return(FALSE)  # fixed dimension check
-    TRUE
-  }, error = function(e) FALSE)
-  if (!success) {
-    warning("Can't set filter function for 'X'; it must return a matrix with the ",
-            "same dimensions as X@Data (per-trial, column-wise).")
-  }
+  operation <- "FilterFunction<-(EPhysData)"
+  .ephys_check_callback(value, operation)
+  .ephys_filter_data(X, value, operation)
   X@filter.fx <- value
-  if (validEPhysData(X)) X
+  validObject(X)
+  X
 })
 
 #' @describeIn GetSet-methods Get the averaging function across trials.
@@ -249,25 +258,15 @@ setMethod("AverageFunction", signature = "EPhysData", function(X) X@average.fx)
 #' @describeIn GetSet-methods Set the averaging function across trials.
 #' @export
 setMethod("AverageFunction<-", signature = "EPhysData", function(X, value) {
-  success <- tryCatch({
-    out <- apply(X@Data, 1, value, simplify = TRUE)
-    if (!is.null(dim(out))) {
-      if (nrow(out) != dim(X)[1]) return(FALSE)
-      if (ncol(out) != 1) return(FALSE)
-    } else {
-      if (length(out) != dim(X)[1]) return(FALSE)
-    }
-    !all(is.na(out))
-  }, error = function(e) FALSE)
-  if (!success) {
-    if (dim(X)[2] == 1) {
-      warning("Object contains a single trial; the provided averaging function is not valid.")
-    } else {
-      stop("Can't set averaging function. It must return a single value for a vector (per row).")
-    }
+  operation <- "AverageFunction<-(EPhysData)"
+  .ephys_check_callback(value, operation)
+  if (!.ephys_is_identity(value)) {
+    data <- .ephys_filter_data(X, X@filter.fx, operation)
+    .ephys_average_data(data, value, operation)
   }
   X@average.fx <- value
-  if (validEPhysData(X)) X
+  validObject(X)
+  X
 })
 
 #' @describeIn GetSet-methods Return the time trace (EPhysData).
@@ -289,18 +288,11 @@ setMethod("StimulusTrace", signature = "EPhysData", function(X) {
 #' @describeIn GetSet-methods Return the time trace (units applied via TimeUnits).
 #' @export
 setMethod("TimeTrace", signature = "EPhysContainer", function(X) {
-  tt <- X@TimeTrace
-  u <- TimeUnits(X)
-  if (length(u) == 0) {
-    u <- ""
-  }
-  tt <-
-    tryCatch(
-      set_units(tt, u, mode = "standard"),
-      error = function(e)
-        NULL
-    )
-  tt
+  tryCatch(
+    set_units(X@TimeTrace, TimeUnits(X), mode = "standard"),
+    error = function(e) .ephys_abort(sprintf("TimeTrace(%s) could not apply TimeUnits %s.",
+                                            class(X)[1L], shQuote(TimeUnits(X))), parent = e)
+  )
 })
 
 #' @describeIn GetSet-methods Return the stimulus trace (units applied via StimulusUnits).
@@ -308,16 +300,12 @@ setMethod("TimeTrace", signature = "EPhysContainer", function(X) {
 setMethod("StimulusTrace", signature = "EPhysContainer", function(X) {
   st <- X@StimulusTrace
   u <- StimulusUnits(X)
-  if (length(u) == 0) {
-    u <- ""
-  }
-  st <-
-    tryCatch(
-      set_units(st, u, mode = "standard"),
-      error = function(e)
-        NULL
-    )
-  st
+  if (!length(u) || identical(u, "")) u <- "1"
+  tryCatch(
+    set_units(st, u, mode = "standard"),
+    error = function(e) .ephys_abort(sprintf("StimulusTrace(%s) could not apply StimulusUnits %s.",
+                                            class(X)[1L], shQuote(u)), parent = e)
+  )
 })
 
 #' @describeIn GetSet-methods Returns the declared time units (udunits symbol).
@@ -357,10 +345,10 @@ setReplaceMethod("StimulusTrace",
                      value <- units::drop_units(value)
                    }
                    value <- as.numeric(value)
-                   tt_len <- tryCatch(length(TimeTrace(X)), error = function(e) NA_integer_)
-                   if (!is.na(tt_len) && length(value) != tt_len) {
-                     stop(sprintf("Length mismatch: StimulusTrace (%d) vs TimeTrace (%d).",
-                                  length(value), tt_len))
+                   tt_len <- length(X@TimeTrace)
+                   if (length(value) && length(value) != tt_len) {
+                     .ephys_abort(sprintf("StimulusTrace<-(%s) received %d samples. Expected 0 or %d.",
+                                          class(X)[1L], length(value), tt_len))
                    }
                    X@StimulusTrace <- value
                    validObject(X)

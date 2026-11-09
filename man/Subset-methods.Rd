@@ -74,9 +74,9 @@ cause an error.
 \item{Time}{A length-2 vector giving the time window; may be plain numeric in the same unit
 as \code{TimeTrace(X)} \emph{or} a \pkg{units} vector convertible to that unit.
 The window is treated as a closed interval \code{[start, end]} and the returned time
-is zero-shifted by \code{start}.}
+keeps the original sample times.}
 
-\item{TimeExclusive}{Logical; if \code{TRUE}, use \code{[start, end)} semantics.}
+\item{TimeExclusive}{Logical; if \code{TRUE}, select the requested time points.}
 
 \item{Trials}{Trial indices \emph{or} a logical vector of length \code{ntrials}. For
 \code{EPhysSet}, this can be used only when all items have the same number of trials.}
@@ -91,20 +91,19 @@ that \code{EPhysData} instead of an \code{EPhysSet}.
 
 \strong{EPhysEvents / EPhysContinuous}}
 
-\item{Step}{Optional numeric criterion. If length-2, treated as a closed range
-\code{[min, max]}; otherwise matched via \code{\%in\%} to \code{Metadata$Step}.}
+\item{Step}{Optional values matched to the levels of \code{Metadata$Step}.}
 
 \item{Experiment}{Optional character vector matched via \code{\%in\%} to \code{Metadata$Experiment}.}
 
-\item{Repeat}{Optional numeric criterion; same range vs. \code{\%in\%} behavior as \code{Step}.}
+\item{Repeat}{Optional numeric criterion; two values specify a closed range, otherwise match individual values.}
 
-\item{RecordingID}{Optional numeric criterion; same behavior as \code{Step}.}
+\item{RecordingID}{Optional numeric criterion; two values specify a closed range, otherwise match individual values.}
 
-\item{Channels}{Optional character vector of channel names to keep. Requested order is preserved.}
+\item{Channels}{Optional character vector of channel names to keep. Requested order is preserved. Missing names cause an error.}
 
 \item{TimeRange}{Length-2 numeric or \pkg{units} vector giving \code{[start, end]} in the
-\code{TimeTrace} unit (converted if \pkg{units}-aware). Returned \code{TimeTrace} (and aligned
-\code{StimulusTrace}, if lengths match) is zero-shifted by \code{start}.}
+\code{TimeTrace} unit (converted if \pkg{units}-aware). Returned sample times
+and event timestamps are shifted by a finite \code{start}.}
 
 \item{x}{An \link{EPhysData}, \link{EPhysSet}, \link{EPhysContinuous}, or
 \link{EPhysEvents} object.}
@@ -136,21 +135,20 @@ same time/trial subsetting to all items (when lengths allow); can simplify to a 
 \item \strong{EPhysEvents}: Filters trials by \code{Metadata} (e.g., Step/Experiment/repeat),
 optionally keeps only selected \code{Channels}, applies a time window to event timestamps,
 zero-shifts times by the lower bound, updates \code{Start}/\code{Stop}/\code{Diff} in
-\code{Metadata} if present, and drops runs with no remaining spikes.
+\code{Metadata} if present, and retains runs with no remaining spikes.
 \item \strong{EPhysContinuous}: Same metadata/channel/time handling as \emph{Events}, but
 subsetting the 3D array \code{[time × run × channel]}. \code{StimulusTrace} is sliced
-with \code{TimeTrace} when lengths match (otherwise left unchanged with a warning).
+with \code{TimeTrace} when present.
 }
 
 \itemize{
-\item \strong{Range vs. membership matching}: For numeric \code{Step}, \code{Repeat},
+\item \strong{Range vs. membership matching}: For numeric \code{Repeat}
 and \code{RecordingID}, a length-2 vector is interpreted as \code{[min, max]} (closed);
-any other length uses \code{\%in\%}. \code{Experiment} is always matched via \code{\%in\%}.
+any other length uses \code{\%in\%}. \code{Experiment} and \code{Step} are matched via \code{\%in\%}.
 \item \strong{Units}: \code{Time} and \code{TimeRange} can be plain numeric (interpreted in
 the same unit as \code{TimeTrace(X)}) or \pkg{units} vectors convertible to that unit.
-\item \strong{Stimulus alignment}: When \code{length(StimulusTrace(X)) == length(TimeTrace(X))},
-the stimulus is cropped/shifted with time; otherwise it is left unchanged and a warning
-is issued.
+\item \strong{Stimulus alignment}: A present stimulus trace uses the same
+sample indices as the time trace. An absent stimulus remains empty.
 \item \strong{Metadata updates}: If \code{Metadata} contains \code{Start}/\code{Stop}, these are
 adjusted to reflect the time window; \code{Diff} is recomputed as \code{Stop - Start}.
 \item \strong{EPhysData resets}: Subsetting by time resets \code{FilterFunction}; subsetting

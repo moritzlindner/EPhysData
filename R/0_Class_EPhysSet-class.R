@@ -1,24 +1,22 @@
 validEPhysSet <- function(object) {
-  if (!is.list(object@Data)) {
-    stop("Data must be a list.")
+  problems <- character()
+  data <- object@Data
+  md <- object@Metadata
+  invalid <- which(!vapply(data, inherits, logical(1), "EPhysData"))
+  if (length(invalid)) {
+    problems <- c(problems, sprintf("`Data` entries must be EPhysData objects. Invalid positions: %s.",
+                                    paste(invalid, collapse = ", ")))
   }
-
-  if (!all(unlist(lapply(object@Data, function(x) {
-    inherits(x, "EPhysData")
-  })))) {
-    stop("Data must be a list of 'EPhysData' objects.")
+  if (nrow(md) != length(data)) {
+    problems <- c(problems, sprintf("`Metadata` has %d rows. Expected %d to match `Data`.",
+                                    nrow(md), length(data)))
   }
-
-  # Check if Data and MetaData are of the same length
-  if (nrow(Metadata(object)) != length(object@Data)) {
-    stop("Metadata must have one row per each list entry in data.")
+  duplicates <- which(duplicated(md))
+  if (length(duplicates)) {
+    problems <- c(problems, sprintf("`Metadata` rows must be unique. Duplicated rows: %s.",
+                                    paste(duplicates, collapse = ", ")))
   }
-
-  if(nrow(Metadata(object))!=nrow(unique(Metadata(object)))){
-    stop("Metadata are not inambiuously defining the individual data in the dataset. I.e. 'metadata' rows are not unique.")
-  }
-
-  TRUE
+  if (length(problems)) problems else TRUE
 }
 
 #' EPhysSet Class
@@ -35,7 +33,7 @@ EPhysSet<-setClass("EPhysSet",
                      Metadata = "data.frame"
                    ),
                    prototype = list(
-                     Data = list(NULL),
+                     Data = list(),
                      Metadata = data.frame(
                        stringsAsFactors = FALSE
                      )
@@ -77,18 +75,7 @@ EPhysSet<-setClass("EPhysSet",
 #' @importFrom methods new validObject
 #' @export
 newEPhysSet <- function(Data, Metadata) {
-  # Call the default constructor
-  obj <- new("EPhysSet")
-
-  # Set the values for the slots
-  obj@Data <- Data
-  obj@Metadata <- Metadata
-
-  # Call the validity method to check if the object is valid
-  if(validObject(obj)){
-    return(obj)
-  }
-
+  new("EPhysSet", Data = Data, Metadata = Metadata)
 }
 
 #' @importFrom utils object.size

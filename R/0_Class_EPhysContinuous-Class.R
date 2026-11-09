@@ -16,8 +16,7 @@
 #' @noRd
 #' @rdname EPhysContainer-class
 validEPhysContinuous <- function(object) {
-  msgs <- validEPhysContainer(object)
-  if (isTRUE(msgs)) msgs <- character()
+  msgs <- character()
 
   d   <- object@Data
   tt  <- object@TimeTrace
@@ -25,7 +24,7 @@ validEPhysContinuous <- function(object) {
   ch  <- object@Channels
 
   if (!(is.array(d) && length(dim(d))==3 && is.numeric(d))) {
-    msgs <- c(msgs, "`Data` must be a 3D numeric array [time × trial × channel].")
+    msgs <- c(msgs, "`Data` must be a 3D numeric array [time x trial x channel].")
   } else {
     if (length(tt) != dim(d)[1]) {
       msgs <- c(msgs, "`length(TimeTrace)` must equal `dim(Data)[1]`.")
@@ -119,7 +118,6 @@ newEPhysContinuous <- function(Data,
                StimulusTrace = StimulusTrace,
                TimeUnits     = TimeUnits,
                StimulusUnits = StimulusUnits)
-  validEPhysContinuous(out)
   out
 }
 

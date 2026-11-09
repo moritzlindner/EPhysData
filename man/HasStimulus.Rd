@@ -26,7 +26,7 @@ aligned with its time trace and free of missing values.
 \details{
 For an \code{\link{EPhysContainer}} object this is \code{TRUE} if and only if:
 \itemize{
-\item \code{StimulusTrace(X)} is not \code{NULL},
+\item \code{StimulusTrace(X)} contains at least one sample,
 \item \code{length(StimulusTrace(X)) == length(TimeTrace(X))}, and
 \item \code{StimulusTrace(X)} contains no \code{NA} values.
 }

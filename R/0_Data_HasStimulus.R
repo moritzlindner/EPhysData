@@ -5,7 +5,7 @@
 #'
 #' For an [`EPhysContainer`] object this is `TRUE` if and only if:
 #' \itemize{
-#'   \item `StimulusTrace(X)` is not `NULL`,
+#'   \item `StimulusTrace(X)` contains at least one sample,
 #'   \item `length(StimulusTrace(X)) == length(TimeTrace(X))`, and
 #'   \item `StimulusTrace(X)` contains no `NA` values.
 #' }
@@ -33,7 +33,8 @@ setGeneric("HasStimulus", function(X)
 #' @aliases HasStimulus,EPhysContainer-method
 #' @export
 setMethod("HasStimulus", "EPhysContainer", function(X) {
-  !is.null(StimulusTrace(X)) &&
-    length(StimulusTrace(X)) == length(TimeTrace(X)) &&
-    !any(is.na(StimulusTrace(X)))
+  stimulus <- StimulusTrace(X)
+  length(stimulus) > 0L &&
+    length(stimulus) == length(TimeTrace(X)) &&
+    !anyNA(stimulus)
 })

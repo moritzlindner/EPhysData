@@ -5,78 +5,48 @@ setOldClass("symbolic_units")
 
 
 #' @importFrom  units deparse_unit
-#' @importFrom cli cli_abort
 #' @keywords internal
 #' @noMd
 validEPhysData <- function(object) {
-  return(TRUE)
-  if (!(inherits(object@Data, "units"))){
-    cli_abort("'Data' does not contain units.")
-  }
-  if (!(inherits(TimeTrace(object), "units"))){
-    cli_abort("'TimeTrace' does not contain units.")
-  }
-  err <- tryCatch(
-    StimulusTrace(object),
-    error = function(e)
-      e
-  )
-  has_stimtrace <- !any(class(err) == "error")
+  problems <- character()
+  data <- object@Data
+  time <- object@TimeTrace
+  stimulus <- object@StimulusTrace
 
-  if(has_stimtrace){
-    if (!(inherits(StimulusTrace(object), "units"))){
-      cli_abort("'StimulusTrace' does not contain units.")
-    }
-
+  if (!is.matrix(data) || !is.numeric(data)) {
+    problems <- c(problems, "`Data` must be a numeric matrix [time x trial] with units.")
+  } else if (length(time) != nrow(data)) {
+    problems <- c(problems, sprintf("`TimeTrace` has %d samples. Expected %d to match `Data`.",
+                                    length(time), nrow(data)))
   }
-  # Check that TimeTrace and StimulusTrace are the same length as the number of rows in Data
-  n_rows <- nrow(object@Data)
-  if (length(TimeTrace(object)) != n_rows) {
-    cli_abort("'TimeTrace' length should be the same as the number of rows in 'Data'.")
+  if (!is.numeric(time) || any(!is.finite(time))) {
+    problems <- c(problems, "`TimeTrace` must contain finite numeric sample times.")
   }
-
-  if(has_stimtrace){
-    if (length(StimulusTrace(object)) > 0 &&
-        length(StimulusTrace(object)) != n_rows) {
-      cli_abort("'StimulusTrace' length should be the same as the number of rows in 'Data'.")
+  if (length(stimulus) && length(stimulus) != length(time)) {
+    problems <- c(problems, sprintf("`StimulusTrace` has %d samples. Expected 0 or %d to match `TimeTrace`.",
+                                    length(stimulus), length(time)))
+  }
+  if (length(time)) {
+    problem <- tryCatch({
+      units::set_units(time[1L], "s", mode = "standard")
+      NULL
+    }, error = conditionMessage)
+    if (!is.null(problem)) {
+      problems <- c(problems, paste("`TimeTrace` must have time units.", problem))
     }
   }
+  if (length(problems)) problems else TRUE
+}
 
-  # Check TimeUnit
-  if (!(deparse_unit(TimeTrace(object)) %in% c("us","ms","s", "min", "h", "d", "w"))) {
-    cli_abort("'TimeUnit' should be either of 's','min','h','d','w'")
-  }
+.ephys_identity <- function(x) x
 
-  # Check Rejected
-  n_cols <- ncol(object@Data)
-  if (length(Rejected(object)) != n_cols) {
-    cli_abort("'Rejected' length should be the same as the number of columns in 'Data', i.e. the number of trials (see the Data slot in {.help [EPhysData-class](EPhysData::EPhysData-class)}")
-  }
+.ephys_reject_none <- function(x) rep(FALSE, ncol(x))
 
-  # check functions
-  if (!is.function(FilterFunction(object))) {
-    stop("'filter.fx' must be a function.")
-  }
-
-  tryCatch(
-    FilterFunction(object)(c(1:10)),
-    error = function(e) {
-      cli_abort("'filter.fx' can not handle numeric vectors. Recheck the function and make sure it can be run with one single parameter representing a numeric vector.")
-    }
-  )
-
-  if (!is.function(AverageFunction(object))) {
-    cli_abort("'average.fx' must be a function.")
-  }
-
-  tryCatch(
-    AverageFunction(object)(c(1:10)),
-    error = function(e) {
-      cli_abort("'average.fx' can not handle numeric vectors. Recheck the function and make sure it can be run with one single parameter representing a numeric vector.")
-    }
-  )
-  # If all checks passed, return TRUE
-  TRUE
+.ephys_is_identity <- function(FUN) {
+  is.function(FUN) && identical(formals(FUN), formals(.ephys_identity)) &&
+    (identical(body(FUN), quote(x)) ||
+       identical(body(FUN), quote({ x })) ||
+       identical(body(FUN), quote({ return(x) })))
 }
 
 #' EPhysData - Class for Electrophysiological Data
@@ -112,15 +82,9 @@ EPhysData <- setClass(
     TimeTrace = as_units(integer(),"s"),
     StimulusTrace = as_units(integer(),unitless),
     Created = as.POSIXct(Sys.time()),
-    Rejected = function(x) {
-      rep(FALSE, 0)
-    },
-    filter.fx = function(x) {
-      x
-    },
-    average.fx = function(x) {
-      x
-    }
+    Rejected = .ephys_reject_none,
+    filter.fx = .ephys_identity,
+    average.fx = .ephys_identity
   ),
   validity = validEPhysData
 )

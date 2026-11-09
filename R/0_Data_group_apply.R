@@ -33,12 +33,11 @@
 #' res_e2 <- group_apply(Xe, function(mat) lengths(mat))
 #' }
 #'
-#' @aliases group_apply group_apply,EPhysContinuous-method group_apply,EPhysEvents-method
+#' @aliases group_apply group_apply,EPhysContinuous,function-method group_apply,EPhysEvents,function-method
 #' @name group_apply
 #' @rdname group_apply
 #' @export
-#' @importFrom future.apply future_lapply
-#' @importFrom cli cli_progress_bar cli_progress_update cli_progress_done cli_warn
+#' @importFrom stats setNames
 setGeneric("group_apply", function(X,
                                    FUN,
                                    parallel = FALSE,
@@ -48,192 +47,57 @@ setGeneric("group_apply", function(X,
   standardGeneric("group_apply")
 })
 
-#' @keywords internal
-.group_indices_by_rec <- function(md) {
-  split(seq_len(nrow(md)), md$RecordingID)
+.ephys_group_apply <- function(X, FUN, dots, error, parallel, progress, get_block) {
+  validObject(X)
+  md <- Metadata(X)
+  groups <- split(seq_len(nrow(md)), md$RecordingID)
+  channels <- Channels(X)
+  combos <- expand.grid(recording = names(groups), channel = channels,
+                        stringsAsFactors = FALSE)
+
+  eval_group <- function(i) {
+    recording <- combos$recording[i]
+    channel <- combos$channel[i]
+    context <- sprintf("group_apply(%s) failed for RecordingID %s, channel %s.",
+                       class(X)[1L], recording, shQuote(channel))
+    .ephys_callback(FUN, c(list(get_block(groups[[recording]], channel)), dots),
+                    context, error)
+  }
+  result <- .ephys_map(seq_len(nrow(combos)), eval_group, parallel, progress, "group_apply")
+  out <- setNames(base::lapply(groups, function(rows) {
+    setNames(vector("list", length(channels)), channels)
+  }), names(groups))
+  for (i in seq_along(result)) {
+    out[[combos$recording[i]]][combos$channel[i]] <- result[i]
+  }
+  out
 }
 
-
-# ---------- EPhysContinuous ----------
-setMethod("group_apply",
-          signature(X = "EPhysContinuous", FUN = "function"),
-          function(X,
-                   FUN,
-                   parallel = FALSE,
-                   error = c("stop", "warn")[1],
-                   progress = interactive(),
-                   ...) {
-            dots     <- list(...)
-            err_mode <- match.arg(error, c("stop", "warn"))
-
-            d      <- X@Data
-            dims   <-
-              dim(d)
-            n_time <- dims[1]
-            n_runs <- dims[2]
-            n_ch <- dims[3]
-            md     <- Metadata(X)
-            rec_groups <-
-              .group_indices_by_rec(md)        # from your helper
-            run_names  <-
-              as.character(md$RunUID)          # guaranteed present
-            ch_names   <-
-              Channels(X)                      # dimnames(d)$channel assumed NULL
-
-            # (RecordingID × Channel) pairs
-            combos <-
-              expand.grid(
-                rec = names(rec_groups),
-                ch = ch_names,
-                stringsAsFactors = FALSE
-              )
-            ch_index <- setNames(seq_along(ch_names), ch_names)
-
-            eval_one <- function(i) {
-              rec  <- combos$rec[[i]]
-              ch   <- combos$ch[[i]]
-              ridx <- rec_groups[[rec]]
-              j    <- ch_index[[ch]]
-
-              # [time × runs_in_recording] slice
-              block <- d[, ridx, j, drop = FALSE]
-              dim(block) <- c(n_time, length(ridx))
-              colnames(block) <- run_names[ridx]
-
-              do.call(FUN, c(list(block), dots))           # only mat + your ...
-            }
-
-            # execute
-            if (isTRUE(parallel)) {
-              res <-
-                future_lapply(seq_len(nrow(combos)), eval_one, future.scheduling = 1, future.seed = TRUE)
-            } else {
-              if (progress) {
-                pb <- cli_progress_bar(total = nrow(combos),
-                                            format = "group_apply {pb_bar} {pb_percent}")
-                on.exit(try(cli_progress_done(id = pb), silent = TRUE)
-                        , add = TRUE)
+setMethod("group_apply", signature(X = "EPhysContinuous", FUN = "function"),
+          function(X, FUN, parallel = FALSE, error = c("stop", "warn")[1],
+                   progress = interactive(), ...) {
+            dat <- X@Data
+            channels <- Channels(X)
+            run_names <- as.character(Metadata(X)$RunUID)
+            .ephys_group_apply(
+              X, FUN, list(...), match.arg(error, c("stop", "warn")), parallel, progress,
+              function(rows, channel) {
+                block <- dat[, rows, match(channel, channels), drop = FALSE]
+                matrix(block, nrow = dim(dat)[1L], ncol = length(rows),
+                       dimnames = list(NULL, run_names[rows]))
               }
-              res <- vector("list", nrow(combos))
-              for (i in seq_len(nrow(combos))) {
-                res[[i]] <- tryCatch(
-                  eval_one(i),
-                  error = function(e) {
-                    msg <- sprintf(
-                      "FUN error at RecordingID=%s, Channel=%s: %s",
-                      combos$rec[[i]],
-                      combos$ch[[i]],
-                      conditionMessage(e)
-                    )
-                    if (identical(err_mode, "stop"))
-                      stop(msg, call. = FALSE)
-                    if (requireNamespace("cli", quietly = TRUE))
-                      cli_warn(msg)
-                    else
-                      warning(msg, call. = FALSE)
-                    NULL
-                  }
-                )
-                if (progress)
-                  cli_progress_update()
-              }
-            }
-
-            # pack nested [RecordingID][Channel]
-            out <-
-              setNames(vector("list", length(rec_groups)), names(rec_groups))
-            for (r in names(rec_groups))
-              out[[r]] <- setNames(vector("list", length(ch_names)), ch_names)
-            for (i in seq_len(nrow(combos)))
-              out[[combos$rec[[i]]]][[combos$ch[[i]]]] <- res[[i]]
-            out
+            )
           })
 
-
-# ---------- EPhysEvents ----------
-setMethod("group_apply",
-          signature(X = "EPhysEvents", FUN = "function"),
-          function(X,
-                   FUN,
-                   parallel = FALSE,
-                   error = c("stop", "warn")[1],
-                   progress = interactive(),
-                   ...) {
-            dots     <- list(...)
-            err_mode <- match.arg(error, c("stop", "warn"))
-
-            dat        <- X@Data
-            md         <- Metadata(X)
-            rec_groups <-
-              .group_indices_by_rec(md)       # your helper
-            run_names  <-
-              as.character(md$RunUID)         # guaranteed present
-            ch_names   <-
-              Channels(X)                     # assume no channel dimnames
-
-            # (RecordingID × Channel) pairs
-            combos   <-
-              expand.grid(
-                rec = names(rec_groups),
-                ch = ch_names,
-                stringsAsFactors = FALSE
-              )
-
-            eval_one <- function(i) {
-              rec  <- combos$rec[[i]]
-              ch   <- combos$ch[[i]]
-              ridx <- rec_groups[[rec]]
-
-              # list of spike vectors (one per run in the recording), named by RunUID
-              spike_list <- lapply(ridx, function(k)
-                dat[[k]][[ch]])
-              names(spike_list) <- run_names[ridx]
-
-              do.call(FUN, c(list(spike_list), dots))     # pass only 'mat' (list) + your ...
-            }
-
-            # execute
-            if (isTRUE(parallel)) {
-              res <-
-                future_lapply(seq_len(nrow(combos)), eval_one, future.scheduling = 1)
-            } else {
-              if (progress) {
-                pb <- cli_progress_bar(total = nrow(combos),
-                                            format = "group_apply {pb_bar} {pb_percent}")
-                on.exit(try(cli_progress_done(id = pb), silent = TRUE)
-                        , add = TRUE)
+setMethod("group_apply", signature(X = "EPhysEvents", FUN = "function"),
+          function(X, FUN, parallel = FALSE, error = c("stop", "warn")[1],
+                   progress = interactive(), ...) {
+            dat <- X@Data
+            run_names <- as.character(Metadata(X)$RunUID)
+            .ephys_group_apply(
+              X, FUN, list(...), match.arg(error, c("stop", "warn")), parallel, progress,
+              function(rows, channel) {
+                setNames(base::lapply(rows, function(i) dat[[i]][[channel]]), run_names[rows])
               }
-              res <- vector("list", nrow(combos))
-              for (i in seq_len(nrow(combos))) {
-                res[[i]] <- tryCatch(
-                  eval_one(i),
-                  error = function(e) {
-                    msg <- sprintf(
-                      "FUN error at RecordingID=%s, Channel=%s: %s",
-                      combos$rec[[i]],
-                      combos$ch[[i]],
-                      conditionMessage(e)
-                    )
-                    if (identical(err_mode, "stop"))
-                      stop(msg, call. = FALSE)
-                    if (requireNamespace("cli", quietly = TRUE))
-                      cli_warn(msg)
-                    else
-                      warning(msg, call. = FALSE)
-                    NULL
-                  }
-                )
-                if (progress)
-                  cli_progress_update()
-              }
-            }
-
-            # pack nested [RecordingID][Channel]
-            out <-
-              setNames(vector("list", length(rec_groups)), names(rec_groups))
-            for (r in names(rec_groups))
-              out[[r]] <- setNames(vector("list", length(ch_names)), ch_names)
-            for (i in seq_len(nrow(combos)))
-              out[[combos$rec[[i]]]][[combos$ch[[i]]]] <- res[[i]]
-            out
+            )
           })

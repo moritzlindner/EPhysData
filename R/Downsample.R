@@ -2,11 +2,13 @@
 #'
 #' This method downsamples an \link{EPhysData} or an \link{EPhysSet} object by sampling the time trace and applying a filter function.
 #'
-#' @inheritParams GetData
-#' @inheritParams base::pretty
+#' @param X An \link{EPhysData} or \link{EPhysSet} object.
+#' @param n Maximum number of samples to retain per recording.
 #' @return An object of class \link{EPhysData} or \link{EPhysSet} after downsampling
 #'
-#' @details The \code{Downsample} function samples the time trace of the input object and applies a filter function to the data. The sampling is based on the \link[base:pretty]{bsae::pretty} function, which creates a sequence of about equally spaced values that cover the range of the input time trace. The filter function stored in the object is applied before downsampling and gets relaced  by an identity function.
+#' @details The stored filter is applied before selecting approximately equally
+#' spaced sample indices. Data, time and any stimulus trace use the same indices.
+#' The stored filter is then replaced by the identity function.
 #'
 #' @examples
 #' # For an EPhysData object
@@ -34,14 +36,21 @@ setGeneric("Downsample", function(X, n = 250) standardGeneric("Downsample"))
 setMethod("Downsample",
           "EPhysData",
           function(X, n = 250) {
-            Xt <- TimeTrace(X)
-            sample <- Xt %in% pretty(Xt, n)
-            unitbuffer <- deparse_unit(X@Data)
-            X@Data <- as_units(apply(X@Data, 2, FilterFunction(X))[sample, 1:dim(X)[2], drop = FALSE], unitbuffer)
-            X@TimeTrace <- Xt[sample]
-            FilterFunction(X) <- function(x) x
-            # message("The filter function is reset upon downsampling.")
-            return(X)
+            if (!is.numeric(n) || length(n) != 1L || !is.finite(n) ||
+                n < 1 || n != floor(n)) {
+              .ephys_abort("Downsample() requires n to be a positive whole number.")
+            }
+            validObject(X)
+            samples <- nrow(X@Data)
+            if (!samples) .ephys_abort("Downsample(EPhysData) found no input samples.")
+            indices <- round(seq.int(1, samples, length.out = min(n, samples)))
+            data <- .ephys_filter_data(X, FilterFunction(X), "Downsample(EPhysData)")
+            X@Data <- data[indices, , drop = FALSE]
+            X@TimeTrace <- X@TimeTrace[indices]
+            if (length(X@StimulusTrace)) X@StimulusTrace <- X@StimulusTrace[indices]
+            X@filter.fx <- .ephys_identity
+            validObject(X)
+            X
           })
 
 #' @rdname Downsample-methods

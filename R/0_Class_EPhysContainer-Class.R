@@ -31,7 +31,7 @@
 #'   \item \strong{Units}
 #'     \itemize{
 #'       \item \code{TimeUnits} and \code{StimulusUnits} (when provided) must be valid udunits \emph{symbols} (e.g., \code{"s"}, \code{"ms"}), validated via \code{units::set_units()}.
-#'       \item \code{StimulusUnits} may be empty if \code{StimulusTrace} is empty. If \code{StimulusTrace} is present but \code{StimulusUnits} is empty, a message is emitted.
+#'       \item \code{StimulusUnits} may be empty when no stimulus unit was recorded.
 #'     }
 #' }
 #'
@@ -57,6 +57,9 @@ validEPhysContainer <- function(object) {
 
   if (!is.character(ch_names)) msgs <- c(msgs, "`Channels` must be a character vector.")
   if (length(ch_names) == 0L)  msgs <- c(msgs, "`Channels` may not be empty.")
+  if (anyNA(ch_names) || any(!nzchar(ch_names))) {
+    msgs <- c(msgs, "`Channels` must contain non-empty, non-missing names.")
+  }
   if (anyDuplicated(ch_names)) msgs <- c(msgs, "`Channels` must be unique (no duplicates).")
 
   #Metadata checks
@@ -90,44 +93,40 @@ validEPhysContainer <- function(object) {
       msgs <- c(msgs, "Column `RunUID` must be unique (no duplicates).")
   }
 
-  # Channel checks
-  ## In validEPhysContainer(), replace the current list-case block with:
-
   if (is.list(dat)) {
-    # top-level: one element per run
     if (length(dat) != nrow(md)) {
-      msgs <- c(msgs, "`Data` (list) must have one element per run: length(Data) == nrow(Metadata).")
+      msgs <- c(msgs, sprintf("`Data` has %d runs, but `Metadata` has %d rows.",
+                              length(dat), nrow(md)))
     }
-
-    if (length(dat) > 0L) {
-      for (i in seq_along(dat)) {
-        rowdat <- dat[[i]]
-        if (!is.list(rowdat)) {
-          msgs <- c(msgs, sprintf("Data[[%d]] must be a list (one element per channel).", i))
-          break
-        }
-        if (length(rowdat) != length(ch_names)) {
-          msgs <- c(
-            msgs,
-            sprintf("Data[[%d]] must have length %d (one per channel); found %d.",
-                    i, length(ch_names), length(rowdat))
-          )
-          break
-        }
+    for (i in seq_along(dat)) {
+      run_id <- if (i <= length(md$RunUID)) as.character(md$RunUID[i]) else "unknown"
+      context <- sprintf("Data[[%d]] (RunUID %s)", i, run_id)
+      rowdat <- dat[[i]]
+      if (!is.list(rowdat) || is.null(names(rowdat))) {
+        msgs <- c(msgs, paste0(context, " must be a named list of channels."))
+        next
+      }
+      run_channels <- names(rowdat)
+      missing <- setdiff(ch_names, run_channels)
+      extra <- setdiff(run_channels, ch_names)
+      duplicated_channels <- unique(run_channels[duplicated(run_channels)])
+      if (length(missing) || length(extra) || length(duplicated_channels)) {
+        format_names <- function(x) if (length(x)) paste(shQuote(x), collapse = ", ") else "none"
+        msgs <- c(msgs, sprintf("%s has invalid channel names. Missing: %s. Unexpected: %s. Duplicated: %s.",
+                                context, format_names(missing), format_names(extra),
+                                format_names(duplicated_channels)))
       }
     }
-  } else if (is.array(dat)) {
-    dch <- dim(dat)[3]
-    if (length(ch_names) != dch) {
-      msgs <- c(msgs, "Length of Channels slot must match third dimension of Data array.")
+  } else if (is.array(dat) && length(dim(dat)) == 3L) {
+    if (length(ch_names) != dim(dat)[3L]) {
+      msgs <- c(msgs, sprintf("`Data` has %d channels, but `Channels` has %d names.",
+                              dim(dat)[3L], length(ch_names)))
     }
-    # Also check channel dimnames if present
     if (!is.null(dimnames(dat)$channel) && !identical(dimnames(dat)$channel, ch_names)) {
       msgs <- c(msgs, "Channel dimnames of Data array must match Channels slot.")
     }
-  }
-  if (length(ch_names) == 0) {
-    msgs <- c(msgs, "Channels slot is empty.")
+  } else {
+    msgs <- c(msgs, "`Data` must be a list of runs or a 3D array [time x run x channel].")
   }
   if (nrow(ch_md)!=0){
     if (length(ch_names) != nrow(ch_md)) {
@@ -145,53 +144,38 @@ validEPhysContainer <- function(object) {
     msgs <- c(msgs, "`Imported` must be a single POSIXct timestamp.")
   }
 
-  # time, stimulus & channels
   tt <- object@TimeTrace
-  d <- diff(tt)
-  if (is.numeric(tt) && (length(tt)!=0 )) {
-    if (!isTRUE(all(d > 0)))  msgs <- c(msgs,"TimeTrace must be linearly increasing.")
-
-    rtol <- 1e-8
-    atol <- 1e-12
-    step <- median(d, na.rm = TRUE)
-
-    if (max(abs(d - step), na.rm = TRUE) > (atol + rtol * abs(step))) {
-      msgs <- c(msgs, "`TimeTrace` must be (approximately) equally spaced.")
+  if (any(!is.finite(tt))) {
+    msgs <- c(msgs, "`TimeTrace` must contain only finite values.")
+  } else if (length(tt) > 1L) {
+    d <- diff(tt)
+    if (any(d <= 0)) msgs <- c(msgs, "`TimeTrace` must be strictly increasing.")
+    step <- median(d)
+    if (max(abs(d - step)) > 1e-12 + 1e-8 * abs(step)) {
+      msgs <- c(msgs, "`TimeTrace` must be approximately equally spaced.")
     }
-  }
-
-  ch <- object@Channels
-  if (!is.character(ch)) {
-    msgs <- c(msgs, "`Channels` must be a character vector.")
   }
 
   st <- object@StimulusTrace
-  if (is.numeric(st) && (length(st)!=0 && length(st)!=length(tt))) {
-    msgs <- c(msgs, "`StimulusTrace` must be numeric of length 0 or same as TimeTrace.")
+  if (length(st) && length(st) != length(tt)) {
+    msgs <- c(msgs, sprintf("`StimulusTrace` has %d samples. Expected 0 or %d to match `TimeTrace`.",
+                            length(st), length(tt)))
   }
 
-  # units validation
   for (nm in c("TimeUnits", "StimulusUnits")) {
     val <- slot(object, nm)
-    if (nm == "StimulusUnits"){
-      if(length(val)==0){
-        if(length(object@StimulusTrace)!=0){
-          message("No StimulusUnits provided.")
-        }
-        next
-      }
+    if (nm == "StimulusUnits" && (!length(val) || identical(val, ""))) next
+    if (length(val) != 1L || is.na(val) || !nzchar(val)) {
+      msgs <- c(msgs, sprintf("`%s` must be a single unit string.", nm))
+      next
     }
-    ok <- tryCatch({
-      # attempt to assign the unit to the number 1
-      set_units(1, val,  mode="standard")
-      TRUE
-    }, error = function(e) FALSE)
-    if (!ok) {
-      msgs <- c(
-        msgs,
-        sprintf("`%s` must be a valid udunits (i.e. one of units::valid_udunits()$symbol)",
-                nm)
-      )
+    problem <- tryCatch({
+      value <- set_units(1, val, mode = "standard")
+      if (nm == "TimeUnits") set_units(value, "s", mode = "standard")
+      NULL
+    }, error = conditionMessage)
+    if (!is.null(problem)) {
+      msgs <- c(msgs, sprintf("`%s` value %s is invalid. %s", nm, shQuote(val), problem))
     }
   }
 
@@ -205,11 +189,13 @@ validEPhysContainer <- function(object) {
 #' a 3D array), timing information, optional stimulus trace, and units.
 #'
 #' @slot Metadata \code{data.frame}. One row per run. Required columns:
+#' \itemize{
 #'   \item \strong{Experiment}: *factor*. Factorized identifier for each Experiment. All recordings/runs acquired on the basis of an identical acquisition protocol can belong to the same Experiment.
 #'   \item \strong{Step}: *ordered*. Ordered identifier for each step. One Step corresponds to a single protocol stage within an Experiment; values are compared in their defined order to reflect the progression of the acquisition.
 #'   \item \strong{RecordingID}: *integer*. Identifier for each Recording. One Recording may have multiple runs.
 #'   \item \strong{RunUID}: *integer*. Unique run ID.
-#'   Any number of additional columns is allowed.
+#' }
+#' Any number of additional columns is allowed.
 #' @slot Data Either:
 #' \enumerate{
 #'   \item \strong{list}: A \emph{list} of length \code{nrow(Metadata)}; each \code{Data[[i]]} is a \emph{named list} with one element per channel. Each channel entry is a numeric vector of event timestamps; or
@@ -225,7 +211,7 @@ validEPhysContainer <- function(object) {
 #' @slot Channel_Metadata \code{data.frame}. Either empty or one row per channel (i.e., \code{nrow(Channel_Metadata) == length(Channels)}).
 #' @slot StimulusTrace \code{numeric}. Length 0 or the same length as \code{TimeTrace}.
 #' @slot TimeUnits \code{character}. A valid udunits \emph{symbol} (e.g., \code{"s"}, \code{"ms"}).
-#' @slot StimulusUnits \code{character}. A valid udunits symbol; may be empty if \code{StimulusTrace} is empty.
+#' @slot StimulusUnits \code{character}. A valid udunits symbol; may be empty when no stimulus unit was recorded.
 #'
 #' @section Validity:
 #' \itemize{
@@ -255,7 +241,7 @@ validEPhysContainer <- function(object) {
 #'   \item \strong{Units}
 #'     \itemize{
 #'       \item \code{TimeUnits} and \code{StimulusUnits} (when provided) must be valid udunits \emph{symbols}, validated via \code{units::set_units()}.
-#'       \item \code{StimulusUnits} may be empty if \code{StimulusTrace} is empty; if \code{StimulusTrace} is present but \code{StimulusUnits} is empty, a message is emitted.
+#'       \item \code{StimulusUnits} may be empty when no stimulus unit was recorded.
 #'     }
 #' }
 #'

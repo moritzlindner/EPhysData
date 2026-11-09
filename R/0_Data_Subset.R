@@ -14,10 +14,10 @@
 #'   \item \strong{EPhysEvents}: Filters trials by \code{Metadata} (e.g., Step/Experiment/repeat),
 #'         optionally keeps only selected \code{Channels}, applies a time window to event timestamps,
 #'         zero-shifts times by the lower bound, updates \code{Start}/\code{Stop}/\code{Diff} in
-#'         \code{Metadata} if present, and drops runs with no remaining spikes.
+#'         \code{Metadata} if present, and retains runs with no remaining spikes.
 #'   \item \strong{EPhysContinuous}: Same metadata/channel/time handling as \emph{Events}, but
 #'         subsetting the 3D array \code{[time × run × channel]}. \code{StimulusTrace} is sliced
-#'         with \code{TimeTrace} when lengths match (otherwise left unchanged with a warning).
+#'         with \code{TimeTrace} when present.
 #' }
 #'
 #' @inheritParams GetData
@@ -32,8 +32,8 @@
 #' @param Time A length-2 vector giving the time window; may be plain numeric in the same unit
 #'   as \code{TimeTrace(X)} \emph{or} a \pkg{units} vector convertible to that unit.
 #'   The window is treated as a closed interval \code{[start, end]} and the returned time
-#'   is zero-shifted by \code{start}.
-#' @param TimeExclusive Logical; if \code{TRUE}, use \code{[start, end)} semantics.
+#'   keeps the original sample times.
+#' @param TimeExclusive Logical; if \code{TRUE}, select the requested time points.
 #' @param Trials Trial indices \emph{or} a logical vector of length \code{ntrials}. For
 #'   \code{EPhysSet}, this can be used only when all items have the same number of trials.
 #' @param SetItems Which items of an \code{EPhysSet} to keep; logical vector of length \code{length(X)}
@@ -42,15 +42,14 @@
 #'   that \code{EPhysData} instead of an \code{EPhysSet}.
 #'
 #' \strong{EPhysEvents / EPhysContinuous}
-#' @param Step Optional numeric criterion. If length-2, treated as a closed range
-#'   \code{[min, max]}; otherwise matched via \code{\%in\%} to \code{Metadata$Step}.
+#' @param Step Optional values matched to the levels of \code{Metadata$Step}.
 #' @param Experiment Optional character vector matched via \code{\%in\%} to \code{Metadata$Experiment}.
-#' @param Repeat Optional numeric criterion; same range vs. \code{\%in\%} behavior as \code{Step}.
-#' @param RecordingID Optional numeric criterion; same behavior as \code{Step}.
-#' @param Channels Optional character vector of channel names to keep. Requested order is preserved.
+#' @param Repeat Optional numeric criterion; two values specify a closed range, otherwise match individual values.
+#' @param RecordingID Optional numeric criterion; two values specify a closed range, otherwise match individual values.
+#' @param Channels Optional character vector of channel names to keep. Requested order is preserved. Missing names cause an error.
 #' @param TimeRange Length-2 numeric or \pkg{units} vector giving \code{[start, end]} in the
-#'   \code{TimeTrace} unit (converted if \pkg{units}-aware). Returned \code{TimeTrace} (and aligned
-#'   \code{StimulusTrace}, if lengths match) is zero-shifted by \code{start}.
+#'   \code{TimeTrace} unit (converted if \pkg{units}-aware). Returned sample times
+#'   and event timestamps are shifted by a finite \code{start}.
 #'
 #' @return
 #' A new object of the same class as \code{X} with the requested subset applied:
@@ -63,14 +62,13 @@
 #'
 #' @details
 #' \itemize{
-#'   \item \strong{Range vs. membership matching}: For numeric \code{Step}, \code{Repeat},
+#'   \item \strong{Range vs. membership matching}: For numeric \code{Repeat}
 #'         and \code{RecordingID}, a length-2 vector is interpreted as \code{[min, max]} (closed);
-#'         any other length uses \code{\%in\%}. \code{Experiment} is always matched via \code{\%in\%}.
+#'         any other length uses \code{\%in\%}. \code{Experiment} and \code{Step} are matched via \code{\%in\%}.
 #'   \item \strong{Units}: \code{Time} and \code{TimeRange} can be plain numeric (interpreted in
 #'         the same unit as \code{TimeTrace(X)}) or \pkg{units} vectors convertible to that unit.
-#'   \item \strong{Stimulus alignment}: When \code{length(StimulusTrace(X)) == length(TimeTrace(X))},
-#'         the stimulus is cropped/shifted with time; otherwise it is left unchanged and a warning
-#'         is issued.
+#'   \item \strong{Stimulus alignment}: A present stimulus trace uses the same
+#'         sample indices as the time trace. An absent stimulus remains empty.
 #'   \item \strong{Metadata updates}: If \code{Metadata} contains \code{Start}/\code{Stop}, these are
 #'         adjusted to reflect the time window; \code{Diff} is recomputed as \code{Stop - Start}.
 #'   \item \strong{EPhysData resets}: Subsetting by time resets \code{FilterFunction}; subsetting
@@ -115,6 +113,9 @@ setMethod("Subset",
                    Trials = NULL,
                    Raw = T,
                    ...) {
+            validObject(X)
+            if (!length(X@TimeTrace)) .ephys_abort("Subset(EPhysData) found no time samples.")
+            Time <- .ephys_legacy_time(X, Time, "Subset(EPhysData)")
             Data <- GetData(
               X = X,
               Time = Time,
@@ -123,70 +124,30 @@ setMethod("Subset",
               Raw = Raw
             )
 
-            if (!("units" %in% class(Time))) {
-              stop("'Time' must be of class 'units'")
-            }
-
-            convertibel.to.s <- tryCatch({
-              set_units(Time, "s")
-              TRUE
-            }, error = function(e) {
-              FALSE
-            })
-            if (!convertibel.to.s) {
-              stop("'Time' must be of convertible to seconds.")
-            }
-
             if (!isTRUE(all.equal(Time, range(TimeTrace(X)))) || TimeExclusive) {
-              filter.fx <- function(x) {
-                return(x)
-              }
-              message("Data is subsetted by time, thus resetting filter function.")
+              filter.fx <- .ephys_identity
+              message("Subset(EPhysData) reset the filter for the time subset.")
             } else {
               filter.fx <- FilterFunction(X)
             }
 
-            if(!is.null(Trials)){
-              warning("Subsetting by trials: resetting rejection function.")
-              rejected.fx <- function(x) {
-                return(rep(FALSE, dim(x)[2]))
-              }
-            } else {
-              rejected.fx<-Rejected(X,return.fx = T)
+            rejected.fx <- Rejected(X, return.fx = TRUE)
+            if (!is.null(Trials)) {
+              .ephys_warn("Subset(EPhysData) reset the rejection callback after selecting trials.",
+                          "ephys_selection_warning")
+              rejected.fx <- .ephys_reject_none
             }
 
-            Time <- condition_time(X, Time, TimeExclusive)
+            trace <- TimeTrace(X)
+            keep_time <- trace %in% condition_time(X, Time, TimeExclusive)
+            Time <- trace[keep_time]
+            new_stim <- if (length(X@StimulusTrace)) X@StimulusTrace[keep_time] else X@StimulusTrace
 
-            err <- tryCatch(
-              StimulusTrace(X),
-              error = function(e)
-                e
-            )
-            has_stimtrace <- !any(class(err) == "error")
-
-            if(has_stimtrace){
-              new_stim<-StimulusTrace(X)[TimeTrace(X) %in% Time]
-            }else{
-              new_stim<-as_units(integer(),unitless)
-            }
-
-            if(!Raw){
-              rejected.fx <- function(x) {
-                return(FALSE)
-              }
-              filter.fx <- function(x) {
-                return(x)
-              }
-            }
-
-            # if x is changed, then dont keep filter
-
+            average.fx <- AverageFunction(X)
             if (!Raw) {
-              average.fx <- function(x) {
-                return(x)
-              }
-            } else {
-              average.fx <- AverageFunction(X)
+              rejected.fx <- .ephys_reject_none
+              filter.fx <- .ephys_identity
+              average.fx <- .ephys_identity
             }
 
             out <- new(
@@ -324,26 +285,44 @@ setMethod("Subset",
   if (!is.null(Step)){
     Step<- as.character(Step)
     if (!all(Step %in% as.character(levels(md$Step)))){
-      stop ("Not all values of 'Step' exist in the repsecitve metadata column.")
+      missing <- setdiff(Step, levels(md$Step))
+      .ephys_abort(sprintf("Subset(%s) received unknown Step values: %s.",
+                           class(X)[1L], paste(shQuote(missing), collapse = ", ")))
     }
     keep <- keep & (as.character(md$Step) %in% Step)
   }
   if (!is.null(Experiment))        keep <- keep & (as.character(md$Experiment) %in% Experiment)
-  if (!is.null(Repeat))      keep <- keep & match_numeric(md$Repeat,       Repeat)
+  if (!is.null(Repeat)) {
+    if (!"Repeat" %in% names(md)) {
+      .ephys_abort(sprintf("Subset(%s) requires Metadata$Repeat when Repeat is supplied.",
+                           class(X)[1L]))
+    }
+    keep <- keep & match_numeric(md$Repeat, Repeat)
+  }
   if (!is.null(RecordingID)) keep <- keep & match_numeric(md$RecordingID, RecordingID)
 
   run_idx <- which(keep)
-  if (length(run_idx) == 0L) stop("No trials match the given metadata filters.")
+  if (!length(run_idx)) {
+    .ephys_abort(sprintf("Subset(%s) matched no runs among %d metadata rows.",
+                         class(X)[1L], nrow(md)))
+  }
   new_md <- md[run_idx, , drop = FALSE]
 
   # ---- channels (respect requested order if provided) ----
   old_ch <- Channels(X)
   if (!is.null(Channels)) {
     req <- unique(as.character(Channels))
-    present <- req[req %in% old_ch]
-    if (length(present) == 0L) stop("None of the requested Channels are present.")
-    ch_idx <- match(present, old_ch)      # preserve request order
-    new_channels <- present
+    if (!length(req)) {
+      .ephys_abort(sprintf("Subset(%s) requires at least one channel name.", class(X)[1L]))
+    }
+    missing <- setdiff(req, old_ch)
+    if (length(missing)) {
+      .ephys_abort(sprintf("Subset(%s) could not find channels: %s. Matched %d of %d requested.",
+                           class(X)[1L], paste(shQuote(missing), collapse = ", "),
+                           length(req) - length(missing), length(req)))
+    }
+    ch_idx <- match(req, old_ch)
+    new_channels <- req
   } else {
     ch_idx <- seq_along(old_ch)
     new_channels <- old_ch
@@ -360,25 +339,29 @@ setMethod("Subset",
 
   # ---- time handling (units-aware) ----
   tt <- TimeTrace(X)
-  if (length(TimeRange) != 2L)
-    stop("TimeRange must be length 2: c(start, end).")
+  operation <- sprintf("Subset(%s)", class(X)[1L])
+  if (!is.numeric(TimeRange) || length(TimeRange) != 2L || anyNA(TimeRange)) {
+    .ephys_abort(paste(operation, "requires a numeric TimeRange of two non-missing bounds."))
+  }
+  tr_u <- tryCatch(
+    set_units(TimeRange, TimeUnits(X), mode = "standard"),
+    error = function(e) .ephys_abort(
+      sprintf("%s could not convert TimeRange to %s.", operation, shQuote(TimeUnits(X))),
+      parent = e
+    )
+  )
+  a <- as.numeric(tr_u[1L])
+  b <- as.numeric(tr_u[2L])
+  if (a > b || a == Inf || b == -Inf) {
+    .ephys_abort(sprintf("%s requires ordered TimeRange bounds. Received [%g, %g] %s.",
+                         operation, a, b, TimeUnits(X)))
+  }
 
-  # Coerce TimeRange to tt's unit (if tt has units); if TimeRange already has units, convert.
-  tr_u <- tryCatch({
-    set_units(TimeRange, TimeUnits(X), mode = "standard")
-  }, error = function(e)
-    stop(
-      "TimeRange is not convertible to the TimeTrace units: ",
-      conditionMessage(e)
-    ))
-  a <- as.numeric(tr_u[1])
-  b <- as.numeric(tr_u[2])
-
-
-  ttn <- as.numeric(tt)  # safe even if tt has units
+  ttn <- as.numeric(tt)
   time_idx <- which(ttn >= a & ttn <= b)
-  if (length(tt) > 0L && length(time_idx) == 0L) {
-    stop("TimeRange selects no time samples.")
+  if (length(tt) && !length(time_idx)) {
+    .ephys_abort(sprintf("%s found no samples in [%g, %g] %s. Available range is [%g, %g] %s.",
+                         operation, a, b, TimeUnits(X), min(ttn), max(ttn), TimeUnits(X)))
   }
 
   # New TimeTrace, zero-shift if finite lower bound
@@ -389,15 +372,17 @@ setMethod("Subset",
 
   # StimulusTrace aligned slice (warn on mismatch)
   st <- StimulusTrace(X)
-  new_st <- st[time_idx]
+  new_st <- if (length(st)) st[time_idx] else st
 
   # ---- Metadata Start/Stop/Diff updates (if columns exist) ----
   # We update in the unit of md (assumes md$Start/Stop in same base as tt)
   if ("Start" %in% names(new_md)) {
-    if (is.finite(a) && a != -Inf) new_md$Start <- new_md$Start + a
-  }
-  if ("Stop" %in% names(new_md)) {
-    if (is.finite(b) && b != Inf)  new_md$Stop  <- new_md$Start + (b - if (is.finite(a)) a else 0)
+    original_start <- new_md$Start
+    if (is.finite(a)) new_md$Start <- original_start + a
+    if ("Stop" %in% names(new_md) && is.finite(b)) new_md$Stop <- original_start + b
+  } else if ("Stop" %in% names(new_md) && is.finite(b)) {
+    .ephys_warn(paste(operation, "preserved Metadata$Stop because Metadata$Start is absent."),
+                "ephys_metadata_warning")
   }
   if (all(c("Start", "Stop") %in% names(new_md))) {
     new_md$Diff <- round(new_md$Stop - new_md$Start, 5)
@@ -410,6 +395,7 @@ setMethod("Subset",
     new_channels   = new_channels,
     new_channel_md = new_cm,
     time_idx       = time_idx,
+    time_bounds    = c(a, b),
     new_tt         = new_tt,
     new_st         = new_st
   )
@@ -424,24 +410,14 @@ setMethod("Subset",
     return(invisible(NULL))
   }
 
-  dot_names <- names(dots)
-  dot_labels <- ifelse(
-    nzchar(dot_names),
-    dot_names,
-    vapply(dots, deparse, character(1), width.cutoff = 500L)
-  )
-
-  msg <- paste0(
-    .fun, " received unused argument(s): ",
-    paste(sprintf("'%s'", dot_labels), collapse = ", "),
-    "."
-  )
-
-  if ("Channel" %in% dot_labels) {
-    msg <- paste0(msg, " Did you mean 'Channels'?")
-  }
-
-  stop(msg, call. = FALSE)
+  dot_labels <- names(dots)
+  if (is.null(dot_labels)) dot_labels <- rep("", length(dots))
+  unnamed <- !nzchar(dot_labels)
+  dot_labels[unnamed] <- paste("unnamed argument", which(unnamed))
+  msg <- sprintf("%s received unused arguments: %s.",
+                 .fun, paste(shQuote(dot_labels), collapse = ", "))
+  if ("Channel" %in% dot_labels) msg <- paste(msg, "Use Channels to select channels.")
+  .ephys_abort(msg)
 }
 
 # ---- Methods: Subset for EPhysEvents / EPhysContinuous -----------------------
@@ -461,8 +437,9 @@ setMethod(
            TimeRange    = c(0, Inf),
            ...) {
 
-    .check_unused_dots(..., .fun = "Subset,EPhysEvents")
+    .check_unused_dots(..., .fun = "Subset(EPhysEvents)")
 
+    validObject(X)
     cmm <- .subset_common_container(
       X, Step = Step, Experiment = Experiment, Repeat = Repeat,
       RecordingID = RecordingID, Channels = Channels, TimeRange = TimeRange
@@ -471,21 +448,12 @@ setMethod(
     # Subset event data by runs, then by channels, then time-window the timestamps
     raw_runs <- X@Data[cmm$run_idx]
 
-    # Channel selection: keep names aligned to Channels(X); we index by position (cmm$ch_idx)
-    # raw_runs is list per run, each is a named list of channels in original order
-    # We transform by index to preserve original structure/order consistent with 'new_channels'.
     new_data <- lapply(raw_runs, function(ch_list) {
-      # ensure index-based selection aligned with original Channels(X)
-      ch_list[cmm$ch_idx]
+      ch_list[cmm$new_channels]
     })
 
-    # Apply time window [a,b] and zero-shift by lower bound 'a'
-    a_num <- as.numeric(TimeRange[1]); b_num <- as.numeric(TimeRange[2])
-    # But use the same numeric 'a'/'b' the helper used (derived from tt units)
-    tr_u <- set_units(TimeRange, TimeUnits(X), mode = "standard")
-    a_num <- as.numeric(tr_u[1])
-    b_num <- as.numeric(tr_u[2])
-
+    a_num <- cmm$time_bounds[1L]
+    b_num <- cmm$time_bounds[2L]
     new_data <- lapply(new_data, function(ch_list) {
       lapply(ch_list, function(ts) {
         ts <- ts[ts >= a_num & ts <= b_num]
@@ -524,9 +492,8 @@ setMethod(
            TimeRange    = c(0, Inf),
            ...) {
 
-    .check_unused_dots(..., .fun = "Subset,EPhysEvents")
-
-    stopifnot(is.array(X@Data), length(dim(X@Data)) == 3L)
+    .check_unused_dots(..., .fun = "Subset(EPhysContinuous)")
+    validObject(X)
 
     cmm <- .subset_common_container(
       X, Step = Step, Experiment = Experiment, Repeat = Repeat,
@@ -575,7 +542,7 @@ setMethod("[[",
 setMethod("[[<-",
           "EPhysSet",
           function(x, i, value) {
-            if(length(i)!=length(value)){
+            if (length(i) != 1L && length(i) != length(value)) {
               stop("Index and replacement must have the same length")
             }
             if (length(i) == 1) {
@@ -592,9 +559,8 @@ setMethod("[[<-",
               }
               x@Data[i]<-value
             }
-            if(validEPhysData(x)){
-              return(x)
-            }
+            validObject(x)
+            x
           })
 
 #' @describeIn Subset-methods Extract specific items from an \linkS4class{EPhysData} object. Returns a data.frame.

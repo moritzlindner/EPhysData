@@ -4,6 +4,9 @@
 #' @param X A \linkS4class{EPhysData} or \linkS4class{EPhysSet} object.
 #' @param filename Path the data is read from or written to.
 #' @param overwrite Should existing files be overwritten?
+#' @param restore_callbacks Restore saved R callback definitions. Defaults to
+#'   \code{FALSE}, which loads data with built-in callbacks. Use \code{TRUE}
+#'   only for files you trust. Restored callback bodies can execute R code when used.
 #' @return
 #' * Save: Does not return any values.
 #' * Load: An \linkS4class{EPhysData} or \linkS4class{EPhysSet} object.
@@ -15,12 +18,11 @@
 #' rm(SampleData)
 #' SampleData<-Load(fn)
 #' SampleData
-#' require(EPhysMethods)
-#' Rejected(SampleData)<-autoreject.by.distance
+#' Rejected(SampleData) <- function(x) rep(FALSE, ncol(x))
 #' Save(SampleData, fn, overwrite = TRUE)
 #' SampleData
 #' rm(SampleData)
-#' SampleData<-Load(fn)
+#' SampleData<-Load(fn, restore_callbacks = TRUE)
 #' SampleData
 #' rm(SampleData)
 #' SampleData<-makeExampleEPhysSet()
@@ -47,255 +49,196 @@ setGeneric(
   }
 )
 
-#' @importFrom hdf5r H5File
-#' @importFrom stringr str_detect
 #' @rdname LoadSave-methods
-#' @aliases Save,EPhysData,EPhysSet,ANY-method
-setMethod("Save",
-          "EPhysData",
-          function(X,
-                   filename,
-                   overwrite) {
-            if (file.exists(filename) & overwrite == F) {
-              stop(paste("File", filename, "already exists."))
-            } else{
-              if (file.exists(filename)) {
-                warning(paste("File", filename, "already exists. Overwriting."))
-              }
-            }
-            if(exists("con")){
-              if(con$is_valid){
-                con$close_all()
-              }
-            }
-            tryCatch({
-              con <- H5File$new(filename, mode = "w")
-            }, error= function(e){
-              if (str_detect(e$message,"unable to create file")){
-                out<-e
-                stop("File '", filename,"' could not be created. Check path.")
-              } else {
-                stop(e)
-              }
-            })
-            con <- Save.EPhysData(con, X)
-            con$close_all()
-          })
+setMethod("Save", "EPhysData", function(X, filename, overwrite) {
+  .ephys_save_file(X, filename, overwrite, Save.EPhysData)
+})
 
-#' @importFrom hdf5r H5File
-#' @importFrom stringr str_detect
 #' @rdname LoadSave-methods
-setMethod("Save",
-          "EPhysSet",
-          function(X,
-                   filename,
-                   overwrite) {
-            if (file.exists(filename) & overwrite == F) {
-              stop(paste("File", filename, "already exists."))
-            } else{
-              if (file.exists(filename)) {
-                warning(paste("File", filename, "already exists. Overwriting."))
-              }
-            }
-            if(exists("con")){
-              if(con$is_valid){
-                con$close_all()
-              }
-            }
-            tryCatch({
-              con <- H5File$new(filename, mode = "w")
-            }, error= function(e){
-              if (str_detect(e$message,"unable to create file")){
-                out<-e
-                stop("File '", filename,"' could not be created. Check path.")
-              } else {
-                stop(e)
-              }
-            })
-            con <- Save.EPhysSet(con, X)
-            con$close_all()
-          })
+setMethod("Save", "EPhysSet", function(X, filename, overwrite) {
+  .ephys_save_file(X, filename, overwrite, Save.EPhysSet)
+})
 
-#' @importFrom hdf5r H5File h5attr `h5attr<-`
-#' @importFrom units drop_units deparse_unit
-#' @noMd
-#' @keywords internal
-Save.EPhysData <- function (con, X) {
-  con$create_dataset("Data",X@Data,gzip_level = 9)
-  con[["Units"]] <- deparse_unit(X@Data)
-  con[["TimeTrace"]] <- drop_units(X@TimeTrace)
-  con[["TimeUnit"]] <- deparse_unit(X@TimeTrace)
-  con[["StimulusTrace"]] <- drop_units(X@StimulusTrace)
-  con[["StimulusUnit"]] <- deparse_unit(X@StimulusTrace)
-  tmp.fx<-deparse(local(X@Rejected))
-  con[["Rejected"]] <- iconv(paste(tmp.fx, collapse = "\n"), "UTF-8", "UTF-8", sub = '')
-  tmp.fx<-deparse(local(X@filter.fx))
-  con[["filter.fx"]] <- paste(tmp.fx, collapse = "\n")
-  tmp.fx<-deparse(local(X@average.fx))
-  con[["average.fx"]] <- paste(tmp.fx, collapse = "\n")
+.ephys_file_argument <- function(filename, operation) {
+  if (!is.character(filename) || length(filename) != 1L ||
+      is.na(filename) || !nzchar(filename)) {
+    .ephys_abort(paste(operation, "requires one non-empty filename."))
+  }
+  path.expand(filename)
+}
+
+.ephys_file_operation <- function(expr, context) {
+  tryCatch(expr, error = function(e) {
+    if (inherits(e, "ephys_io_error")) stop(e)
+    .ephys_abort(context, "ephys_io_error", parent = e)
+  })
+}
+
+.ephys_close_hdf <- function(con) {
+  if (con$is_valid) con$close_all()
+}
+
+.ephys_save_file <- function(X, filename, overwrite, writer) {
+  filename <- .ephys_file_argument(filename, "Save()")
+  if (!is.logical(overwrite) || length(overwrite) != 1L || is.na(overwrite)) {
+    .ephys_abort("Save() requires overwrite to be TRUE or FALSE.")
+  }
+  context <- sprintf("Save() failed for %s.", shQuote(filename))
+  check_destination <- function() {
+    if (dir.exists(filename)) {
+      .ephys_abort(paste(context, "The destination is a directory."), "ephys_io_error")
+    }
+    if (file.exists(filename) && !overwrite) {
+      .ephys_abort(paste(context, "The file already exists. Set overwrite = TRUE to replace it."),
+                   "ephys_io_error")
+    }
+  }
+  check_destination()
+  temp <- tempfile(".ephys-", tmpdir = dirname(filename))
+  on.exit(unlink(temp), add = TRUE)
+  .ephys_file_operation({
+    validObject(X)
+    con <- hdf5r::H5File$new(temp, mode = "w")
+    tryCatch(writer(con, X, context), finally = .ephys_close_hdf(con))
+    check_destination()
+    if (!suppressWarnings(file.rename(temp, filename))) {
+      .ephys_abort(paste(context, "Could not move the completed file into place."),
+                   "ephys_io_error")
+    }
+  }, context)
+  invisible(NULL)
+}
+
+#' @importFrom utils packageVersion compareVersion
+Save.EPhysData <- function(con, X, context) {
+  .ephys_file_operation(validObject(X), context)
+  con$create_dataset("Data", units::drop_units(X@Data), gzip_level = 9)
+  con[["Units"]] <- units::deparse_unit(X@Data)
+  con[["TimeTrace"]] <- units::drop_units(X@TimeTrace)
+  con[["TimeUnit"]] <- units::deparse_unit(X@TimeTrace)
+  con[["StimulusTrace"]] <- units::drop_units(X@StimulusTrace)
+  con[["StimulusUnit"]] <- units::deparse_unit(X@StimulusTrace)
+  con[["Rejected"]] <- paste(deparse(X@Rejected), collapse = "\n")
+  con[["filter.fx"]] <- paste(deparse(X@filter.fx), collapse = "\n")
+  con[["average.fx"]] <- paste(deparse(X@average.fx), collapse = "\n")
   con[["Created"]] <- X@Created
   con[["Type"]] <- "EPhysData"
-  con[["EPhysDataVersion"]] <- as.character(packageVersion('EPhysData'))
-  #con[["Description"]] <- readLines(file = paste0(path.package("EPhysData"), "/Hdf5_EPhysData_desc.txt"))
-  con
+  con[["EPhysDataVersion"]] <- as.character(packageVersion("EPhysData"))
+  invisible(con)
 }
 
-#' @importFrom hdf5r H5File h5attr `h5attr<-`
-#' @importFrom utils txtProgressBar setTxtProgressBar
-#' @noMd
-#' @keywords internal
-Save.EPhysSet <- function (con, X) {
-  SER_SLOT <- con$create_group("Data")
-  pb = txtProgressBar(min = 0, max = length(X@Data), initial = 0)
-  for (i in 1:length(X)) {
-    Recordings <-
-      Save.EPhysData(SER_SLOT$create_group(as.character(i)),
-                     X[[i]])
-    setTxtProgressBar(pb,i)
+Save.EPhysSet <- function(con, X, context) {
+  recordings <- con$create_group("Data")
+  for (i in seq_along(X@Data)) {
+    record_context <- sprintf("%s Recording %d.", context, i)
+    .ephys_file_operation(
+      Save.EPhysData(recordings$create_group(as.character(i)), X@Data[[i]], record_context),
+      record_context
+    )
   }
-  close(pb)
-  con$create_dataset("Metadata",X@Metadata)
+  con$create_dataset("Metadata", X@Metadata)
   con[["Type"]] <- "EPhysSet"
-  con[["EPhysDataVersion"]] <- as.character(packageVersion('EPhysData'))
-  con
+  con[["EPhysDataVersion"]] <- as.character(packageVersion("EPhysData"))
+  invisible(con)
 }
 
-#' @importFrom hdf5r H5File
-#' @importFrom utils packageVersion compareVersion
-#' @describeIn LoadSave-methods Load \linkS4class{EPhysData} or \linkS4class{EPhysSet} objects from an HDF5 file
+.ephys_hdf_read <- function(con, name, context, ...) {
+  .ephys_file_operation(con$open(name)$read(...),
+                        sprintf("%s Could not read HDF5 field %s.", context, shQuote(name)))
+}
+
+#' @describeIn LoadSave-methods Load \linkS4class{EPhysData} or \linkS4class{EPhysSet} from HDF5.
 #' @export
-Load <- function(filename) {
-  if (file.exists(filename)) {
-    con <- H5File$new(filename, mode = "r")
-  } else {
-    stop("File '", filename, "' does not exist. ")
+Load <- function(filename, restore_callbacks = FALSE) {
+  filename <- .ephys_file_argument(filename, "Load()")
+  if (!is.logical(restore_callbacks) || length(restore_callbacks) != 1L || is.na(restore_callbacks)) {
+    .ephys_abort("Load() requires restore_callbacks to be TRUE or FALSE.")
+  }
+  context <- sprintf("Load() failed for %s.", shQuote(filename))
+  if (!file.exists(filename) || dir.exists(filename)) {
+    .ephys_abort(paste(context, "Expected an existing HDF5 file."), "ephys_io_error")
   }
 
-  if (compareVersion(con$open("EPhysDataVersion")$read(),
-                     as.character(packageVersion('EPhysData')))>0) {
-    warning("This file was created using a newer version of EPhysData (",con$open("EPhysDataVersion")$read(),")")
-  }
-
-  if (con$open("Type")$read() == "EPhysData") {
-    out <- Load.EPhysData(con)
-  }
-  if (con$open("Type")$read() == "EPhysSet") {
-    out <- Load.EPhysSet(con)
-  }
-  con$close_all()
-  return(out)
-}
-
-#' @importFrom hdf5r H5File
-#' @keywords internal
-#' @noMd
-Load.EPhysData <- function(con) {
-  if (con$open("Type")$read() != "EPhysData") {
-    warning("This Hdf5 file does not seem to contain EPhysData.")
-  }
-
-
-  Rejected = con$open("Rejected")$read()
-  filter.fx = con$open("filter.fx")$read()
-  average.fx = con$open("average.fx")$read()
-
-  warnstring1 <-
-    ", probably because it was too complex or not formatted correctly ('"
-  warnstring2 <-
-    "'). Replacing by default. For storing and loading multiline functions, make sure each line of code ends with a ';'."
-  fxstr<-Rejected
-  Rejected <- tryCatch({
-    eval(parse(text = Rejected))
-  }, error = function(e) {
-    warning(
-      "Function stored for rejection of recordings could not be imported",
-      warnstring1,
-      fxstr,
-      warnstring2
-    )
-
-    function(x) {
-      rep(FALSE, ncol(x))
+  skipped <- character()
+  callback_env <- parent.frame()
+  read_callback <- function(con, name, default, record_context) {
+    if (!con$exists(name)) return(default)
+    text <- .ephys_hdf_read(con, name, record_context)
+    if (!restore_callbacks) {
+      compact <- gsub("[[:space:]{}]", "", paste(text, collapse = ""))
+      default_code <- gsub("[[:space:]{}]", "", paste(deparse(default), collapse = ""))
+      if (!compact %in% c(default_code, if (name != "Rejected") "function(x)return(x)")) skipped <<- c(skipped, name)
+      return(default)
     }
-  })
-  fxstr<-filter.fx
-  filter.fx <- tryCatch({
-    eval(parse(text = filter.fx))
-  }, error = function(e) {
-    warning(
-      "Function stored for filtering of individual recordings could not be imported",
-      warnstring1,
-      fxstr,
-      warnstring2
-    )
-    function(x) {
-      x
-    }
-  })
-  fxstr<-average.fx
-  average.fx <- tryCatch({
-    eval(parse(text = average.fx))
-  }, error = function(e) {
-    function(x) {
-      x
-    }
-    warning(
-      "Function stored for averaging of recordings could not be imported",
-      warnstring1,
-      fxstr,
-      warnstring2,
-      ". One reason could be that not all packages that the function depends on are loaded. e.g. Try 'require(EPhysMethods)' before loading the data. "
-    )
-  })
+    tryCatch({
+      code <- parse(text = text, keep.source = FALSE)
+      if (length(code) != 1L || !is.call(code[[1L]]) ||
+          !identical(code[[1L]][[1L]], as.name("function"))) {
+        stop("Expected a single function definition.", call. = FALSE)
+      }
+      eval(code[[1L]], envir = callback_env)
+    }, error = function(e) {
+      .ephys_warn(sprintf("%s Could not restore callback %s. Using the built-in default. %s",
+                          record_context, shQuote(name), conditionMessage(e)),
+                  "ephys_io_warning")
+      default
+    })
+  }
 
-  out <- EPhysData(
-    Data = as_units(con$open("Data")$read(), con$open("Units")$read()),
-    TimeTrace = as_units(con$open("TimeTrace")$read(), con$open("TimeUnit")$read()),
-    StimulusTrace = as_units(
-      con$open("StimulusTrace")$read(),
-      con$open("StimulusUnit")$read()
-    ),
-    Rejected = Rejected,
-    filter.fx = filter.fx,
-    average.fx = average.fx
+  con <- .ephys_file_operation(hdf5r::H5File$new(filename, mode = "r"), context)
+  on.exit(.ephys_close_hdf(con), add = TRUE)
+  version <- .ephys_hdf_read(con, "EPhysDataVersion", context)
+  .ephys_file_operation({
+    if (compareVersion(version, as.character(packageVersion("EPhysData"))) > 0) {
+      .ephys_warn(sprintf("Load(%s) is reading a file written by newer EPhysData %s.",
+                          shQuote(filename), version), "ephys_io_warning")
+    }
+  }, paste(context, "Invalid EPhysDataVersion."))
+  type <- .ephys_hdf_read(con, "Type", context)
+  out <- .ephys_file_operation(
+    switch(as.character(type),
+           EPhysData = Load.EPhysData(con, context, read_callback),
+           EPhysSet = Load.EPhysSet(con, context, read_callback),
+           .ephys_abort(sprintf("%s Unsupported HDF5 Type %s. Expected EPhysData or EPhysSet.",
+                                context, shQuote(toString(type))), "ephys_io_error")),
+    context
   )
-  out@Created <-
-    as.POSIXct(con$open("Created")$read(), origin = "1970-01-01")
-
-  if (validObject(out)) {
-    return(out)
-  } else{
-    stop("Importing file results in an invalid 'EPhysData' object. Is Hdf5 file corrupted?")
+  if (length(skipped)) {
+    .ephys_warn(sprintf("Load(%s) used built-in defaults for saved callbacks: %s. Use restore_callbacks = TRUE for trusted files.",
+                        shQuote(filename), paste(unique(skipped), collapse = ", ")),
+                "ephys_io_warning")
   }
-
+  out
 }
 
-#' @importFrom hdf5r H5File
-#' @importFrom utils txtProgressBar setTxtProgressBar
-#' @keywords internal
-#' @noMd
-Load.EPhysSet <- function(con) {
-  if(con$open("Type")$read() != "EPhysSet"){
-    warning("This Hdf5 file does not seem to contain an EPhysSet.")
+Load.EPhysData <- function(con, context, read_callback) {
+  read <- function(name, ...) .ephys_hdf_read(con, name, context, ...)
+  if (!identical(as.character(read("Type")), "EPhysData")) {
+    .ephys_abort(paste(context, "Expected HDF5 Type EPhysData."), "ephys_io_error")
   }
+  EPhysData(
+    Data = as_units(read("Data", drop = FALSE), read("Units")),
+    TimeTrace = as_units(read("TimeTrace"), read("TimeUnit")),
+    StimulusTrace = as_units(read("StimulusTrace"), read("StimulusUnit")),
+    Rejected = read_callback(con, "Rejected", .ephys_reject_none, context),
+    filter.fx = read_callback(con, "filter.fx", .ephys_identity, context),
+    average.fx = read_callback(con, "average.fx", .ephys_identity, context),
+    Created = as.POSIXct(read("Created"), origin = "1970-01-01")
+  )
+}
 
-  Data.con <- con$open("Data")
-  DATA<-list()
-  pb = txtProgressBar(min = 0, max = length(names(Data.con)), initial = 0)
-  j=0
-  for (i in names(Data.con)){
-    Data.curr<-Data.con$open(i)
-    DATA[[as.integer(i)]]<-Load.EPhysData(con = Data.curr)
-    setTxtProgressBar(pb,j)
-    j=j+1
+Load.EPhysSet <- function(con, context, read_callback) {
+  recordings <- .ephys_file_operation(con$open("Data"), paste(context, "Could not open HDF5 group Data."))
+  ids <- names(recordings)
+  expected <- as.character(seq_along(ids))
+  if (!setequal(ids, expected)) {
+    .ephys_abort(paste(context, "Recording groups must be numbered consecutively from 1."),
+                 "ephys_io_error")
   }
-  close(pb)
-
-  out <- EPhysSet(Data = DATA,
-                  Metadata = con$open("Metadata")$read())
-  if (validObject(out)) {
-    return(out)
-  } else{
-    stop("Importing file results in an invalid 'EPhysSet' object. Is Hdf5 file corrupted?")
-  }
+  data <- base::lapply(expected, function(id) {
+    record_context <- sprintf("%s Recording %s.", context, id)
+    .ephys_file_operation(Load.EPhysData(recordings$open(id), record_context, read_callback),
+                          record_context)
+  })
+  EPhysSet(Data = data, Metadata = .ephys_hdf_read(con, "Metadata", context))
 }
